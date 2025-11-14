@@ -48,10 +48,6 @@ builder.Services.AddHttpClient<IPaintCatalogApiClient, PaintCatalogApiClient>((s
 
 var app = builder.Build();
 
-// Localization
-var locOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>();
-app.UseRequestLocalization(locOptions.Value);
-
 // Enforce canonical URLs without trailing slash (except for root "/")
 app.Use(async (context, next) =>
 {
@@ -78,6 +74,10 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// Localization must run after routing so RouteDataRequestCultureProvider can see route values
+var locOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>();
+app.UseRequestLocalization(locOptions.Value);
 
 app.UseAuthorization();
 
