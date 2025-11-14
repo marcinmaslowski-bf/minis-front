@@ -1,9 +1,9 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
+using PaintCatalog.Portal;
 using PaintCatalog.Portal.ApiClients;
 using PaintCatalog.Portal.Models;
-using PaintCatalog.Portal.Resources;
 
 namespace PaintCatalog.Portal.Controllers
 {
