@@ -8,10 +8,10 @@
 
   <ItemGroup>
     <EmbeddedResource Update="Resources\SharedResource.resx">
-      <LogicalName>Resources.SharedResource</LogicalName>
+      <LogicalName>PaintCatalog.Portal.Resources.SharedResource</LogicalName>
     </EmbeddedResource>
     <EmbeddedResource Update="Resources\SharedResource.pl.resx">
-      <LogicalName>Resources.SharedResource.pl</LogicalName>
+      <LogicalName>PaintCatalog.Portal.Resources.SharedResource.pl</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 
