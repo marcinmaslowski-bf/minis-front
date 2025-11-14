@@ -6,4 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Ensure culture-specific resource file shows up as a separate item in VS -->
+    <EmbeddedResource Update="Resources\SharedResource.pl.resx">
+      <DependentUpon>SharedResource.resx</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>
