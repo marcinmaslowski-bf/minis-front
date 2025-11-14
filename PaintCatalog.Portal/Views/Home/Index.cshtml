@@ -1,19 +1,24 @@
 @model PaintCatalog.Portal.Models.HomeViewModel
-@inject Microsoft.Extensions.Localization.IStringLocalizer<PaintCatalog.Portal.SharedResource> L
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["Page_Title"].Value;
+    ViewData["MetaDescription"] = Localizer["Page_Description"].Value;
+}
 
 <section class="space-y-6">
     <div class="space-y-3">
         <h1 class="text-3xl font-semibold leading-tight tracking-tight md:text-4xl">
-            @L["Home_Hero_Title"]
+            @Localizer["Hero_Title"]
         </h1>
         <p class="max-w-xl text-sm text-slate-300 md:text-base">
-            @L["Home_Hero_Description"]
+            @Localizer["Hero_Description"]
         </p>
     </div>
 
     <section class="space-y-3">
         <h2 class="text-lg font-semibold tracking-tight md:text-xl">
-            @L["Home_Debug_Title"]
+            @Localizer["Debug_Title"]
         </h2>
 
         <div class="rounded-2xl border border-slate-800 bg-slate-900/60 p-4 text-sm">
@@ -24,7 +29,7 @@
             else
             {
                 <p class="text-xs text-slate-400">
-                    @L["Home_Debug_ApiMissing"]
+                    @Localizer["Debug_ApiMissing"]
                 </p>
             }
         </div>

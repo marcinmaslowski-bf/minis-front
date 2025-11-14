@@ -7,9 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Ensure culture-specific resource file shows up as a separate item in VS -->
-    <EmbeddedResource Update="Resources\SharedResource.pl.resx">
-      <DependentUpon>SharedResource.resx</DependentUpon>
+    <!-- Ensure culture-specific resource files show as dependent items in VS -->
+    <EmbeddedResource Update="Resources\Views.Shared._Layout.pl.resx">
+      <DependentUpon>Views.Shared._Layout.resx</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Views.Home.Index.pl.resx">
+      <DependentUpon>Views.Home.Index.resx</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
 
