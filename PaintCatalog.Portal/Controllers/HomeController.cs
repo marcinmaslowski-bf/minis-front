@@ -1,7 +1,5 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using PaintCatalog.Portal;
 using PaintCatalog.Portal.ApiClients;
 using PaintCatalog.Portal.Models;
 
@@ -10,12 +8,9 @@ namespace PaintCatalog.Portal.Controllers
     public class HomeController : Controller
     {
         private readonly IPaintCatalogApiClient _apiClient;
-        private readonly IStringLocalizer<SharedResource> _localizer;
-
-        public HomeController(IPaintCatalogApiClient apiClient, IStringLocalizer<SharedResource> localizer)
+        public HomeController(IPaintCatalogApiClient apiClient)
         {
             _apiClient = apiClient;
-            _localizer = localizer;
         }
 
         public async Task<IActionResult> Index()
@@ -36,8 +31,6 @@ namespace PaintCatalog.Portal.Controllers
             {
                 PaintsJsonSample = paintsJson
             };
-
-            ViewData["Title"] = _localizer["SiteTitle"];
 
             return View(vm);
         }

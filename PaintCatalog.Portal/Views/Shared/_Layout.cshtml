@@ -1,6 +1,6 @@
 @using System.Globalization
 @using PaintCatalog.Portal.Helpers
-@inject Microsoft.Extensions.Localization.IStringLocalizer<PaintCatalog.Portal.SharedResource> L
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer LayoutLocalizer
 
 @{
     // Source of truth: CurrentUICulture set by RequestLocalization middleware
@@ -21,6 +21,17 @@
     var homeEnUrl = Url.Action("Index", "Home", new { culture = (string?)null }) ?? "/";
     var homePlUrl = Url.Action("Index", "Home", new { culture = "pl" }) ?? "/pl";
     var navHomeUrl = routeCulture == "pl" ? homePlUrl : homeEnUrl;
+
+    var pageTitle = ViewData["Title"]?.ToString();
+    var metaDescription = ViewData["MetaDescription"]?.ToString();
+
+    var resolvedTitle = string.IsNullOrWhiteSpace(pageTitle)
+        ? LayoutLocalizer["SiteTitle"].Value
+        : pageTitle;
+
+    var resolvedDescription = string.IsNullOrWhiteSpace(metaDescription)
+        ? LayoutLocalizer["Default_MetaDescription"].Value
+        : metaDescription;
 }
 
 <!DOCTYPE html>
@@ -29,8 +40,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>@ViewData["Title"]</title>
-    <meta name="description" content="@L["Home_Hero_Description"]" />
+    <title>@resolvedTitle</title>
+    <meta name="description" content="@resolvedDescription" />
 
     <!-- Canonical -->
     <link rel="canonical" href="@canonicalUrl" />
@@ -81,18 +92,18 @@
             <a href="@navHomeUrl" class="flex items-center gap-2">
                 <span class="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500 text-sm font-bold text-slate-950">PC</span>
                 <span class="text-sm font-semibold tracking-tight text-slate-800 dark:text-slate-50 md:text-base">
-                    @L["SiteTitle"]
+                    @LayoutLocalizer["SiteTitle"]
                 </span>
             </a>
 
             <nav class="hidden items-center gap-6 text-sm text-slate-600 dark:text-slate-300 md:flex">
-                <a href="@navHomeUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@L["Nav_Home"]</a>
+                <a href="@navHomeUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Home"]</a>
             </nav>
 
             <div class="flex items-center gap-2 text-xs">
                 <button onclick="toggleTheme()"
                         class="rounded-full border border-slate-300 px-3 py-1 text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 dark:border-slate-700 dark:text-slate-200">
-                    @L["ThemeToggle_Label"]
+                    @LayoutLocalizer["ThemeToggle_Label"]
                 </button>
 
                 <div class="flex gap-1 rounded-full border border-slate-300 bg-white/80 p-1 dark:border-slate-700 dark:bg-slate-900/80">
@@ -115,7 +126,7 @@
         </div>
 
         <div id="mobile-menu" class="hidden border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 md:hidden">
-            <a href="@navHomeUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@L["Nav_Home"]</a>
+            <a href="@navHomeUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Home"]</a>
         </div>
     </header>
 
@@ -127,8 +138,8 @@
         <div class="mx-auto flex max-w-6xl flex-col justify-between gap-3 px-4 py-4 text-xs md:flex-row">
             <p>© @DateTime.UtcNow.Year Paint Catalog Portal</p>
             <div class="flex flex-wrap gap-3">
-                <a href="#" class="hover:text-emerald-600 dark:hover:text-emerald-300">@L["Footer_About"]</a>
-                <a href="#" class="hover:text-emerald-600 dark:hover:text-emerald-300">@L["Footer_Contact"]</a>
+                <a href="#" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Footer_About"]</a>
+                <a href="#" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Footer_Contact"]</a>
             </div>
         </div>
     </footer>
