@@ -1,4 +1,4 @@
-namespace PaintCatalog.Portal.Resources
+namespace PaintCatalog.Portal
 {
     /// <summary>
     /// Marker class for shared localization resources.
