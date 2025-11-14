@@ -5,8 +5,13 @@
 @{
     // Source of truth: CurrentUICulture set by RequestLocalization middleware
     var uiLang = CultureHelpers.GetCurrentLangTwoLetter();
-    var isPl = CultureHelpers.IsPl();
-    var routeCulture = CultureHelpers.GetRouteCultureSegment();
+    var routeCulture = Context.Request.RouteValues["culture"] as string;
+    if (string.IsNullOrEmpty(routeCulture) && CultureHelpers.IsPl())
+    {
+        routeCulture = "pl";
+    }
+
+    var isPl = string.Equals(routeCulture, "pl", StringComparison.OrdinalIgnoreCase);
 
     // canonical path is already normalized (no trailing slash) by middleware
     var path = Context.Request.Path.HasValue ? Context.Request.Path.Value : "/";
@@ -81,13 +86,13 @@
             </a>
 
             <nav class="hidden items-center gap-6 text-sm text-slate-600 dark:text-slate-300 md:flex">
-                <a href="@navHomeUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">Home</a>
+                <a href="@navHomeUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@L["Nav_Home"]</a>
             </nav>
 
             <div class="flex items-center gap-2 text-xs">
                 <button onclick="toggleTheme()"
                         class="rounded-full border border-slate-300 px-3 py-1 text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 dark:border-slate-700 dark:text-slate-200">
-                    Dark / Light
+                    @L["ThemeToggle_Label"]
                 </button>
 
                 <div class="flex gap-1 rounded-full border border-slate-300 bg-white/80 p-1 dark:border-slate-700 dark:bg-slate-900/80">
@@ -110,7 +115,7 @@
         </div>
 
         <div id="mobile-menu" class="hidden border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 md:hidden">
-            <a href="@navHomeUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">Home</a>
+            <a href="@navHomeUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@L["Nav_Home"]</a>
         </div>
     </header>
 
@@ -122,8 +127,8 @@
         <div class="mx-auto flex max-w-6xl flex-col justify-between gap-3 px-4 py-4 text-xs md:flex-row">
             <p>© @DateTime.UtcNow.Year Paint Catalog Portal</p>
             <div class="flex flex-wrap gap-3">
-                <a href="#" class="hover:text-emerald-600 dark:hover:text-emerald-300">About</a>
-                <a href="#" class="hover:text-emerald-600 dark:hover:text-emerald-300">Contact</a>
+                <a href="#" class="hover:text-emerald-600 dark:hover:text-emerald-300">@L["Footer_About"]</a>
+                <a href="#" class="hover:text-emerald-600 dark:hover:text-emerald-300">@L["Footer_Contact"]</a>
             </div>
         </div>
     </footer>

@@ -21,4 +21,22 @@
   <data name="Home_Hero_Description" xml:space="preserve">
     <value>Search paints, tutorials and share your own recipes.</value>
   </data>
+  <data name="Nav_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="ThemeToggle_Label" xml:space="preserve">
+    <value>Dark / Light</value>
+  </data>
+  <data name="Footer_About" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="Footer_Contact" xml:space="preserve">
+    <value>Contact</value>
+  </data>
+  <data name="Home_Debug_Title" xml:space="preserve">
+    <value>Debug: sample paints data (raw JSON from /api/v1/paints)</value>
+  </data>
+  <data name="Home_Debug_ApiMissing" xml:space="preserve">
+    <value>API is not reachable or &lt;code&gt;PaintCatalogApi:BaseUrl&lt;/code&gt; is not configured yet.</value>
+  </data>
 </root>
