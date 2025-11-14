@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -11,7 +11,14 @@
     <EmbeddedResource Update="Resources\Views.Shared._Layout.pl.resx">
       <DependentUpon>Views.Shared._Layout.resx</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Views.Shared._Layout.en.resx">
+      <DependentUpon>Views.Shared._Layout.resx</DependentUpon>
+    </EmbeddedResource>
+    
     <EmbeddedResource Update="Resources\Views.Home.Index.pl.resx">
+      <DependentUpon>Views.Home.Index.resx</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Update="Resources\Views.Home.Index.en.resx">
       <DependentUpon>Views.Home.Index.resx</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
