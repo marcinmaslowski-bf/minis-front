@@ -25,7 +25,7 @@ namespace PaintCatalog.Portal.Controllers
             try
             {
                 // Small sample to verify that integration with PaintCatalog.Api works.
-                paintsJson = await _apiClient.GetPaintsRawAsync(pageSize: 5);
+                paintsJson = await _apiClient.GetBrandsRawAsync();
             }
             catch
             {
