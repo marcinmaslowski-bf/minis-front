@@ -6,13 +6,4 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="Resources\SharedResource.resx">
-      <LogicalName>PaintCatalog.Portal.Resources.SharedResource</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Update="Resources\SharedResource.pl.resx">
-      <LogicalName>PaintCatalog.Portal.Resources.SharedResource.pl</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
 </Project>
