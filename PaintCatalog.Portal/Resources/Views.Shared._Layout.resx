@@ -21,6 +21,9 @@
   <data name="Nav_Home" xml:space="preserve">
     <value>Home</value>
   </data>
+  <data name="Nav_Paints" xml:space="preserve">
+    <value>Paints</value>
+  </data>
   <data name="ThemeToggle_Label" xml:space="preserve">
     <value>Toggle theme</value>
   </data>

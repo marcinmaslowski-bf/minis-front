@@ -1,0 +1,867 @@
+@using System.Collections.Generic
+@using System.Linq
+@using System.Text.Encodings.Web
+@using System.Text.Json
+@model PaintCatalog.Portal.Models.PaintsViewModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["Page_Title"].Value;
+    ViewData["MetaDescription"] = Localizer["Page_Description"].Value;
+
+    var paintsDataEndpoint = Url.Action("Data", "Paints") ?? "/paints/data";
+    var brandsEndpoint = Url.Action("Brands", "Paints") ?? "/paints/brands";
+
+    var initialPaintsJson = string.IsNullOrWhiteSpace(Model.InitialPaintsJson)
+        ? "null"
+        : Model.InitialPaintsJson;
+
+    var brandsJson = string.IsNullOrWhiteSpace(Model.BrandsJson)
+        ? "null"
+        : Model.BrandsJson;
+
+    var typeLabels = Enumerable.Range(1, 10)
+        .ToDictionary(i => i.ToString(), i => Localizer[$"Filters_Type_{i}"].Value);
+
+    var finishLabels = Enumerable.Range(1, 6)
+        .ToDictionary(i => i.ToString(), i => Localizer[$"Filters_Finish_{i}"].Value);
+
+    var mediumLabels = new Dictionary<string, string>
+    {
+        ["1"] = Localizer["Filters_Medium_1"].Value,
+        ["2"] = Localizer["Filters_Medium_2"].Value,
+        ["3"] = Localizer["Filters_Medium_3"].Value,
+        ["4"] = Localizer["Filters_Medium_4"].Value,
+        ["5"] = Localizer["Filters_Medium_5"].Value,
+        ["99"] = Localizer["Filters_Medium_99"].Value
+    };
+
+    var jsonOptions = new JsonSerializerOptions
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
+    var bootstrap = new
+    {
+        endpoints = new { data = paintsDataEndpoint, brands = brandsEndpoint },
+        labels = new
+        {
+            brand = Localizer["Card_Label_Brand"].Value,
+            series = Localizer["Card_Label_Series"].Value,
+            finish = Localizer["Card_Label_Finish"].Value,
+            type = Localizer["Card_Label_Type"].Value,
+            medium = Localizer["Card_Label_Medium"].Value,
+            tags = Localizer["Card_Label_Tags"].Value,
+            sku = Localizer["Card_Label_Sku"].Value,
+            color = Localizer["Card_Label_Color"].Value
+        },
+        filters = new
+        {
+            allBrands = Localizer["Filters_AllBrands"].Value,
+            allSeries = Localizer["Filters_AllSeries"].Value,
+            type = typeLabels,
+            finish = finishLabels,
+            medium = mediumLabels
+        },
+        pagination = new
+        {
+            previous = Localizer["Pagination_Previous"].Value,
+            next = Localizer["Pagination_Next"].Value
+        }
+    };
+
+    var bootstrapJson = JsonSerializer.Serialize(bootstrap, jsonOptions);
+}
+
+<section class="space-y-6">
+    <div class="space-y-3">
+        <p class="inline-flex items-center gap-2 rounded-full border border-emerald-500/60 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-400">
+            <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+            @Localizer["Hero_Badge"]
+        </p>
+        <div class="space-y-2">
+            <h1 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white md:text-4xl">
+                @Localizer["Hero_Title"]
+            </h1>
+            <p class="max-w-3xl text-sm text-slate-500 dark:text-slate-300 md:text-base">
+                @Localizer["Hero_Description"]
+            </p>
+        </div>
+    </div>
+
+    <div class="grid gap-4 text-sm text-slate-600 dark:text-slate-300 md:grid-cols-3">
+        <div class="rounded-2xl border border-slate-200 bg-white/60 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <p class="text-xs uppercase tracking-wide text-emerald-500">@Localizer["Hero_Feature1_Label"]</p>
+            <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-white">@Localizer["Hero_Feature1_Value"]</p>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">@Localizer["Hero_Feature1_Description"]</p>
+        </div>
+        <div class="rounded-2xl border border-slate-200 bg-white/60 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <p class="text-xs uppercase tracking-wide text-emerald-500">@Localizer["Hero_Feature2_Label"]</p>
+            <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-white">@Localizer["Hero_Feature2_Value"]</p>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">@Localizer["Hero_Feature2_Description"]</p>
+        </div>
+        <div class="rounded-2xl border border-slate-200 bg-white/60 p-4 dark:border-slate-800 dark:bg-slate-900/60">
+            <p class="text-xs uppercase tracking-wide text-emerald-500">@Localizer["Hero_Feature3_Label"]</p>
+            <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-white">@Localizer["Hero_Feature3_Value"]</p>
+            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">@Localizer["Hero_Feature3_Description"]</p>
+        </div>
+    </div>
+</section>
+
+<div class="grid gap-8 lg:grid-cols-[320px_1fr]">
+    <aside class="space-y-6">
+        <div class="rounded-2xl border border-slate-200 bg-white/80 p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+            <div class="space-y-1">
+                <p class="text-sm font-semibold text-slate-900 dark:text-white">@Localizer["Filters_Title"]</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">@Localizer["Filters_Subtitle"]</p>
+            </div>
+
+            <div class="mt-4 space-y-5 text-sm">
+                <div>
+                    <label for="paintSearch" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        @Localizer["Filters_Search_Label"]
+                    </label>
+                    <div class="mt-2 relative">
+                        <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                            </svg>
+                        </span>
+                        <input id="paintSearch"
+                               type="search"
+                               autocomplete="off"
+                               placeholder="@Localizer["Filters_Search_Placeholder"]"
+                               class="w-full rounded-xl border border-slate-300 bg-white/80 py-2 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" />
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="brandFilter" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        @Localizer["Filters_Brand_Label"]
+                    </label>
+                    <select id="brandFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40">
+                        <option value="">@Localizer["Filters_AllBrands"]</option>
+                    </select>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="seriesFilter" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        @Localizer["Filters_Series_Label"]
+                    </label>
+                    <select id="seriesFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40" disabled>
+                        <option value="">@Localizer["Filters_AllSeries"]</option>
+                    </select>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="typeFilter" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        @Localizer["Filters_Type_Label"]
+                    </label>
+                    <select id="typeFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40">
+                        <option value="">@Localizer["Filters_Type_All"]</option>
+                        @foreach (var pair in typeLabels)
+                        {
+                            <option value="@pair.Key">@pair.Value</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="finishFilter" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        @Localizer["Filters_Finish_Label"]
+                    </label>
+                    <select id="finishFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40">
+                        <option value="">@Localizer["Filters_Finish_All"]</option>
+                        @foreach (var pair in finishLabels)
+                        {
+                            <option value="@pair.Key">@pair.Value</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="mediumFilter" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        @Localizer["Filters_Medium_Label"]
+                    </label>
+                    <select id="mediumFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40">
+                        <option value="">@Localizer["Filters_Medium_All"]</option>
+                        @foreach (var pair in mediumLabels)
+                        {
+                            <option value="@pair.Key">@pair.Value</option>
+                        }
+                    </select>
+                </div>
+
+                <button id="clearFiltersBtn" type="button" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 dark:border-slate-700 dark:text-slate-200">
+                    @Localizer["Filters_Clear"]
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <section class="space-y-6">
+        <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm dark:border-slate-800 dark:bg-slate-900/70">
+            <div>
+                <p id="paintStats" data-template="@Localizer["Stats_Template"]" data-empty="@Localizer["Stats_Fallback"]" class="font-semibold text-slate-900 dark:text-white">
+                    @Localizer["Stats_Fallback"]
+                </p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">@Localizer["Stats_Subtitle"]</p>
+            </div>
+            <div class="ml-auto flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <label for="pageSizeSelect" class="font-semibold uppercase tracking-wide">@Localizer["PageSize_Label"]</label>
+                <select id="pageSizeSelect" class="rounded-xl border border-slate-300 bg-white/80 px-2 py-1 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40">
+                    <option value="24">24</option>
+                    <option value="48">48</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white/80 p-4 dark:border-slate-800 dark:bg-slate-900/70">
+            <div class="flex items-center justify-between">
+                <p class="text-sm font-semibold text-slate-900 dark:text-white">@Localizer["ActiveFilters_Title"]</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">@Localizer["ActiveFilters_Subtitle"]</p>
+            </div>
+            <div id="activeFilters" data-empty-text="@Localizer["ActiveFilters_None"]" class="mt-3 flex flex-wrap gap-2 text-xs">
+                <span class="rounded-full bg-slate-200 px-3 py-1 text-slate-600 dark:bg-slate-800/70 dark:text-slate-200">
+                    @Localizer["ActiveFilters_None"]
+                </span>
+            </div>
+        </div>
+
+        <div id="paintLoading" class="hidden rounded-2xl border border-slate-200 bg-white/80 p-6 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300">
+            <div class="flex flex-col items-center gap-2">
+                <svg class="h-6 w-6 animate-spin text-emerald-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v4a4 4 0 0 0-4 4H4z"></path>
+                </svg>
+                <p>@Localizer["Status_Loading"]</p>
+            </div>
+        </div>
+
+        <div id="paintError" class="hidden rounded-2xl border border-red-200 bg-red-50/80 p-6 text-sm text-red-800 dark:border-red-800 dark:bg-red-950/30 dark:text-red-200">
+            <p class="text-base font-semibold">@Localizer["Status_Error_Title"]</p>
+            <p class="mt-1 text-xs">@Localizer["Status_Error_Description"]</p>
+        </div>
+
+        <div id="paintEmpty" class="hidden rounded-2xl border border-slate-200 bg-white/80 p-6 text-center text-sm text-slate-500 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-300">
+            <p class="text-base font-semibold text-slate-900 dark:text-white">@Localizer["Status_Empty_Title"]</p>
+            <p class="mt-1 text-xs">@Localizer["Status_Empty_Description"]</p>
+        </div>
+
+        <div id="paintResults" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
+
+        <div id="paintPagination" class="hidden items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm dark:border-slate-800 dark:bg-slate-900/70">
+            <button id="prevPageBtn" type="button" class="flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-emerald-500 hover:text-emerald-600 disabled:opacity-50 disabled:hover:border-slate-300 dark:border-slate-700 dark:text-slate-200">
+                <span aria-hidden="true">←</span>
+                @Localizer["Pagination_Previous"]
+            </button>
+            <p id="paginationInfo" class="text-xs text-slate-500 dark:text-slate-400"></p>
+            <button id="nextPageBtn" type="button" class="flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-emerald-500 hover:text-emerald-600 disabled:opacity-50 disabled:hover:border-slate-300 dark:border-slate-700 dark:text-slate-200">
+                @Localizer["Pagination_Next"]
+                <span aria-hidden="true">→</span>
+            </button>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        window.__PAINTS_DATA = {
+            config: @Html.Raw(bootstrapJson),
+            initialPaints: @Html.Raw(initialPaintsJson),
+            brands: @Html.Raw(brandsJson)
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const bootstrap = window.__PAINTS_DATA || {};
+            const config = bootstrap.config || {};
+            const labels = config.labels || {};
+            const filterDictionaries = config.filters || {};
+            const endpoints = config.endpoints || {};
+
+            const state = {
+                filters: {
+                    brandId: null,
+                    seriesId: null,
+                    type: null,
+                    finish: null,
+                    medium: null,
+                    search: ''
+                },
+                pagination: {
+                    page: 1,
+                    pageSize: 24
+                },
+                total: 0,
+                items: [],
+                brands: normalizeBrandPayload(bootstrap.brands),
+                loading: false
+            };
+
+            const elements = {
+                searchInput: document.getElementById('paintSearch'),
+                brandSelect: document.getElementById('brandFilter'),
+                seriesSelect: document.getElementById('seriesFilter'),
+                typeSelect: document.getElementById('typeFilter'),
+                finishSelect: document.getElementById('finishFilter'),
+                mediumSelect: document.getElementById('mediumFilter'),
+                clearFiltersBtn: document.getElementById('clearFiltersBtn'),
+                pageSizeSelect: document.getElementById('pageSizeSelect'),
+                stats: document.getElementById('paintStats'),
+                activeFilters: document.getElementById('activeFilters'),
+                loading: document.getElementById('paintLoading'),
+                error: document.getElementById('paintError'),
+                empty: document.getElementById('paintEmpty'),
+                results: document.getElementById('paintResults'),
+                pagination: document.getElementById('paintPagination'),
+                paginationInfo: document.getElementById('paginationInfo'),
+                prevPageBtn: document.getElementById('prevPageBtn'),
+                nextPageBtn: document.getElementById('nextPageBtn')
+            };
+
+            hydrateFromApiResponse(state, bootstrap.initialPaints);
+            populateBrandOptions();
+            populateSeriesOptions();
+            renderAll();
+            wireEvents();
+
+            if (!state.items.length) {
+                fetchPaints();
+            }
+
+            async function fetchPaints() {
+                if (!endpoints.data) {
+                    console.warn('Missing paints endpoint');
+                    return;
+                }
+
+                const params = new URLSearchParams();
+                const { filters, pagination } = state;
+
+                if (filters.brandId) params.append('brandId', filters.brandId);
+                if (filters.seriesId) params.append('seriesId', filters.seriesId);
+                if (filters.type) params.append('type', filters.type);
+                if (filters.finish) params.append('finish', filters.finish);
+                if (filters.medium) params.append('medium', filters.medium);
+                if (filters.search) params.append('search', filters.search);
+                if (pagination.page) params.append('page', pagination.page);
+                if (pagination.pageSize) params.append('pageSize', pagination.pageSize);
+
+                toggleLoading(true);
+
+                try {
+                    const response = await fetch(`${endpoints.data}?${params.toString()}`, {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Request failed');
+                    }
+
+                    const payload = await response.json();
+                    hydrateFromApiResponse(state, payload);
+                    if (elements.error) {
+                        elements.error.classList.add('hidden');
+                    }
+                } catch (error) {
+                    console.error('Unable to fetch paints', error);
+                    if (elements.error) {
+                        elements.error.classList.remove('hidden');
+                    }
+                } finally {
+                    toggleLoading(false);
+                    renderAll();
+                }
+            }
+
+            function hydrateFromApiResponse(targetState, payload) {
+                const normalized = normalizePaintPayload(payload, targetState.pagination.pageSize);
+                targetState.items = normalized.items;
+                targetState.total = normalized.total;
+                targetState.pagination.page = normalized.page;
+                targetState.pagination.pageSize = normalized.pageSize;
+
+                if (elements.pageSizeSelect) {
+                    elements.pageSizeSelect.value = String(targetState.pagination.pageSize);
+                }
+            }
+
+            function normalizePaintPayload(payload, fallbackPageSize) {
+                if (!payload) {
+                    return { items: [], total: 0, page: 1, pageSize: fallbackPageSize };
+                }
+
+                let raw = payload;
+                if (typeof raw === 'string') {
+                    try {
+                        raw = JSON.parse(raw);
+                    } catch (error) {
+                        console.warn('Unable to parse paints payload', error);
+                        raw = null;
+                    }
+                }
+
+                if (!raw) {
+                    return { items: [], total: 0, page: 1, pageSize: fallbackPageSize };
+                }
+
+                const items = Array.isArray(raw.items)
+                    ? raw.items
+                    : Array.isArray(raw.data)
+                        ? raw.data
+                        : Array.isArray(raw.results)
+                            ? raw.results
+                            : Array.isArray(raw.paints)
+                                ? raw.paints
+                                : [];
+
+                const total = Number.isFinite(raw.total)
+                    ? raw.total
+                    : Number.isFinite(raw.count)
+                        ? raw.count
+                        : items.length;
+
+                const page = Number.isFinite(raw.page)
+                    ? raw.page
+                    : Number.isFinite(raw.currentPage)
+                        ? raw.currentPage
+                        : 1;
+
+                const pageSize = Number.isFinite(raw.pageSize)
+                    ? raw.pageSize
+                    : Number.isFinite(raw.perPage)
+                        ? raw.perPage
+                        : (items.length > 0 ? items.length : fallbackPageSize);
+
+                return { items, total, page, pageSize };
+            }
+
+            function normalizeBrandPayload(payload) {
+                if (!payload) return [];
+                let raw = payload;
+                if (typeof raw === 'string') {
+                    try {
+                        raw = JSON.parse(raw);
+                    } catch (error) {
+                        console.warn('Unable to parse brands payload', error);
+                        return [];
+                    }
+                }
+
+                if (Array.isArray(raw)) {
+                    return raw;
+                }
+
+                if (Array.isArray(raw.items)) return raw.items;
+                if (Array.isArray(raw.data)) return raw.data;
+
+                return [];
+            }
+
+            function populateBrandOptions() {
+                const select = elements.brandSelect;
+                if (!select) return;
+
+                select.innerHTML = '';
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = filterDictionaries.allBrands || 'All brands';
+                select.appendChild(placeholderOption);
+
+                if (state.brands.length === 0) {
+                    select.disabled = true;
+                    return;
+                }
+
+                state.brands.forEach(brand => {
+                    if (!brand) return;
+                    const option = document.createElement('option');
+                    option.value = String(brand.id ?? '');
+                    option.textContent = brand.name ?? `#${brand.id}`;
+                    select.appendChild(option);
+                });
+
+                select.disabled = false;
+            }
+
+            function populateSeriesOptions() {
+                const select = elements.seriesSelect;
+                if (!select) return;
+
+                select.innerHTML = '';
+                const placeholderOption = document.createElement('option');
+                placeholderOption.value = '';
+                placeholderOption.textContent = filterDictionaries.allSeries || 'All series';
+                select.appendChild(placeholderOption);
+
+                const brandId = state.filters.brandId;
+                if (!brandId) {
+                    select.disabled = true;
+                    state.filters.seriesId = null;
+                    return;
+                }
+
+                const numericBrandId = Number(brandId);
+                const brand = state.brands.find(b => Number(b?.id) === numericBrandId);
+                const seriesList = Array.isArray(brand?.series) ? brand.series : [];
+
+                if (seriesList.length === 0) {
+                    select.disabled = true;
+                    state.filters.seriesId = null;
+                    return;
+                }
+
+                seriesList.forEach(series => {
+                    if (!series) return;
+                    const option = document.createElement('option');
+                    option.value = String(series.id ?? '');
+                    option.textContent = series.name ?? `#${series.id}`;
+                    select.appendChild(option);
+                });
+
+                select.disabled = false;
+            }
+
+            function wireEvents() {
+                if (elements.searchInput) {
+                    const debounced = debounce(value => {
+                        state.filters.search = value.trim();
+                        state.pagination.page = 1;
+                        fetchPaints();
+                    }, 400);
+
+                    elements.searchInput.addEventListener('input', event => {
+                        debounced(event.target.value || '');
+                    });
+                }
+
+                if (elements.brandSelect) {
+                    elements.brandSelect.addEventListener('change', event => {
+                        const value = event.target.value;
+                        state.filters.brandId = value ? Number(value) : null;
+                        state.filters.seriesId = null;
+                        populateSeriesOptions();
+                        state.pagination.page = 1;
+                        fetchPaints();
+                    });
+                }
+
+                if (elements.seriesSelect) {
+                    elements.seriesSelect.addEventListener('change', event => {
+                        const value = event.target.value;
+                        state.filters.seriesId = value ? Number(value) : null;
+                        state.pagination.page = 1;
+                        fetchPaints();
+                    });
+                }
+
+                if (elements.typeSelect) {
+                    elements.typeSelect.addEventListener('change', event => {
+                        const value = event.target.value;
+                        state.filters.type = value ? Number(value) : null;
+                        state.pagination.page = 1;
+                        fetchPaints();
+                    });
+                }
+
+                if (elements.finishSelect) {
+                    elements.finishSelect.addEventListener('change', event => {
+                        const value = event.target.value;
+                        state.filters.finish = value ? Number(value) : null;
+                        state.pagination.page = 1;
+                        fetchPaints();
+                    });
+                }
+
+                if (elements.mediumSelect) {
+                    elements.mediumSelect.addEventListener('change', event => {
+                        const value = event.target.value;
+                        state.filters.medium = value ? Number(value) : null;
+                        state.pagination.page = 1;
+                        fetchPaints();
+                    });
+                }
+
+                if (elements.clearFiltersBtn) {
+                    elements.clearFiltersBtn.addEventListener('click', () => {
+                        elements.brandSelect.value = '';
+                        elements.seriesSelect.value = '';
+                        elements.typeSelect.value = '';
+                        elements.finishSelect.value = '';
+                        elements.mediumSelect.value = '';
+                        if (elements.searchInput) {
+                            elements.searchInput.value = '';
+                        }
+
+                        state.filters = {
+                            brandId: null,
+                            seriesId: null,
+                            type: null,
+                            finish: null,
+                            medium: null,
+                            search: ''
+                        };
+
+                        populateSeriesOptions();
+                        state.pagination.page = 1;
+                        fetchPaints();
+                    });
+                }
+
+                if (elements.pageSizeSelect) {
+                    elements.pageSizeSelect.addEventListener('change', event => {
+                        const value = Number(event.target.value) || 24;
+                        state.pagination.pageSize = value;
+                        state.pagination.page = 1;
+                        fetchPaints();
+                    });
+                }
+
+                if (elements.prevPageBtn) {
+                    elements.prevPageBtn.addEventListener('click', () => {
+                        if (state.pagination.page <= 1) return;
+                        state.pagination.page -= 1;
+                        fetchPaints();
+                    });
+                }
+
+                if (elements.nextPageBtn) {
+                    elements.nextPageBtn.addEventListener('click', () => {
+                        const totalPages = Math.max(1, Math.ceil(state.total / state.pagination.pageSize));
+                        if (state.pagination.page >= totalPages) return;
+                        state.pagination.page += 1;
+                        fetchPaints();
+                    });
+                }
+            }
+
+            function renderAll() {
+                updateStats();
+                renderActiveFilters();
+                renderPaintCards();
+                renderPagination();
+                renderEmptyState();
+            }
+
+            function updateStats() {
+                if (!elements.stats) return;
+                const template = elements.stats.dataset.template || '';
+                const emptyCopy = elements.stats.dataset.empty || '';
+
+                if (!state.items.length) {
+                    elements.stats.textContent = emptyCopy;
+                    return;
+                }
+
+                const start = (state.pagination.page - 1) * state.pagination.pageSize + 1;
+                const end = Math.min(state.total, state.pagination.page * state.pagination.pageSize);
+                const formatted = template
+                    .replace('{0}', start)
+                    .replace('{1}', end)
+                    .replace('{2}', state.total);
+
+                elements.stats.textContent = formatted;
+            }
+
+            function renderActiveFilters() {
+                const container = elements.activeFilters;
+                if (!container) return;
+
+                container.innerHTML = '';
+                const active = [];
+
+                if (state.filters.brandId) {
+                    const brand = state.brands.find(b => Number(b?.id) === Number(state.filters.brandId));
+                    if (brand?.name) {
+                        active.push(`${labels.brand || 'Brand'}: ${brand.name}`);
+                    }
+                }
+
+                if (state.filters.seriesId) {
+                    const brand = state.brands.find(b => Number(b?.id) === Number(state.filters.brandId));
+                    const series = Array.isArray(brand?.series) ? brand.series.find(s => Number(s?.id) === Number(state.filters.seriesId)) : null;
+                    if (series?.name) {
+                        active.push(`${labels.series || 'Series'}: ${series.name}`);
+                    }
+                }
+
+                if (state.filters.type) {
+                    const label = filterDictionaries.type?.[String(state.filters.type)] || `Type ${state.filters.type}`;
+                    active.push(`${labels.type || 'Type'}: ${label}`);
+                }
+
+                if (state.filters.finish) {
+                    const label = filterDictionaries.finish?.[String(state.filters.finish)] || `Finish ${state.filters.finish}`;
+                    active.push(`${labels.finish || 'Finish'}: ${label}`);
+                }
+
+                if (state.filters.medium) {
+                    const label = filterDictionaries.medium?.[String(state.filters.medium)] || `Medium ${state.filters.medium}`;
+                    active.push(`${labels.medium || 'Medium'}: ${label}`);
+                }
+
+                if (state.filters.search) {
+                    active.push(`"${state.filters.search}"`);
+                }
+
+                if (!active.length) {
+                    const span = document.createElement('span');
+                    span.className = 'rounded-full bg-slate-200 px-3 py-1 text-slate-600 dark:bg-slate-800/70 dark:text-slate-200';
+                    span.textContent = container.dataset.emptyText || 'No filters';
+                    container.appendChild(span);
+                    return;
+                }
+
+                active.forEach(text => {
+                    const pill = document.createElement('span');
+                    pill.className = 'rounded-full bg-emerald-100 px-3 py-1 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200';
+                    pill.textContent = text;
+                    container.appendChild(pill);
+                });
+            }
+
+            function renderPaintCards() {
+                const container = elements.results;
+                if (!container) return;
+
+                if (!state.items.length) {
+                    container.innerHTML = '';
+                    container.classList.add('hidden');
+                    return;
+                }
+
+                container.classList.remove('hidden');
+                container.innerHTML = state.items.map(createPaintCard).join('');
+            }
+
+            function createPaintCard(paint) {
+                const brandName = (paint?.brand?.name) || paint?.brandName || '';
+                const seriesName = (paint?.series?.name) || paint?.seriesName || '';
+                const finishName = paint?.finishName || paint?.finish?.name || paint?.finish || '';
+                const typeName = paint?.typeName || paint?.type?.name || paint?.type || '';
+                const mediumName = paint?.mediumName || paint?.medium?.name || paint?.medium || '';
+                const sku = paint?.sku || paint?.code || '';
+                const colorHex = (paint?.hex) || paint?.colorHex || paint?.hexCode || paint?.swatchHex || '#475569';
+                const tags = Array.isArray(paint?.tags) ? paint.tags : [];
+                const safeName = escapeHtml(paint?.name || 'Untitled paint');
+                const safeDescription = escapeHtml(paint?.description || '');
+                const safeBrand = escapeHtml(brandName);
+                const safeSeries = escapeHtml(seriesName);
+                const safeFinish = escapeHtml(finishName);
+                const safeType = escapeHtml(typeName);
+                const safeMedium = escapeHtml(mediumName);
+                const safeSku = escapeHtml(sku);
+                const safeHex = escapeHtml(colorHex);
+
+                const tagsMarkup = tags
+                    .map(tag => typeof tag === 'string' ? tag : (tag?.name || tag?.label))
+                    .filter(Boolean)
+                    .map(tag => `<span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(tag)}</span>`)
+                    .join('');
+
+                return `
+                    <article class="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-800 dark:bg-slate-900/80">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <p class="text-xs uppercase tracking-wide text-slate-400">${safeBrand || labels.brand || 'Brand'}</p>
+                                <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${safeName}</h3>
+                                ${safeSeries ? `<p class="text-xs text-slate-500">${labels.series || 'Series'}: ${safeSeries}</p>` : ''}
+                            </div>
+                            <div class="h-12 w-12 rounded-full border border-slate-200" style="background: linear-gradient(135deg, ${safeHex}, #0f172a);"></div>
+                        </div>
+                        ${safeDescription ? `<p class="mt-3 text-sm text-slate-500 dark:text-slate-300">${safeDescription}</p>` : ''}
+                        <dl class="mt-4 grid grid-cols-2 gap-3 text-xs text-slate-500">
+                            <div>
+                                <dt class="font-semibold text-slate-400">${labels.finish || 'Finish'}</dt>
+                                <dd class="text-sm text-slate-900 dark:text-slate-100">${safeFinish || '—'}</dd>
+                            </div>
+                            <div>
+                                <dt class="font-semibold text-slate-400">${labels.type || 'Type'}</dt>
+                                <dd class="text-sm text-slate-900 dark:text-slate-100">${safeType || '—'}</dd>
+                            </div>
+                            <div>
+                                <dt class="font-semibold text-slate-400">${labels.medium || 'Medium'}</dt>
+                                <dd class="text-sm text-slate-900 dark:text-slate-100">${safeMedium || '—'}</dd>
+                            </div>
+                            <div>
+                                <dt class="font-semibold text-slate-400">${labels.sku || 'SKU'}</dt>
+                                <dd class="text-sm text-slate-900 dark:text-slate-100">${safeSku || '—'}</dd>
+                            </div>
+                        </dl>
+                        <div class="mt-4 flex items-center gap-2 text-xs text-slate-500">
+                            <span class="font-semibold uppercase tracking-wide">${labels.color || 'Color'}</span>
+                            <span class="rounded-full border border-slate-200 px-2 py-0.5 text-slate-700 dark:border-slate-700 dark:text-slate-200">${safeHex}</span>
+                        </div>
+                        ${tagsMarkup ? `<div class="mt-4 flex flex-wrap gap-2">${tagsMarkup}</div>` : ''}
+                    </article>`;
+            }
+
+            function renderPagination() {
+                const container = elements.pagination;
+                if (!container) return;
+
+                const totalPages = Math.max(1, Math.ceil(state.total / state.pagination.pageSize));
+                const shouldShow = state.total > state.pagination.pageSize;
+
+                container.classList.toggle('hidden', !shouldShow);
+
+                if (!shouldShow) {
+                    return;
+                }
+
+                const info = elements.paginationInfo;
+                if (info) {
+                    info.textContent = `${state.pagination.page} / ${totalPages}`;
+                }
+
+                if (elements.prevPageBtn) {
+                    elements.prevPageBtn.disabled = state.pagination.page <= 1;
+                }
+
+                if (elements.nextPageBtn) {
+                    elements.nextPageBtn.disabled = state.pagination.page >= totalPages;
+                }
+            }
+
+            function renderEmptyState() {
+                if (!elements.empty) return;
+                const shouldShowEmpty = !state.loading && state.items.length === 0;
+                elements.empty.classList.toggle('hidden', !shouldShowEmpty);
+            }
+
+            function toggleLoading(isLoading) {
+                state.loading = isLoading;
+                if (elements.loading) {
+                    elements.loading.classList.toggle('hidden', !isLoading);
+                }
+
+                if (elements.results) {
+                    elements.results.classList.toggle('opacity-50', isLoading);
+                }
+            }
+
+            function escapeHtml(value) {
+                if (value === null || value === undefined) {
+                    return '';
+                }
+
+                return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
+            function debounce(fn, delay) {
+                let timeout;
+                return function (...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => fn.apply(this, args), delay);
+                };
+            }
+        });
+    </script>
+}
