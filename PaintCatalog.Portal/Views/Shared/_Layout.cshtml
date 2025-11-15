@@ -20,8 +20,8 @@
 
     var homeEnUrl = Url.Action("Index", "Home", new { culture = (string?)null }) ?? "/";
     var homePlUrl = Url.Action("Index", "Home", new { culture = "pl" }) ?? "/pl";
-    var paintsEnUrl = Url.Action("Index", "Paints", new { culture = (string?)null }) ?? "/Paints";
-    var paintsPlUrl = Url.Action("Index", "Paints", new { culture = "pl" }) ?? "/pl/paints";
+    var paintsEnUrl = Url.Action("Index", "paints", new { culture = (string?)null }) ?? "/paints";
+    var paintsPlUrl = Url.Action("Index", "paints", new { culture = "pl" }) ?? "/pl/paints";
 
     var navHomeUrl = routeCulture == "pl" ? homePlUrl : homeEnUrl;
     var navPaintsUrl = routeCulture == "pl" ? paintsPlUrl : paintsEnUrl;
