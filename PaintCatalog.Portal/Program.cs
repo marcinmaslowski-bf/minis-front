@@ -81,9 +81,14 @@ app.UseRequestLocalization(locOptions.Value);
 
 app.UseAuthorization();
 
-// Routing with optional culture segment: "" => en, "pl" => pl
+// Routing: allow default routes without culture segment and an optional "pl" prefix
 app.MapControllerRoute(
     name: "default",
-    pattern: "{culture:regex(^pl$)?}/{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}",
+    defaults: new { culture = "en" });
+
+app.MapControllerRoute(
+    name: "localized",
+    pattern: "{culture:regex(^pl$)}/{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
