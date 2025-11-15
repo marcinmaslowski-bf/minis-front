@@ -202,7 +202,10 @@
     <section class="space-y-6">
         <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-slate-200 bg-white/80 p-4 text-sm dark:border-slate-800 dark:bg-slate-900/70">
             <div>
-                <p id="paintStats" data-template="@Localizer["Stats_Template"]" data-empty="@Localizer["Stats_Fallback"]" class="font-semibold text-slate-900 dark:text-white">
+                <p id="paintStats"
+                   data-template="@Localizer["Stats_Template", "{0}", "{1}", "{2}"]"
+                   data-empty="@Localizer["Stats_Fallback"]"
+                   class="font-semibold text-slate-900 dark:text-white">
                     @Localizer["Stats_Fallback"]
                 </p>
                 <p class="text-xs text-slate-500 dark:text-slate-400">@Localizer["Stats_Subtitle"]</p>
