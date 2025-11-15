@@ -3,28 +3,22 @@
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer LayoutLocalizer
 
 @{
-    // Source of truth: CurrentUICulture set by RequestLocalization middleware
     var uiLang = CultureHelpers.GetCurrentLangTwoLetter();
-    var routeCulture = Context.Request.RouteValues["culture"] as string;
-    if (string.IsNullOrEmpty(routeCulture) && CultureHelpers.IsPl())
-    {
-        routeCulture = "pl";
-    }
+    var isPl = CultureHelpers.IsPl();
+    var currentCultureSegment = CultureHelpers.GetRouteCultureSegment();
 
-    var isPl = string.Equals(routeCulture, "pl", StringComparison.OrdinalIgnoreCase);
-
-    // canonical path is already normalized (no trailing slash) by middleware
     var path = Context.Request.Path.HasValue ? Context.Request.Path.Value : "/";
+    var queryString = Context.Request.QueryString.HasValue ? Context.Request.QueryString.Value : string.Empty;
     var host = $"{Context.Request.Scheme}://{Context.Request.Host}";
     var canonicalUrl = host + path;
 
-    var homeEnUrl = Url.Action("Index", "Home", new { culture = (string?)null }) ?? "/";
-    var homePlUrl = Url.Action("Index", "Home", new { culture = "pl" }) ?? "/pl";
-    var paintsEnUrl = Url.Action("Index", "paints", new { culture = (string?)null }) ?? "/paints";
-    var paintsPlUrl = Url.Action("Index", "paints", new { culture = "pl" }) ?? "/pl/paints";
+    var baseLanguageEnUrl = Url.Action(action: null, controller: null, values: new { culture = (string?)null }) ?? path;
+    var baseLanguagePlUrl = Url.Action(action: null, controller: null, values: new { culture = "pl" }) ?? path;
+    var languageEnUrl = string.IsNullOrEmpty(queryString) ? baseLanguageEnUrl : baseLanguageEnUrl + queryString;
+    var languagePlUrl = string.IsNullOrEmpty(queryString) ? baseLanguagePlUrl : baseLanguagePlUrl + queryString;
 
-    var navHomeUrl = routeCulture == "pl" ? homePlUrl : homeEnUrl;
-    var navPaintsUrl = routeCulture == "pl" ? paintsPlUrl : paintsEnUrl;
+    var navHomeUrl = Url.Action("Index", "Home", new { culture = currentCultureSegment }) ?? "/";
+    var navPaintsUrl = Url.Action("Index", "paints", new { culture = currentCultureSegment }) ?? "/paints";
 
     var pageTitle = ViewData["Title"]?.ToString();
     var metaDescription = ViewData["MetaDescription"]?.ToString();
@@ -109,11 +103,11 @@
                         </button>
 
                         <div class="flex gap-1 rounded-full border border-slate-300 bg-white/80 p-1 dark:border-slate-700 dark:bg-slate-900/80">
-                            <a href="@homeEnUrl"
+                            <a href="@languageEnUrl"
                                class="rounded-full px-2 py-0.5 @(isPl ? "text-slate-500 dark:text-slate-300" : "bg-emerald-500 text-slate-950")">
                                 EN
                             </a>
-                            <a href="@homePlUrl"
+                            <a href="@languagePlUrl"
                                class="rounded-full px-2 py-0.5 @(isPl ? "bg-emerald-500 text-slate-950" : "text-slate-500 dark:text-slate-300")">
                                 PL
                             </a>
