@@ -281,6 +281,10 @@
             const labels = config.labels || {};
             const filterDictionaries = config.filters || {};
             const endpoints = config.endpoints || {};
+            const initialQueryString = window.location?.search || '';
+            const initialQueryParams = new URLSearchParams(initialQueryString);
+            const hasInitialQueryParams = Array.from(initialQueryParams.keys()).length > 0;
+            const DEFAULT_PAGE_SIZE = 24;
 
             const state = {
                 filters: {
@@ -293,7 +297,7 @@
                 },
                 pagination: {
                     page: 1,
-                    pageSize: 24
+                    pageSize: DEFAULT_PAGE_SIZE
                 },
                 total: 0,
                 items: [],
@@ -323,14 +327,24 @@
             };
 
             hydrateFromApiResponse(state, bootstrap.initialPaints);
+            applyQueryParamsToState(initialQueryParams);
             populateBrandOptions();
             populateSeriesOptions();
+            syncFormControlsWithState();
             renderAll();
             wireEvents();
 
-            if (!state.items.length) {
+            if (!state.items.length || hasInitialQueryParams) {
                 fetchPaints();
             }
+
+            window.addEventListener('popstate', () => {
+                const params = new URLSearchParams(window.location?.search || '');
+                applyQueryParamsToState(params);
+                populateSeriesOptions();
+                syncFormControlsWithState();
+                fetchPaints();
+            });
 
             async function fetchPaints() {
                 if (!endpoints.data) {
@@ -338,17 +352,8 @@
                     return;
                 }
 
-                const params = new URLSearchParams();
-                const { filters, pagination } = state;
-
-                if (filters.brandId) params.append('brandId', filters.brandId);
-                if (filters.seriesId) params.append('seriesId', filters.seriesId);
-                if (filters.type) params.append('type', filters.type);
-                if (filters.finish) params.append('finish', filters.finish);
-                if (filters.medium) params.append('medium', filters.medium);
-                if (filters.search) params.append('search', filters.search);
-                if (pagination.page) params.append('page', pagination.page);
-                if (pagination.pageSize) params.append('pageSize', pagination.pageSize);
+                const params = buildQueryParamsFromState();
+                updateUrlFromState(params);
 
                 toggleLoading(true);
 
@@ -475,6 +480,7 @@
 
                 if (state.brands.length === 0) {
                     select.disabled = true;
+                    select.value = '';
                     return;
                 }
 
@@ -487,6 +493,7 @@
                 });
 
                 select.disabled = false;
+                select.value = state.filters.brandId !== null ? String(state.filters.brandId) : '';
             }
 
             function populateSeriesOptions() {
@@ -502,6 +509,7 @@
                 const brandId = state.filters.brandId;
                 if (!brandId) {
                     select.disabled = true;
+                    select.value = '';
                     state.filters.seriesId = null;
                     return;
                 }
@@ -512,6 +520,7 @@
 
                 if (seriesList.length === 0) {
                     select.disabled = true;
+                    select.value = '';
                     state.filters.seriesId = null;
                     return;
                 }
@@ -525,6 +534,7 @@
                 });
 
                 select.disabled = false;
+                select.value = state.filters.seriesId !== null ? String(state.filters.seriesId) : '';
             }
 
             function wireEvents() {
@@ -646,6 +656,130 @@
                 renderPaintCards();
                 renderPagination();
                 renderEmptyState();
+            }
+
+            function applyQueryParamsToState(params) {
+                if (!params) return;
+
+                state.filters = {
+                    brandId: null,
+                    seriesId: null,
+                    type: null,
+                    finish: null,
+                    medium: null,
+                    search: ''
+                };
+
+                state.pagination.page = 1;
+                state.pagination.pageSize = DEFAULT_PAGE_SIZE;
+
+                const brandId = parseNumericParam(params.get('brandId'));
+                if (brandId !== null) {
+                    state.filters.brandId = brandId;
+                }
+
+                const seriesId = parseNumericParam(params.get('seriesId'));
+                if (seriesId !== null) {
+                    state.filters.seriesId = seriesId;
+                }
+
+                const type = parseNumericParam(params.get('type'));
+                if (type !== null) {
+                    state.filters.type = type;
+                }
+
+                const finish = parseNumericParam(params.get('finish'));
+                if (finish !== null) {
+                    state.filters.finish = finish;
+                }
+
+                const medium = parseNumericParam(params.get('medium'));
+                if (medium !== null) {
+                    state.filters.medium = medium;
+                }
+
+                const search = params.get('search');
+                if (typeof search === 'string') {
+                    state.filters.search = search.trim();
+                }
+
+                const page = parseNumericParam(params.get('page'));
+                if (page !== null && page > 0) {
+                    state.pagination.page = page;
+                }
+
+                const pageSize = parseNumericParam(params.get('pageSize'));
+                if (pageSize !== null && pageSize > 0) {
+                    state.pagination.pageSize = pageSize;
+                }
+            }
+
+            function syncFormControlsWithState() {
+                if (elements.searchInput) {
+                    elements.searchInput.value = state.filters.search || '';
+                }
+
+                if (elements.brandSelect) {
+                    elements.brandSelect.value = state.filters.brandId !== null ? String(state.filters.brandId) : '';
+                }
+
+                if (elements.seriesSelect) {
+                    elements.seriesSelect.value = state.filters.seriesId !== null ? String(state.filters.seriesId) : '';
+                }
+
+                if (elements.typeSelect) {
+                    elements.typeSelect.value = state.filters.type !== null ? String(state.filters.type) : '';
+                }
+
+                if (elements.finishSelect) {
+                    elements.finishSelect.value = state.filters.finish !== null ? String(state.filters.finish) : '';
+                }
+
+                if (elements.mediumSelect) {
+                    elements.mediumSelect.value = state.filters.medium !== null ? String(state.filters.medium) : '';
+                }
+
+                if (elements.pageSizeSelect) {
+                    elements.pageSizeSelect.value = String(state.pagination.pageSize);
+                }
+            }
+
+            function buildQueryParamsFromState() {
+                const params = new URLSearchParams();
+                const { filters, pagination } = state;
+
+                if (filters.brandId !== null) params.append('brandId', filters.brandId);
+                if (filters.seriesId !== null) params.append('seriesId', filters.seriesId);
+                if (filters.type !== null) params.append('type', filters.type);
+                if (filters.finish !== null) params.append('finish', filters.finish);
+                if (filters.medium !== null) params.append('medium', filters.medium);
+                if (filters.search) params.append('search', filters.search);
+                if (pagination.page) params.append('page', pagination.page);
+                if (pagination.pageSize) params.append('pageSize', pagination.pageSize);
+
+                return params;
+            }
+
+            function updateUrlFromState(providedParams) {
+                if (!window?.history?.replaceState) return;
+                const params = providedParams || buildQueryParamsFromState();
+                const queryString = params.toString();
+                const basePath = window.location.pathname || '';
+                const newUrl = queryString ? `${basePath}?${queryString}` : basePath;
+                const current = `${window.location.pathname}${window.location.search}`;
+
+                if (current !== newUrl) {
+                    window.history.replaceState(window.history.state, '', newUrl);
+                }
+            }
+
+            function parseNumericParam(value) {
+                if (value === null || value === undefined || value === '') {
+                    return null;
+                }
+
+                const parsed = Number(value);
+                return Number.isFinite(parsed) ? parsed : null;
             }
 
             function updateStats() {
