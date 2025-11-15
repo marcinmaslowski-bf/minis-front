@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Linq;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -52,6 +53,15 @@ var app = builder.Build();
 app.Use(async (context, next) =>
 {
     var path = context.Request.Path.Value ?? string.Empty;
+
+    // Redirect to the lowercase version of the path if any uppercase letters are present.
+    if (!string.IsNullOrEmpty(path) && path.Any(char.IsUpper))
+    {
+        var lowerCasePath = path.ToLowerInvariant();
+        var query = context.Request.QueryString;
+        context.Response.Redirect(lowerCasePath + query, permanent: true);
+        return;
+    }
 
     if (path.Length > 1 && path.EndsWith("/"))
     {
