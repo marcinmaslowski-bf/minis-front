@@ -3,70 +3,22 @@
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer LayoutLocalizer
 
 @{
-    // Source of truth: CurrentUICulture set by RequestLocalization middleware
     var uiLang = CultureHelpers.GetCurrentLangTwoLetter();
-    var routeCulture = Context.Request.RouteValues["culture"] as string;
-    if (string.IsNullOrEmpty(routeCulture) && CultureHelpers.IsPl())
-    {
-        routeCulture = "pl";
-    }
+    var isPl = CultureHelpers.IsPl();
+    var currentCultureSegment = CultureHelpers.GetRouteCultureSegment();
 
-    var isPl = string.Equals(routeCulture, "pl", StringComparison.OrdinalIgnoreCase);
-
-    // canonical path is already normalized (no trailing slash) by middleware
     var path = Context.Request.Path.HasValue ? Context.Request.Path.Value : "/";
     var queryString = Context.Request.QueryString.HasValue ? Context.Request.QueryString.Value : string.Empty;
     var host = $"{Context.Request.Scheme}://{Context.Request.Host}";
     var canonicalUrl = host + path;
 
-    string BuildCultureAwarePath(string requestPath, string? targetCulture)
-    {
-        if (string.Equals(targetCulture, "pl", StringComparison.OrdinalIgnoreCase))
-        {
-            if (requestPath.StartsWith("/pl", StringComparison.OrdinalIgnoreCase))
-            {
-                return requestPath;
-            }
+    var baseLanguageEnUrl = Url.Action(action: null, controller: null, values: new { culture = (string?)null }) ?? path;
+    var baseLanguagePlUrl = Url.Action(action: null, controller: null, values: new { culture = "pl" }) ?? path;
+    var languageEnUrl = string.IsNullOrEmpty(queryString) ? baseLanguageEnUrl : baseLanguageEnUrl + queryString;
+    var languagePlUrl = string.IsNullOrEmpty(queryString) ? baseLanguagePlUrl : baseLanguagePlUrl + queryString;
 
-            if (requestPath == "/")
-            {
-                return "/pl";
-            }
-
-            return "/pl" + requestPath;
-        }
-        else
-        {
-            if (requestPath.StartsWith("/pl/", StringComparison.OrdinalIgnoreCase))
-            {
-                return requestPath[3..];
-            }
-
-            if (string.Equals(requestPath, "/pl", StringComparison.OrdinalIgnoreCase))
-            {
-                return "/";
-            }
-
-            return requestPath;
-        }
-    }
-
-    string BuildCultureUrl(string? targetCulture)
-    {
-        var culturePath = BuildCultureAwarePath(path, targetCulture);
-        return string.IsNullOrEmpty(queryString) ? culturePath : culturePath + queryString;
-    }
-
-    var homeEnUrl = Url.Action("Index", "Home", new { culture = (string?)null }) ?? "/";
-    var homePlUrl = Url.Action("Index", "Home", new { culture = "pl" }) ?? "/pl";
-    var paintsEnUrl = Url.Action("Index", "paints", new { culture = (string?)null }) ?? "/paints";
-    var paintsPlUrl = Url.Action("Index", "paints", new { culture = "pl" }) ?? "/pl/paints";
-
-    var languageEnUrl = BuildCultureUrl(null);
-    var languagePlUrl = BuildCultureUrl("pl");
-
-    var navHomeUrl = routeCulture == "pl" ? homePlUrl : homeEnUrl;
-    var navPaintsUrl = routeCulture == "pl" ? paintsPlUrl : paintsEnUrl;
+    var navHomeUrl = Url.Action("Index", "Home", new { culture = currentCultureSegment }) ?? "/";
+    var navPaintsUrl = Url.Action("Index", "paints", new { culture = currentCultureSegment }) ?? "/paints";
 
     var pageTitle = ViewData["Title"]?.ToString();
     var metaDescription = ViewData["MetaDescription"]?.ToString();
