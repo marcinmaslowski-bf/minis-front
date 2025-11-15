@@ -15,13 +15,55 @@
 
     // canonical path is already normalized (no trailing slash) by middleware
     var path = Context.Request.Path.HasValue ? Context.Request.Path.Value : "/";
+    var queryString = Context.Request.QueryString.HasValue ? Context.Request.QueryString.Value : string.Empty;
     var host = $"{Context.Request.Scheme}://{Context.Request.Host}";
     var canonicalUrl = host + path;
+
+    string BuildCultureAwarePath(string requestPath, string? targetCulture)
+    {
+        if (string.Equals(targetCulture, "pl", StringComparison.OrdinalIgnoreCase))
+        {
+            if (requestPath.StartsWith("/pl", StringComparison.OrdinalIgnoreCase))
+            {
+                return requestPath;
+            }
+
+            if (requestPath == "/")
+            {
+                return "/pl";
+            }
+
+            return "/pl" + requestPath;
+        }
+        else
+        {
+            if (requestPath.StartsWith("/pl/", StringComparison.OrdinalIgnoreCase))
+            {
+                return requestPath[3..];
+            }
+
+            if (string.Equals(requestPath, "/pl", StringComparison.OrdinalIgnoreCase))
+            {
+                return "/";
+            }
+
+            return requestPath;
+        }
+    }
+
+    string BuildCultureUrl(string? targetCulture)
+    {
+        var culturePath = BuildCultureAwarePath(path, targetCulture);
+        return string.IsNullOrEmpty(queryString) ? culturePath : culturePath + queryString;
+    }
 
     var homeEnUrl = Url.Action("Index", "Home", new { culture = (string?)null }) ?? "/";
     var homePlUrl = Url.Action("Index", "Home", new { culture = "pl" }) ?? "/pl";
     var paintsEnUrl = Url.Action("Index", "paints", new { culture = (string?)null }) ?? "/paints";
     var paintsPlUrl = Url.Action("Index", "paints", new { culture = "pl" }) ?? "/pl/paints";
+
+    var languageEnUrl = BuildCultureUrl(null);
+    var languagePlUrl = BuildCultureUrl("pl");
 
     var navHomeUrl = routeCulture == "pl" ? homePlUrl : homeEnUrl;
     var navPaintsUrl = routeCulture == "pl" ? paintsPlUrl : paintsEnUrl;
@@ -109,11 +151,11 @@
                         </button>
 
                         <div class="flex gap-1 rounded-full border border-slate-300 bg-white/80 p-1 dark:border-slate-700 dark:bg-slate-900/80">
-                            <a href="@homeEnUrl"
+                            <a href="@languageEnUrl"
                                class="rounded-full px-2 py-0.5 @(isPl ? "text-slate-500 dark:text-slate-300" : "bg-emerald-500 text-slate-950")">
                                 EN
                             </a>
-                            <a href="@homePlUrl"
+                            <a href="@languagePlUrl"
                                class="rounded-full px-2 py-0.5 @(isPl ? "bg-emerald-500 text-slate-950" : "text-slate-500 dark:text-slate-300")">
                                 PL
                             </a>
