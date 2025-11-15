@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Page_Title" xml:space="preserve">
+    <value>Miniature paints catalog - Paint Catalog Portal</value>
+  </data>
+  <data name="Page_Description" xml:space="preserve">
+    <value>Browse, search, and filter paints coming from the minis API.</value>
+  </data>
+  <data name="Hero_Badge" xml:space="preserve">
+    <value>Live catalog</value>
+  </data>
+  <data name="Hero_Title" xml:space="preserve">
+    <value>Find the perfect miniature paint</value>
+  </data>
+  <data name="Hero_Description" xml:space="preserve">
+    <value>Filter the catalog by brand, series, medium, or finish to discover the next color for your army.</value>
+  </data>
+  <data name="Hero_Feature1_Label" xml:space="preserve">
+    <value>Brands</value>
+  </data>
+  <data name="Hero_Feature1_Value" xml:space="preserve">
+    <value>60+ lines</value>
+  </data>
+  <data name="Hero_Feature1_Description" xml:space="preserve">
+    <value>A curated mix of acrylic ranges, speed paints, and specialty inks.</value>
+  </data>
+  <data name="Hero_Feature2_Label" xml:space="preserve">
+    <value>Filters</value>
+  </data>
+  <data name="Hero_Feature2_Value" xml:space="preserve">
+    <value>Stackable filters</value>
+  </data>
+  <data name="Hero_Feature2_Description" xml:space="preserve">
+    <value>Combine brand, medium, and finish filters to narrow the grid instantly.</value>
+  </data>
+  <data name="Hero_Feature3_Label" xml:space="preserve">
+    <value>Realtime</value>
+  </data>
+  <data name="Hero_Feature3_Value" xml:space="preserve">
+    <value>Instant results</value>
+  </data>
+  <data name="Hero_Feature3_Description" xml:space="preserve">
+    <value>The grid updates as soon as you adjust the filters or search.</value>
+  </data>
+  <data name="Filters_Title" xml:space="preserve">
+    <value>Filters</value>
+  </data>
+  <data name="Filters_Subtitle" xml:space="preserve">
+    <value>Stack filters to find paints faster.</value>
+  </data>
+  <data name="Filters_Search_Label" xml:space="preserve">
+    <value>Search paints</value>
+  </data>
+  <data name="Filters_Search_Placeholder" xml:space="preserve">
+    <value>Search by name, SKU, or tags</value>
+  </data>
+  <data name="Filters_Brand_Label" xml:space="preserve">
+    <value>Brand</value>
+  </data>
+  <data name="Filters_AllBrands" xml:space="preserve">
+    <value>All brands</value>
+  </data>
+  <data name="Filters_Series_Label" xml:space="preserve">
+    <value>Series</value>
+  </data>
+  <data name="Filters_AllSeries" xml:space="preserve">
+    <value>All series</value>
+  </data>
+  <data name="Filters_Type_Label" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Filters_Type_All" xml:space="preserve">
+    <value>All types</value>
+  </data>
+  <data name="Filters_Type_1" xml:space="preserve">
+    <value>Type 1</value>
+  </data>
+  <data name="Filters_Type_2" xml:space="preserve">
+    <value>Type 2</value>
+  </data>
+  <data name="Filters_Type_3" xml:space="preserve">
+    <value>Type 3</value>
+  </data>
+  <data name="Filters_Type_4" xml:space="preserve">
+    <value>Type 4</value>
+  </data>
+  <data name="Filters_Type_5" xml:space="preserve">
+    <value>Type 5</value>
+  </data>
+  <data name="Filters_Type_6" xml:space="preserve">
+    <value>Type 6</value>
+  </data>
+  <data name="Filters_Type_7" xml:space="preserve">
+    <value>Type 7</value>
+  </data>
+  <data name="Filters_Type_8" xml:space="preserve">
+    <value>Type 8</value>
+  </data>
+  <data name="Filters_Type_9" xml:space="preserve">
+    <value>Type 9</value>
+  </data>
+  <data name="Filters_Type_10" xml:space="preserve">
+    <value>Type 10</value>
+  </data>
+  <data name="Filters_Finish_Label" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="Filters_Finish_All" xml:space="preserve">
+    <value>All finishes</value>
+  </data>
+  <data name="Filters_Finish_1" xml:space="preserve">
+    <value>Finish 1</value>
+  </data>
+  <data name="Filters_Finish_2" xml:space="preserve">
+    <value>Finish 2</value>
+  </data>
+  <data name="Filters_Finish_3" xml:space="preserve">
+    <value>Finish 3</value>
+  </data>
+  <data name="Filters_Finish_4" xml:space="preserve">
+    <value>Finish 4</value>
+  </data>
+  <data name="Filters_Finish_5" xml:space="preserve">
+    <value>Finish 5</value>
+  </data>
+  <data name="Filters_Finish_6" xml:space="preserve">
+    <value>Finish 6</value>
+  </data>
+  <data name="Filters_Medium_Label" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="Filters_Medium_All" xml:space="preserve">
+    <value>All mediums</value>
+  </data>
+  <data name="Filters_Medium_1" xml:space="preserve">
+    <value>Medium 1</value>
+  </data>
+  <data name="Filters_Medium_2" xml:space="preserve">
+    <value>Medium 2</value>
+  </data>
+  <data name="Filters_Medium_3" xml:space="preserve">
+    <value>Medium 3</value>
+  </data>
+  <data name="Filters_Medium_4" xml:space="preserve">
+    <value>Medium 4</value>
+  </data>
+  <data name="Filters_Medium_5" xml:space="preserve">
+    <value>Medium 5</value>
+  </data>
+  <data name="Filters_Medium_99" xml:space="preserve">
+    <value>Other mediums</value>
+  </data>
+  <data name="Filters_Clear" xml:space="preserve">
+    <value>Reset filters</value>
+  </data>
+  <data name="Stats_Template" xml:space="preserve">
+    <value>Showing {0}-{1} of {2} paints</value>
+  </data>
+  <data name="Stats_Fallback" xml:space="preserve">
+    <value>No paints loaded yet</value>
+  </data>
+  <data name="Stats_Subtitle" xml:space="preserve">
+    <value>Results refresh instantly as you refine the filters.</value>
+  </data>
+  <data name="PageSize_Label" xml:space="preserve">
+    <value>Page size</value>
+  </data>
+  <data name="ActiveFilters_Title" xml:space="preserve">
+    <value>Active filters</value>
+  </data>
+  <data name="ActiveFilters_Subtitle" xml:space="preserve">
+    <value>Reset filters to return to the full list.</value>
+  </data>
+  <data name="ActiveFilters_None" xml:space="preserve">
+    <value>No filters applied</value>
+  </data>
+  <data name="Status_Loading" xml:space="preserve">
+    <value>Loading paints...</value>
+  </data>
+  <data name="Status_Error_Title" xml:space="preserve">
+    <value>The paint data is unavailable</value>
+  </data>
+  <data name="Status_Error_Description" xml:space="preserve">
+    <value>We could not reach the minis API. Please try again in a moment.</value>
+  </data>
+  <data name="Status_Empty_Title" xml:space="preserve">
+    <value>No paints match your filters</value>
+  </data>
+  <data name="Status_Empty_Description" xml:space="preserve">
+    <value>Clear one or more filters or adjust your search keywords.</value>
+  </data>
+  <data name="Pagination_Previous" xml:space="preserve">
+    <value>Previous</value>
+  </data>
+  <data name="Pagination_Next" xml:space="preserve">
+    <value>Next</value>
+  </data>
+  <data name="Card_Label_Brand" xml:space="preserve">
+    <value>Brand</value>
+  </data>
+  <data name="Card_Label_Series" xml:space="preserve">
+    <value>Series</value>
+  </data>
+  <data name="Card_Label_Finish" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="Card_Label_Type" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Card_Label_Medium" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="Card_Label_Tags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="Card_Label_Sku" xml:space="preserve">
+    <value>SKU</value>
+  </data>
+  <data name="Card_Label_Color" xml:space="preserve">
+    <value>Color</value>
+  </data>
+</root>

@@ -20,7 +20,11 @@
 
     var homeEnUrl = Url.Action("Index", "Home", new { culture = (string?)null }) ?? "/";
     var homePlUrl = Url.Action("Index", "Home", new { culture = "pl" }) ?? "/pl";
+    var paintsEnUrl = Url.Action("Index", "Paints", new { culture = (string?)null }) ?? "/Paints";
+    var paintsPlUrl = Url.Action("Index", "Paints", new { culture = "pl" }) ?? "/pl/paints";
+
     var navHomeUrl = routeCulture == "pl" ? homePlUrl : homeEnUrl;
+    var navPaintsUrl = routeCulture == "pl" ? paintsPlUrl : paintsEnUrl;
 
     var pageTitle = ViewData["Title"]?.ToString();
     var metaDescription = ViewData["MetaDescription"]?.ToString();
@@ -98,6 +102,7 @@
 
             <nav class="hidden items-center gap-6 text-sm text-slate-600 dark:text-slate-300 md:flex">
                 <a href="@navHomeUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Home"]</a>
+                <a href="@navPaintsUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Paints"]</a>
             </nav>
 
             <div class="flex items-center gap-2 text-xs">
@@ -127,6 +132,7 @@
 
         <div id="mobile-menu" class="hidden border-t border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200 md:hidden">
             <a href="@navHomeUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Home"]</a>
+            <a href="@navPaintsUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Paints"]</a>
         </div>
     </header>
 
