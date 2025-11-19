@@ -60,6 +60,7 @@
         {
             allBrands = Localizer["Filters_AllBrands"].Value,
             allSeries = Localizer["Filters_AllSeries"].Value,
+            activeFiltersRemove = Localizer["ActiveFilters_Remove"].Value,
             type = typeLabels,
             finish = finishLabels,
             medium = mediumLabels
@@ -926,41 +927,79 @@
                 const container = elements.activeFilters;
                 if (!container) return;
 
+                const removalLabel = filterDictionaries?.activeFiltersRemove || 'Remove filter';
                 container.innerHTML = '';
                 const active = [];
 
                 if (state.filters.brandId) {
                     const brand = state.brands.find(b => Number(b?.id) === Number(state.filters.brandId));
                     if (brand?.name) {
-                        active.push(`${labels.brand || 'Brand'}: ${brand.name}`);
+                        active.push({
+                            key: 'brand',
+                            label: `${labels.brand || 'Brand'}: ${brand.name}`,
+                            onRemove: () => {
+                                state.filters.brandId = null;
+                                state.filters.seriesId = null;
+                                populateSeriesOptions();
+                            }
+                        });
                     }
                 }
 
                 if (state.filters.seriesId) {
                     const brand = state.brands.find(b => Number(b?.id) === Number(state.filters.brandId));
-                    const series = Array.isArray(brand?.series) ? brand.series.find(s => Number(s?.id) === Number(state.filters.seriesId)) : null;
+                    const brandSlug = brand?.slug;
+                    const seriesList = brandSlug && Array.isArray(state.brandSeries[brandSlug])
+                        ? state.brandSeries[brandSlug]
+                        : Array.isArray(brand?.series)
+                            ? brand.series
+                            : [];
+                    const series = seriesList.find(s => Number(s?.id) === Number(state.filters.seriesId));
                     if (series?.name) {
-                        active.push(`${labels.series || 'Series'}: ${series.name}`);
+                        active.push({
+                            key: 'series',
+                            label: `${labels.series || 'Series'}: ${series.name}`,
+                            onRemove: () => {
+                                state.filters.seriesId = null;
+                                populateSeriesOptions();
+                            }
+                        });
                     }
                 }
 
                 if (state.filters.type) {
                     const label = filterDictionaries.type?.[String(state.filters.type)] || `Type ${state.filters.type}`;
-                    active.push(`${labels.type || 'Type'}: ${label}`);
+                    active.push({
+                        key: 'type',
+                        label: `${labels.type || 'Type'}: ${label}`,
+                        onRemove: () => { state.filters.type = null; }
+                    });
                 }
 
                 if (state.filters.finish) {
                     const label = filterDictionaries.finish?.[String(state.filters.finish)] || `Finish ${state.filters.finish}`;
-                    active.push(`${labels.finish || 'Finish'}: ${label}`);
+                    active.push({
+                        key: 'finish',
+                        label: `${labels.finish || 'Finish'}: ${label}`,
+                        onRemove: () => { state.filters.finish = null; }
+                    });
                 }
 
                 if (state.filters.medium) {
                     const label = filterDictionaries.medium?.[String(state.filters.medium)] || `Medium ${state.filters.medium}`;
-                    active.push(`${labels.medium || 'Medium'}: ${label}`);
+                    active.push({
+                        key: 'medium',
+                        label: `${labels.medium || 'Medium'}: ${label}`,
+                        onRemove: () => { state.filters.medium = null; }
+                    });
                 }
 
                 if (state.filters.search) {
-                    active.push(`"${state.filters.search}"`);
+                    active.push({
+                        key: 'search',
+                        label: `"${state.filters.search}"`,
+                        onRemove: () => { state.filters.search = ''; }
+                    });
                 }
 
                 if (!active.length) {
@@ -971,10 +1010,29 @@
                     return;
                 }
 
-                active.forEach(text => {
+                active.forEach(item => {
                     const pill = document.createElement('span');
-                    pill.className = 'rounded-full bg-emerald-100 px-3 py-1 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200';
-                    pill.textContent = text;
+                    pill.className = 'inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200';
+
+                    const text = document.createElement('span');
+                    text.textContent = item.label;
+                    pill.appendChild(text);
+
+                    if (typeof item.onRemove === 'function') {
+                        const removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.className = 'grid h-5 w-5 place-items-center rounded-full text-emerald-600 transition hover:bg-emerald-200 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-500/30';
+                        removeBtn.innerHTML = `<span aria-hidden="true">×</span><span class="sr-only">${removalLabel}</span>`;
+                        removeBtn.addEventListener('click', () => {
+                            item.onRemove();
+                            state.pagination.page = 1;
+                            syncFormControlsWithState();
+                            renderActiveFilters();
+                            fetchPaints();
+                        });
+                        pill.appendChild(removeBtn);
+                    }
+
                     container.appendChild(pill);
                 });
             }
