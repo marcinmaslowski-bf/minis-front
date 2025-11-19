@@ -17,5 +17,7 @@ namespace PaintCatalog.Portal.ApiClients
             int? pageSize = null);
 
         Task<string> GetBrandsRawAsync();
+
+        Task<string> GetBrandSeriesRawAsync(string brandSlug);
     }
 }
