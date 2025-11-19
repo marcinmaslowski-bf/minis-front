@@ -11,6 +11,7 @@
 
     var paintsDataEndpoint = Url.Action("Data", "Paints") ?? "/paints/data";
     var brandsEndpoint = Url.Action("Brands", "Paints") ?? "/paints/brands";
+    var brandSeriesEndpoint = Url.Action("Series", "Paints") ?? "/paints/series";
 
     var initialPaintsJson = string.IsNullOrWhiteSpace(Model.InitialPaintsJson)
         ? "null"
@@ -43,7 +44,7 @@
 
     var bootstrap = new
     {
-        endpoints = new { data = paintsDataEndpoint, brands = brandsEndpoint },
+        endpoints = new { data = paintsDataEndpoint, brands = brandsEndpoint, series = brandSeriesEndpoint },
         labels = new
         {
             brand = Localizer["Card_Label_Brand"].Value,
@@ -302,8 +303,11 @@
                 total: 0,
                 items: [],
                 brands: normalizeBrandPayload(bootstrap.brands),
+                brandSeries: {},
                 loading: false
             };
+
+            primeBrandSeriesCacheFromBrands(state.brands);
 
             const elements = {
                 searchInput: document.getElementById('paintSearch'),
@@ -330,6 +334,7 @@
             applyQueryParamsToState(initialQueryParams);
             populateBrandOptions();
             populateSeriesOptions();
+            fetchSeriesForSelectedBrand();
             syncFormControlsWithState();
             renderAll();
             wireEvents();
@@ -343,6 +348,7 @@
                 const params = new URLSearchParams(window.location?.search || '');
                 applyQueryParamsToState(params);
                 populateSeriesOptions();
+                fetchSeriesForSelectedBrand();
                 syncFormControlsWithState();
                 fetchPaints();
             });
@@ -404,11 +410,54 @@
 
                     const payload = await response.json();
                     state.brands = normalizeBrandPayload(payload);
+                    primeBrandSeriesCacheFromBrands(state.brands);
                     populateBrandOptions();
                     populateSeriesOptions();
                     syncFormControlsWithState();
                 } catch (error) {
                     console.error('Unable to fetch brands', error);
+                }
+            }
+
+            async function fetchSeriesForSelectedBrand() {
+                if (!endpoints.series) {
+                    return;
+                }
+
+                const brandId = state.filters.brandId;
+                if (!brandId) {
+                    return;
+                }
+
+                const brand = state.brands.find(b => Number(b?.id) === Number(brandId));
+                const brandSlug = brand?.slug;
+                if (!brandSlug) {
+                    return;
+                }
+
+                if (Array.isArray(state.brandSeries[brandSlug]) && state.brandSeries[brandSlug].length > 0) {
+                    return;
+                }
+
+                try {
+                    const url = `${endpoints.series}?brandSlug=${encodeURIComponent(brandSlug)}`;
+                    const response = await fetch(url, {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Request failed');
+                    }
+
+                    const payload = await response.json();
+                    const normalized = normalizeSeriesPayload(payload);
+                    state.brandSeries[brandSlug] = normalized;
+                    populateSeriesOptions();
+                    syncFormControlsWithState();
+                } catch (error) {
+                    console.error('Unable to fetch series for brand', error);
                 }
             }
 
@@ -496,6 +545,40 @@
                 return [];
             }
 
+            function normalizeSeriesPayload(payload) {
+                if (!payload) return [];
+
+                let raw = payload;
+                if (typeof raw === 'string') {
+                    try {
+                        raw = JSON.parse(raw);
+                    } catch (error) {
+                        console.warn('Unable to parse series payload', error);
+                        return [];
+                    }
+                }
+
+                if (Array.isArray(raw)) return raw;
+                if (Array.isArray(raw.items)) return raw.items;
+                if (Array.isArray(raw.data)) return raw.data;
+
+                return [];
+            }
+
+            function primeBrandSeriesCacheFromBrands(brands) {
+                if (!Array.isArray(brands)) return;
+
+                brands.forEach(brand => {
+                    if (!brand?.slug || !Array.isArray(brand.series) || brand.series.length === 0) {
+                        return;
+                    }
+
+                    if (!Array.isArray(state.brandSeries[brand.slug])) {
+                        state.brandSeries[brand.slug] = brand.series;
+                    }
+                });
+            }
+
             function populateBrandOptions() {
                 const select = elements.brandSelect;
                 if (!select) return;
@@ -544,12 +627,20 @@
 
                 const numericBrandId = Number(brandId);
                 const brand = state.brands.find(b => Number(b?.id) === numericBrandId);
-                const seriesList = Array.isArray(brand?.series) ? brand.series : [];
+                const brandSlug = brand?.slug;
+                const seriesList = brandSlug && Array.isArray(state.brandSeries[brandSlug])
+                    ? state.brandSeries[brandSlug]
+                    : Array.isArray(brand?.series)
+                        ? brand.series
+                        : [];
 
                 if (seriesList.length === 0) {
                     select.disabled = true;
                     select.value = '';
                     state.filters.seriesId = null;
+                    if (brandSlug) {
+                        fetchSeriesForSelectedBrand();
+                    }
                     return;
                 }
 
@@ -584,6 +675,7 @@
                         state.filters.brandId = value ? Number(value) : null;
                         state.filters.seriesId = null;
                         populateSeriesOptions();
+                        fetchSeriesForSelectedBrand();
                         state.pagination.page = 1;
                         fetchPaints();
                     });

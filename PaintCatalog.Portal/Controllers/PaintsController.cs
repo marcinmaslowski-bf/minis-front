@@ -104,5 +104,28 @@ namespace PaintCatalog.Portal.Controllers
                 return StatusCode(500, new { error = "Unexpected server error", detail = ex.Message });
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Series(string brandSlug)
+        {
+            if (string.IsNullOrWhiteSpace(brandSlug))
+            {
+                return BadRequest(new { error = "Brand slug is required" });
+            }
+
+            try
+            {
+                var payload = await _apiClient.GetBrandSeriesRawAsync(brandSlug);
+                return Content(payload, "application/json");
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, new { error = "Paint catalog API unavailable", detail = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Unexpected server error", detail = ex.Message });
+            }
+        }
     }
 }
