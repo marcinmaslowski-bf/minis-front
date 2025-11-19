@@ -41,7 +41,7 @@ namespace PaintCatalog.Portal.Controllers
                 // Ignore missing brand data as well.
             }
 
-            var vm = new PaintsViewModelvv
+            var vm = new PaintsViewModel
             {
                 InitialPaintsJson = paintsJson,
                 BrandsJson = brandsJson
