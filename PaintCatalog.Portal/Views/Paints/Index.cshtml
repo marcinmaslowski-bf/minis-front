@@ -880,7 +880,7 @@
                     params.append('page', pagination.page);
                 }
 
-                if (pagination.pageSize) {
+                if (pagination.pageSize && pagination.pageSize !== DEFAULT_PAGE_SIZE) {
                     params.append('pageSize', pagination.pageSize);
                 }
 
