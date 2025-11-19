@@ -286,6 +286,7 @@
             const initialQueryString = window.location?.search || '';
             const initialQueryParams = new URLSearchParams(initialQueryString);
             const hasInitialQueryParams = Array.from(initialQueryParams.keys()).length > 0;
+            const DEFAULT_PAGE = 1;
             const DEFAULT_PAGE_SIZE = 24;
 
             const state = {
@@ -298,7 +299,7 @@
                     search: ''
                 },
                 pagination: {
-                    page: 1,
+                    page: DEFAULT_PAGE,
                     pageSize: DEFAULT_PAGE_SIZE
                 },
                 total: 0,
@@ -791,7 +792,7 @@
                     search: ''
                 };
 
-                state.pagination.page = 1;
+                state.pagination.page = DEFAULT_PAGE;
                 state.pagination.pageSize = DEFAULT_PAGE_SIZE;
 
                 const brandId = parseNumericParam(params.get('brandId'));
@@ -875,8 +876,13 @@
                 if (filters.finish !== null) params.append('finish', filters.finish);
                 if (filters.medium !== null) params.append('medium', filters.medium);
                 if (filters.search) params.append('search', filters.search);
-                if (pagination.page) params.append('page', pagination.page);
-                if (pagination.pageSize) params.append('pageSize', pagination.pageSize);
+                if (pagination.page && pagination.page !== DEFAULT_PAGE) {
+                    params.append('page', pagination.page);
+                }
+
+                if (pagination.pageSize && pagination.pageSize !== DEFAULT_PAGE_SIZE) {
+                    params.append('pageSize', pagination.pageSize);
+                }
 
                 return params;
             }
