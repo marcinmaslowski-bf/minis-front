@@ -183,6 +183,9 @@
   <data name="ActiveFilters_Subtitle" xml:space="preserve">
     <value>Reset filters to return to the full list.</value>
   </data>
+  <data name="ActiveFilters_Remove" xml:space="preserve">
+    <value>Remove filter</value>
+  </data>
   <data name="ActiveFilters_None" xml:space="preserve">
     <value>No filters applied</value>
   </data>
