@@ -333,6 +333,7 @@
             syncFormControlsWithState();
             renderAll();
             wireEvents();
+            fetchBrands();
 
             if (!state.items.length || hasInitialQueryParams) {
                 fetchPaints();
@@ -381,6 +382,33 @@
                 } finally {
                     toggleLoading(false);
                     renderAll();
+                }
+            }
+
+            async function fetchBrands() {
+                if (!endpoints.brands) {
+                    console.warn('Missing brands endpoint');
+                    return;
+                }
+
+                try {
+                    const response = await fetch(endpoints.brands, {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Request failed');
+                    }
+
+                    const payload = await response.json();
+                    state.brands = normalizeBrandPayload(payload);
+                    populateBrandOptions();
+                    populateSeriesOptions();
+                    syncFormControlsWithState();
+                } catch (error) {
+                    console.error('Unable to fetch brands', error);
                 }
             }
 
