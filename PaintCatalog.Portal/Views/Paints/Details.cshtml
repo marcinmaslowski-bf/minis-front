@@ -88,6 +88,20 @@
                         <dd class="mt-1 text-slate-900 dark:text-slate-100" id="paint-sku">—</dd>
                     </div>
                 </dl>
+                <dl class="grid grid-cols-1 gap-4 text-sm text-slate-600 dark:text-slate-200">
+                    <div>
+                        <dt class="font-semibold text-slate-400">@Localizer["Card_Label_Discontinued"]</dt>
+                        <dd class="mt-1 text-slate-900 dark:text-slate-100" id="paint-discontinued">—</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-slate-400">@Localizer["Card_Label_BrandWebsite"]</dt>
+                        <dd class="mt-1 text-slate-900 dark:text-slate-100" id="paint-brand-website">—</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-slate-400">@Localizer["Card_Label_Identifiers"]</dt>
+                        <dd class="mt-1 space-y-1 text-slate-900 dark:text-slate-100" id="paint-identifiers">—</dd>
+                    </div>
+                </dl>
                 <div class="flex flex-wrap gap-2" id="paint-tags"></div>
             </div>
             <div class="flex flex-col items-center justify-center gap-4">
@@ -114,6 +128,13 @@
             const bootstrap = @Html.Raw(bootstrapJson);
             const rawJson = @Html.Raw(detailsJson);
             const enumLabels = bootstrap.enumLabels || {};
+            const localized = {
+                discontinuedYes: @Html.Raw(JsonSerializer.Serialize(Localizer["Card_Value_Discontinued_Yes"].Value, jsonOptions)),
+                discontinuedNo: @Html.Raw(JsonSerializer.Serialize(Localizer["Card_Value_Discontinued_No"].Value, jsonOptions)),
+                discontinuedUnknown: @Html.Raw(JsonSerializer.Serialize(Localizer["Card_Value_Discontinued_Unknown"].Value, jsonOptions)),
+                brandWebsiteUnavailable: @Html.Raw(JsonSerializer.Serialize(Localizer["Card_Value_BrandWebsite_Unavailable"].Value, jsonOptions)),
+                identifiersNone: @Html.Raw(JsonSerializer.Serialize(Localizer["Card_Value_Identifiers_None"].Value, jsonOptions))
+            };
 
             const state = {
                 paint: null,
@@ -146,6 +167,143 @@
                 const key = String(value);
                 return dictionary[key] || fallback;
             };
+
+            function normalizeBoolean(value) {
+                if (value === null || value === undefined) return null;
+                if (typeof value === 'boolean') return value;
+
+                if (typeof value === 'number') {
+                    if (value === 1) return true;
+                    if (value === 0) return false;
+                }
+
+                const normalized = String(value).trim().toLowerCase();
+                if (['true', 'yes', 'y', '1', 'discontinued', 'retired', 'wycofana', 'wycofane', 'wycofany'].includes(normalized)) {
+                    return true;
+                }
+                if (['false', 'no', 'n', '0', 'available', 'active'].includes(normalized)) {
+                    return false;
+                }
+
+                return null;
+            }
+
+            function resolveDiscontinued(paint) {
+                const candidate = paint?.isDiscontinued
+                    ?? paint?.discontinued
+                    ?? paint?.discontinuedFromSale
+                    ?? paint?.retired
+                    ?? paint?.isRetired
+                    ?? paint?.status;
+
+                return normalizeBoolean(candidate);
+            }
+
+            function formatDiscontinued(value) {
+                if (value === true) return localized.discontinuedYes;
+                if (value === false) return localized.discontinuedNo;
+                return localized.discontinuedUnknown;
+            }
+
+            function resolveBrandWebsite(brand) {
+                if (!brand) return null;
+
+                const candidate = brand.websiteUrl
+                    ?? brand.websiteURL
+                    ?? brand.website
+                    ?? brand.url
+                    ?? brand.site
+                    ?? brand.homepage
+                    ?? brand.link
+                    ?? brand.links?.website
+                    ?? brand.links?.site
+                    ?? brand.links?.homepage;
+
+                const sanitized = sanitizeUrl(candidate);
+                if (!sanitized) return null;
+
+                let label = brand.name || '';
+                try {
+                    const url = new URL(sanitized);
+                    if (url.hostname) {
+                        label = label ? `${label} (${url.hostname})` : url.hostname;
+                    }
+                } catch {
+                    label = label || sanitized;
+                }
+
+                return { url: sanitized, label: label || sanitized };
+            }
+
+            function sanitizeUrl(value) {
+                if (!value) return null;
+
+                const raw = String(value).trim();
+                if (!raw) return null;
+
+                const prefixed = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+
+                try {
+                    const url = new URL(prefixed);
+                    if (['http:', 'https:'].includes(url.protocol)) {
+                        return url.toString();
+                    }
+                } catch {
+                    return null;
+                }
+
+                return null;
+            }
+
+            function normalizeIdentifiers(raw) {
+                if (!raw) return [];
+
+                if (Array.isArray(raw)) {
+                    return raw.map(normalizeIdentifier).filter(Boolean);
+                }
+
+                if (typeof raw === 'object') {
+                    return Object.entries(raw)
+                        .map(([key, value]) => normalizeIdentifier({ type: key, value }))
+                        .filter(Boolean);
+                }
+
+                return [];
+            }
+
+            function normalizeIdentifier(value) {
+                if (value === null || value === undefined) return null;
+
+                if (typeof value === 'string' || typeof value === 'number') {
+                    const normalized = String(value).trim();
+                    return normalized ? { label: null, value: normalized } : null;
+                }
+
+                if (typeof value === 'object') {
+                    const identifierValue = value.value
+                        ?? value.id
+                        ?? value.code
+                        ?? value.identifier
+                        ?? value.number
+                        ?? value.slug
+                        ?? value.text;
+
+                    if (!identifierValue && identifierValue !== 0) return null;
+
+                    const label = value.type
+                        ?? value.name
+                        ?? value.label
+                        ?? value.system
+                        ?? value.scope
+                        ?? value.source
+                        ?? value.kind
+                        ?? value.key;
+
+                    return { label: label ? String(label) : null, value: String(identifierValue) };
+                }
+
+                return null;
+            }
 
             function parsePaint() {
                 if (!rawJson) return null;
@@ -182,6 +340,9 @@
                     finish: document.getElementById('paint-finish'),
                     medium: document.getElementById('paint-medium'),
                     sku: document.getElementById('paint-sku'),
+                    discontinued: document.getElementById('paint-discontinued'),
+                    brandWebsite: document.getElementById('paint-brand-website'),
+                    identifiers: document.getElementById('paint-identifiers'),
                     tags: document.getElementById('paint-tags'),
                     swatch: document.getElementById('paint-swatch'),
                     hex: document.getElementById('paint-hex'),
@@ -206,6 +367,9 @@
                 const colorHex = paint?.hex || paint?.colorHex || paint?.hexCode || paint?.swatchHex || '#0f172a';
                 const swatch = buildPaintSwatch(paint, colorHex, { defaultHex: '#0f172a' });
                 const tags = Array.isArray(paint?.tags) ? paint.tags : [];
+                const discontinued = resolveDiscontinued(paint);
+                const brandWebsite = resolveBrandWebsite(paint?.brand);
+                const identifiers = normalizeIdentifiers(paint?.identifiers || paint?.ids || paint?.codes || paint?.references);
 
                 if (elements.brand) {
                     const brandLabel = brandSlug ? `${brandName || 'Brand'} (${brandSlug})` : (brandName || 'Brand');
@@ -230,6 +394,31 @@
                 if (elements.finish) elements.finish.textContent = finishName || '—';
                 if (elements.medium) elements.medium.textContent = mediumName || '—';
                 if (elements.sku) elements.sku.textContent = sku || '—';
+
+                if (elements.discontinued) elements.discontinued.textContent = formatDiscontinued(discontinued);
+
+                if (elements.brandWebsite) {
+                    if (brandWebsite?.url) {
+                        const label = brandWebsite.label || brandWebsite.url;
+                        elements.brandWebsite.innerHTML = `<a href="${escapeHtml(brandWebsite.url)}" target="_blank" rel="noreferrer noopener" class="text-emerald-600 hover:underline dark:text-emerald-400">${escapeHtml(label)}</a>`;
+                    } else {
+                        elements.brandWebsite.textContent = localized.brandWebsiteUnavailable;
+                    }
+                }
+
+                if (elements.identifiers) {
+                    if (!identifiers.length) {
+                        elements.identifiers.textContent = localized.identifiersNone;
+                    } else {
+                        elements.identifiers.innerHTML = identifiers
+                            .map(item => {
+                                const label = item.label ? `<span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(item.label)}</span>` : '';
+                                const value = `<span class="font-mono text-xs text-slate-900 dark:text-slate-100">${escapeHtml(item.value)}</span>`;
+                                return `<div class="flex flex-wrap items-center gap-2">${label}${value}</div>`;
+                            })
+                            .join('');
+                    }
+                }
 
                 if (elements.tags) {
                     if (tags.length === 0) {
