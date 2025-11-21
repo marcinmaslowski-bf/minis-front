@@ -19,5 +19,7 @@ namespace PaintCatalog.Portal.ApiClients
         Task<string> GetBrandsRawAsync();
 
         Task<string> GetBrandSeriesRawAsync(string brandSlug);
+
+        Task<string> GetPaintBySlugsRawAsync(string brandSlug, string seriesSlug, string paintSlug);
     }
 }

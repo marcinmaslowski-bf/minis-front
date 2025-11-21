@@ -85,5 +85,30 @@ namespace PaintCatalog.Portal.ApiClients
 
             return await response.Content.ReadAsStringAsync();
         }
+
+        public async Task<string> GetPaintBySlugsRawAsync(string brandSlug, string seriesSlug, string paintSlug)
+        {
+            if (string.IsNullOrWhiteSpace(brandSlug))
+            {
+                throw new ArgumentException("Brand slug must be provided", nameof(brandSlug));
+            }
+
+            if (string.IsNullOrWhiteSpace(seriesSlug))
+            {
+                throw new ArgumentException("Series slug must be provided", nameof(seriesSlug));
+            }
+
+            if (string.IsNullOrWhiteSpace(paintSlug))
+            {
+                throw new ArgumentException("Paint slug must be provided", nameof(paintSlug));
+            }
+
+            var url = $"/api/v1/paints/{Uri.EscapeDataString(brandSlug)}/{Uri.EscapeDataString(seriesSlug)}/{Uri.EscapeDataString(paintSlug)}";
+
+            using var response = await _httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
     }
 }

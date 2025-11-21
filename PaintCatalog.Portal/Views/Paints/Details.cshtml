@@ -1,0 +1,239 @@
+@using System.Text.Json
+@using System.Text.Encodings.Web
+@model PaintCatalog.Portal.Models.PaintDetailsViewModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["Page_Title"].Value;
+    ViewData["MetaDescription"] = Localizer["Page_Description"].Value;
+
+    var detailsJson = string.IsNullOrWhiteSpace(Model.PaintJson) ? "null" : Model.PaintJson;
+    var jsonOptions = new JsonSerializerOptions
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
+    var bootstrap = new
+    {
+        paint = Model.PaintJson,
+        brandSlug = Model.BrandSlug,
+        seriesSlug = Model.SeriesSlug,
+        paintSlug = Model.PaintSlug
+    };
+
+    var bootstrapJson = JsonSerializer.Serialize(bootstrap, jsonOptions);
+    var backToSearchUrl = Url.LocalizedAction("Index", "Paints");
+}
+
+<section class="space-y-8">
+    <div class="flex items-center justify-between gap-4">
+        <div>
+            <p class="text-xs uppercase tracking-wide text-emerald-400">@Localizer["Details_Breadcrumb"]</p>
+            <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white">@Localizer["Details_Title"]</h1>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-300">@Localizer["Details_Subtitle"]</p>
+        </div>
+        <a href="@backToSearchUrl" class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">
+            <span aria-hidden="true">←</span>
+            <span>@Localizer["Details_Back"]</span>
+        </a>
+    </div>
+
+    <div id="paint-details" class="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+        <div class="flex flex-wrap items-start gap-6">
+            <div class="flex-1 space-y-3 min-w-[16rem]">
+                <p class="text-xs uppercase tracking-wide text-slate-400" id="paint-brand"></p>
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white" id="paint-name"></h2>
+                <p class="text-sm text-slate-500 dark:text-slate-300" id="paint-series"></p>
+                <p class="text-sm text-slate-500 dark:text-slate-300" id="paint-description"></p>
+                <dl class="grid grid-cols-2 gap-4 text-sm text-slate-600 dark:text-slate-200">
+                    <div>
+                        <dt class="font-semibold text-slate-400">@Localizer["Card_Label_Type"]</dt>
+                        <dd class="mt-1 text-slate-900 dark:text-slate-100" id="paint-type">—</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-slate-400">@Localizer["Card_Label_Finish"]</dt>
+                        <dd class="mt-1 text-slate-900 dark:text-slate-100" id="paint-finish">—</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-slate-400">@Localizer["Card_Label_Medium"]</dt>
+                        <dd class="mt-1 text-slate-900 dark:text-slate-100" id="paint-medium">—</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-slate-400">@Localizer["Card_Label_Sku"]</dt>
+                        <dd class="mt-1 text-slate-900 dark:text-slate-100" id="paint-sku">—</dd>
+                    </div>
+                </dl>
+                <div class="flex flex-wrap gap-2" id="paint-tags"></div>
+            </div>
+            <div class="flex flex-col items-center justify-center gap-4">
+                <div class="h-24 w-24 rounded-full border border-slate-200 shadow-inner" id="paint-swatch"></div>
+                <div class="text-xs text-slate-500 dark:text-slate-300" id="paint-hex">#000000</div>
+            </div>
+        </div>
+        <div id="paint-debug" class="mt-6 rounded-xl bg-slate-50 p-4 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-200">
+            <p class="mb-2 font-semibold uppercase tracking-wide text-slate-500">@Localizer["Details_Debug"]</p>
+            <pre class="whitespace-pre-wrap" id="paint-json"></pre>
+        </div>
+    </div>
+
+    <div id="paint-error" class="hidden rounded-xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+        <p class="font-semibold">@Localizer["Details_Error_Title"]</p>
+        <p class="text-sm">@Localizer["Details_Error_Description"]</p>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        (function() {
+            const bootstrap = @Html.Raw(bootstrapJson);
+            const rawJson = @Html.Raw(detailsJson);
+
+            const state = {
+                paint: null,
+                brandSlug: bootstrap.brandSlug,
+                seriesSlug: bootstrap.seriesSlug,
+                paintSlug: bootstrap.paintSlug,
+            };
+
+            function parsePaint() {
+                if (!rawJson) return null;
+                if (typeof rawJson === 'string') {
+                    try {
+                        return JSON.parse(rawJson);
+                    } catch (err) {
+                        console.error('Failed to parse paint JSON', err);
+                        return null;
+                    }
+                }
+
+                return rawJson;
+            }
+
+            function hydrate() {
+                state.paint = parsePaint();
+                if (!state.paint) {
+                    toggleError(true);
+                    return;
+                }
+
+                render();
+            }
+
+            function render() {
+                const paint = state.paint;
+                const elements = {
+                    brand: document.getElementById('paint-brand'),
+                    name: document.getElementById('paint-name'),
+                    series: document.getElementById('paint-series'),
+                    description: document.getElementById('paint-description'),
+                    type: document.getElementById('paint-type'),
+                    finish: document.getElementById('paint-finish'),
+                    medium: document.getElementById('paint-medium'),
+                    sku: document.getElementById('paint-sku'),
+                    tags: document.getElementById('paint-tags'),
+                    swatch: document.getElementById('paint-swatch'),
+                    hex: document.getElementById('paint-hex'),
+                    json: document.getElementById('paint-json'),
+                    error: document.getElementById('paint-error'),
+                    container: document.getElementById('paint-details')
+                };
+
+                const brandName = paint?.brand?.name || paint?.brandName || '';
+                const brandSlug = paint?.brand?.slug || paint?.brandSlug || state.brandSlug;
+                const seriesName = paint?.series?.name || paint?.seriesName || '';
+                const seriesSlug = paint?.series?.slug || paint?.seriesSlug || state.seriesSlug;
+                const paintName = paint?.name || paint?.paintName || state.paintSlug || 'Untitled paint';
+                const description = paint?.description || '';
+                const finishName = paint?.finishName || paint?.finish?.name || paint?.finish || '—';
+                const typeName = paint?.typeName || paint?.type?.name || paint?.type || '—';
+                const mediumName = paint?.mediumName || paint?.medium?.name || paint?.medium || '—';
+                const sku = paint?.sku || paint?.code || '—';
+                const colorHex = paint?.hex || paint?.colorHex || paint?.hexCode || paint?.swatchHex || '#0f172a';
+                const tags = Array.isArray(paint?.tags) ? paint.tags : [];
+
+                if (elements.brand) {
+                    const brandLabel = brandSlug ? `${brandName || 'Brand'} (${brandSlug})` : (brandName || 'Brand');
+                    elements.brand.textContent = brandLabel;
+                }
+
+                if (elements.name) {
+                    elements.name.textContent = paintName;
+                }
+
+                if (elements.series) {
+                    const seriesLabel = seriesSlug ? `${seriesName || 'Series'} (${seriesSlug})` : (seriesName || 'Series');
+                    elements.series.textContent = seriesLabel;
+                }
+
+                if (elements.description) {
+                    elements.description.textContent = description;
+                    elements.description.classList.toggle('hidden', !description);
+                }
+
+                if (elements.type) elements.type.textContent = typeName || '—';
+                if (elements.finish) elements.finish.textContent = finishName || '—';
+                if (elements.medium) elements.medium.textContent = mediumName || '—';
+                if (elements.sku) elements.sku.textContent = sku || '—';
+
+                if (elements.tags) {
+                    if (tags.length === 0) {
+                        elements.tags.innerHTML = '';
+                    } else {
+                        elements.tags.innerHTML = tags
+                            .map(tag => typeof tag === 'string' ? tag : (tag?.name || tag?.label))
+                            .filter(Boolean)
+                            .map(tag => `<span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(tag)}</span>`)
+                            .join('');
+                    }
+                }
+
+                if (elements.swatch) {
+                    elements.swatch.style.background = `linear-gradient(135deg, ${colorHex}, #0f172a)`;
+                }
+
+                if (elements.hex) {
+                    elements.hex.textContent = colorHex;
+                }
+
+                if (elements.json) {
+                    try {
+                        elements.json.textContent = JSON.stringify(paint, null, 2);
+                    } catch {
+                        elements.json.textContent = paint?.toString?.() ?? '';
+                    }
+                }
+
+                toggleError(false);
+                if (elements.container) {
+                    elements.container.classList.remove('hidden');
+                }
+            }
+
+            function escapeHtml(value) {
+                if (value === null || value === undefined) {
+                    return '';
+                }
+
+                return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            }
+
+            function toggleError(isError) {
+                const errorBox = document.getElementById('paint-error');
+                const container = document.getElementById('paint-details');
+                if (errorBox) {
+                    errorBox.classList.toggle('hidden', !isError);
+                }
+                if (container) {
+                    container.classList.toggle('hidden', isError);
+                }
+            }
+
+            hydrate();
+        })();
+    </script>
+}
