@@ -19,14 +19,34 @@
     var host = $"{Context.Request.Scheme}://{Context.Request.Host}";
     var canonicalUrl = host + path;
 
-    var baseLanguageEnUrl = Url.Action(action: null, controller: null, values: new { culture = (string?)null }) ?? string.Empty;
-    if (string.IsNullOrWhiteSpace(baseLanguageEnUrl))
+    // Detect paint details route values so localized links use the correct named routes
+    var brandSlug = Context.Request.RouteValues["brandSlug"] as string;
+    var seriesSlug = Context.Request.RouteValues["seriesSlug"] as string;
+    var paintSlug = Context.Request.RouteValues["paintSlug"] as string;
+    var isPaintDetails = !string.IsNullOrWhiteSpace(brandSlug)
+        && !string.IsNullOrWhiteSpace(seriesSlug)
+        && !string.IsNullOrWhiteSpace(paintSlug);
+
+    string baseLanguageEnUrl;
+    string baseLanguagePlUrl;
+
+    if (isPaintDetails)
     {
-        baseLanguageEnUrl = path.StartsWith("/pl", global::System.StringComparison.OrdinalIgnoreCase)
-            ? (path.Length > 3 ? path.Substring(3) : "/")
-            : (!string.IsNullOrEmpty(path) ? path : "/");
+        baseLanguageEnUrl = Url.RouteUrl("PaintDetails", new { brandSlug, seriesSlug, paintSlug }) ?? string.Empty;
+        baseLanguagePlUrl = Url.RouteUrl("PaintDetailsLocalized", new { culture = "pl", brandSlug, seriesSlug, paintSlug }) ?? path;
     }
-    var baseLanguagePlUrl = Url.Action(action: null, controller: null, values: new { culture = "pl" }) ?? path;
+    else
+    {
+        baseLanguageEnUrl = Url.Action(action: null, controller: null, values: new { culture = (string?)null }) ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(baseLanguageEnUrl))
+        {
+            baseLanguageEnUrl = path.StartsWith("/pl", global::System.StringComparison.OrdinalIgnoreCase)
+                ? (path.Length > 3 ? path.Substring(3) : "/")
+                : (!string.IsNullOrEmpty(path) ? path : "/");
+        }
+
+        baseLanguagePlUrl = Url.Action(action: null, controller: null, values: new { culture = "pl" }) ?? path;
+    }
     var languageEnUrl = (string.IsNullOrEmpty(queryString) ? baseLanguageEnUrl : baseLanguageEnUrl + queryString).ToLower();
     var languagePlUrl = (string.IsNullOrEmpty(queryString) ? baseLanguagePlUrl : baseLanguagePlUrl + queryString).ToLower();
 
