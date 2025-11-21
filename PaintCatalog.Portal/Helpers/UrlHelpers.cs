@@ -11,7 +11,9 @@ namespace PaintCatalog.Portal.Helpers
             if(cultureSegment == null)
                 return url.Action(action, controller) ?? "/";
 
-            return url.Action(action, controller, new { culture = cultureSegment }) ?? "/";
+            return url.RouteUrl("localized", new { culture = cultureSegment, controller, action })
+                ?? url.Action(action, controller, new { culture = cultureSegment })
+                ?? "/";
         }
     }
 }

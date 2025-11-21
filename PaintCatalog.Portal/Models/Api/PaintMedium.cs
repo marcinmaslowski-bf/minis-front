@@ -2,12 +2,12 @@ namespace PaintCatalog.Portal.Models.Api
 {
     public enum PaintMedium
     {
-        Unknown = 0,
-        Medium1 = 1,
-        Medium2 = 2,
-        Medium3 = 3,
-        Medium4 = 4,
-        Medium5 = 5,
-        Other = 99
+        None = 0,
+        Acrylic = 1,
+        Enamel = 2,
+        Oil = 3,
+        Lacquer = 4,
+        Alcohol = 5,
+        Unknown = 99
     }
 }
