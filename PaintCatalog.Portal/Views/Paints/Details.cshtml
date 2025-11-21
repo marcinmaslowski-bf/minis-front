@@ -283,6 +283,7 @@
                     const identifierValue = value.value
                         ?? value.id
                         ?? value.code
+                        ?? value.codeValue
                         ?? value.identifier
                         ?? value.number
                         ?? value.slug
@@ -290,16 +291,33 @@
 
                     if (!identifierValue && identifierValue !== 0) return null;
 
-                    const label = value.type
+                    const labelParts = [];
+
+                    if (value.bottleMl !== null && value.bottleMl !== undefined) {
+                        const volume = Number(value.bottleMl);
+                        if (!Number.isNaN(volume)) {
+                            labelParts.push(`${volume}ml`);
+                        }
+                    }
+
+                    const identifierLabel = value.type
                         ?? value.name
                         ?? value.label
                         ?? value.system
                         ?? value.scope
                         ?? value.source
                         ?? value.kind
-                        ?? value.key;
+                        ?? value.key
+                        ?? value.codeType;
 
-                    return { label: label ? String(label) : null, value: String(identifierValue) };
+                    if (identifierLabel) {
+                        labelParts.push(String(identifierLabel));
+                    }
+
+                    return {
+                        label: labelParts.length ? labelParts.join(' · ') : null,
+                        value: String(identifierValue)
+                    };
                 }
 
                 return null;
