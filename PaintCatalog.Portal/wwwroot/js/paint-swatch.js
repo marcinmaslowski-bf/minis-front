@@ -17,7 +17,7 @@
 
         if (gradientType === 1 && hexFrom && hexTo) {
             return {
-                background: `linear-gradient(135deg, ${hexFrom}, ${hexTo})`,
+                background: `linear-gradient(90deg, ${hexFrom}, ${hexTo})`,
                 label: `${hexFrom} → ${hexTo}`
             };
         }
@@ -37,7 +37,7 @@
         }
 
         return {
-            background: `linear-gradient(135deg, ${defaultHex}, #0f172a)`,
+            background: `linear-gradient(90deg, ${defaultHex}, #0f172a)`,
             label: defaultHex
         };
     }
