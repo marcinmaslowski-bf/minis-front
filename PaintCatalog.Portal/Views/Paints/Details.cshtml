@@ -1,13 +1,32 @@
+@using System.Collections.Generic
+@using System.Linq
 @using System.Text.Json
 @using System.Text.Encodings.Web
 @model PaintCatalog.Portal.Models.PaintDetailsViewModel
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizerFactory LocalizerFactory
 
 @{
     ViewData["Title"] = Localizer["Page_Title"].Value;
     ViewData["MetaDescription"] = Localizer["Page_Description"].Value;
 
     var detailsJson = string.IsNullOrWhiteSpace(Model.PaintJson) ? "null" : Model.PaintJson;
+    var searchLocalizer = LocalizerFactory.Create("Views.Paints.Index", typeof(Program).Assembly.GetName().Name);
+    var typeLabels = Enumerable.Range(1, 10)
+        .ToDictionary(i => i.ToString(), i => searchLocalizer[$"Filters_Type_{i}"].Value);
+
+    var finishLabels = Enumerable.Range(1, 6)
+        .ToDictionary(i => i.ToString(), i => searchLocalizer[$"Filters_Finish_{i}"].Value);
+
+    var mediumLabels = new Dictionary<string, string>
+    {
+        ["1"] = searchLocalizer["Filters_Medium_1"].Value,
+        ["2"] = searchLocalizer["Filters_Medium_2"].Value,
+        ["3"] = searchLocalizer["Filters_Medium_3"].Value,
+        ["4"] = searchLocalizer["Filters_Medium_4"].Value,
+        ["5"] = searchLocalizer["Filters_Medium_5"].Value,
+        ["99"] = searchLocalizer["Filters_Medium_99"].Value
+    };
     var jsonOptions = new JsonSerializerOptions
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
@@ -18,7 +37,13 @@
         paint = Model.PaintJson,
         brandSlug = Model.BrandSlug,
         seriesSlug = Model.SeriesSlug,
-        paintSlug = Model.PaintSlug
+        paintSlug = Model.PaintSlug,
+        enumLabels = new
+        {
+            type = typeLabels,
+            finish = finishLabels,
+            medium = mediumLabels
+        }
     };
 
     var bootstrapJson = JsonSerializer.Serialize(bootstrap, jsonOptions);
@@ -88,6 +113,7 @@
         (function() {
             const bootstrap = @Html.Raw(bootstrapJson);
             const rawJson = @Html.Raw(detailsJson);
+            const enumLabels = bootstrap.enumLabels || {};
 
             const state = {
                 paint: null,
@@ -107,6 +133,19 @@
                 const hex = normalizeHex(options.defaultHex) || normalizeHex(fallbackHex) || '#0f172a';
                 return { background: hex, label: hex };
             });
+            const resolveEnumLabel = (dictionary, rawValue, fallback) => {
+                if (!dictionary) return fallback;
+
+                let value = rawValue;
+                if (value && typeof value === 'object') {
+                    value = value.id ?? value.value ?? value.type ?? value.finish ?? value.medium;
+                }
+
+                if (value === null || value === undefined) return fallback;
+
+                const key = String(value);
+                return dictionary[key] || fallback;
+            };
 
             function parsePaint() {
                 if (!rawJson) return null;
@@ -157,9 +196,12 @@
                 const seriesSlug = paint?.series?.slug || paint?.seriesSlug || state.seriesSlug;
                 const paintName = paint?.name || paint?.paintName || state.paintSlug || 'Untitled paint';
                 const description = paint?.description || '';
-                const finishName = paint?.finishName || paint?.finish?.name || paint?.finish || '—';
-                const typeName = paint?.typeName || paint?.type?.name || paint?.type || '—';
-                const mediumName = paint?.mediumName || paint?.medium?.name || paint?.medium || '—';
+                const finishRaw = paint?.finishId ?? paint?.finish?.id ?? paint?.finish;
+                const typeRaw = paint?.typeId ?? paint?.type?.id ?? paint?.type;
+                const mediumRaw = paint?.mediumId ?? paint?.medium?.id ?? paint?.medium;
+                const finishName = resolveEnumLabel(enumLabels.finish, finishRaw, paint?.finishName || paint?.finish?.name || paint?.finish || '—');
+                const typeName = resolveEnumLabel(enumLabels.type, typeRaw, paint?.typeName || paint?.type?.name || paint?.type || '—');
+                const mediumName = resolveEnumLabel(enumLabels.medium, mediumRaw, paint?.mediumName || paint?.medium?.name || paint?.medium || '—');
                 const sku = paint?.sku || paint?.code || '—';
                 const colorHex = paint?.hex || paint?.colorHex || paint?.hexCode || paint?.swatchHex || '#0f172a';
                 const swatch = buildPaintSwatch(paint, colorHex, { defaultHex: '#0f172a' });
