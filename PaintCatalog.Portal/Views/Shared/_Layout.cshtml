@@ -1,4 +1,6 @@
 @using System.Globalization
+@using System.Linq
+@using Microsoft.AspNetCore.Http.Extensions
 @using PaintCatalog.Portal.Helpers
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer LayoutLocalizer
 
@@ -7,7 +9,13 @@
     var isPl = CultureHelpers.IsPl();
 
     var path = Context.Request.Path.HasValue ? Context.Request.Path.Value : "/";
-    var queryString = Context.Request.QueryString.HasValue ? Context.Request.QueryString.Value : string.Empty;
+
+    var filteredQuery = new QueryBuilder(
+        Context.Request.Query
+            .Where(kvp => !string.Equals(kvp.Key, "culture", StringComparison.OrdinalIgnoreCase))
+            .SelectMany(kvp => kvp.Value, (kvp, value) => new KeyValuePair<string, string?>(kvp.Key, value))
+    );
+    var queryString = filteredQuery.ToQueryString().Value ?? string.Empty;
     var host = $"{Context.Request.Scheme}://{Context.Request.Host}";
     var canonicalUrl = host + path;
 
