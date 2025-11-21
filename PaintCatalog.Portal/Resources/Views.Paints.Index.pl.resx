@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -85,34 +85,34 @@
     <value>Wszystkie typy</value>
   </data>
   <data name="Filters_Type_1" xml:space="preserve">
-    <value>Typ 1</value>
+    <value>Baza</value>
   </data>
   <data name="Filters_Type_2" xml:space="preserve">
-    <value>Typ 2</value>
+    <value>Warstwa</value>
   </data>
   <data name="Filters_Type_3" xml:space="preserve">
-    <value>Typ 3</value>
+    <value>Kontrast</value>
   </data>
   <data name="Filters_Type_4" xml:space="preserve">
-    <value>Typ 4</value>
+    <value>Cieniowanie</value>
   </data>
   <data name="Filters_Type_5" xml:space="preserve">
-    <value>Typ 5</value>
+    <value>Suchy pędzel</value>
   </data>
   <data name="Filters_Type_6" xml:space="preserve">
-    <value>Typ 6</value>
+    <value>Techniczna</value>
   </data>
   <data name="Filters_Type_7" xml:space="preserve">
-    <value>Typ 7</value>
+    <value>Do aerografu</value>
   </data>
   <data name="Filters_Type_8" xml:space="preserve">
-    <value>Typ 8</value>
+    <value>Podkład</value>
   </data>
   <data name="Filters_Type_9" xml:space="preserve">
-    <value>Typ 9</value>
+    <value>Werniks</value>
   </data>
   <data name="Filters_Type_10" xml:space="preserve">
-    <value>Typ 10</value>
+    <value>Medium</value>
   </data>
   <data name="Filters_Finish_Label" xml:space="preserve">
     <value>Wykończenie</value>
@@ -121,22 +121,22 @@
     <value>Wszystkie wykończenia</value>
   </data>
   <data name="Filters_Finish_1" xml:space="preserve">
-    <value>Wykończenie 1</value>
+    <value>Mat</value>
   </data>
   <data name="Filters_Finish_2" xml:space="preserve">
-    <value>Wykończenie 2</value>
+    <value>Satyna</value>
   </data>
   <data name="Filters_Finish_3" xml:space="preserve">
-    <value>Wykończenie 3</value>
+    <value>Połysk</value>
   </data>
   <data name="Filters_Finish_4" xml:space="preserve">
-    <value>Wykończenie 4</value>
+    <value>Metaliczny</value>
   </data>
   <data name="Filters_Finish_5" xml:space="preserve">
-    <value>Wykończenie 5</value>
+    <value>Fluorescencyjny</value>
   </data>
   <data name="Filters_Finish_6" xml:space="preserve">
-    <value>Wykończenie 6</value>
+    <value>Transparentny</value>
   </data>
   <data name="Filters_Medium_Label" xml:space="preserve">
     <value>Medium</value>
@@ -145,22 +145,22 @@
     <value>Wszystkie media</value>
   </data>
   <data name="Filters_Medium_1" xml:space="preserve">
-    <value>Medium 1</value>
+    <value>Akryl</value>
   </data>
   <data name="Filters_Medium_2" xml:space="preserve">
-    <value>Medium 2</value>
+    <value>Emalia</value>
   </data>
   <data name="Filters_Medium_3" xml:space="preserve">
-    <value>Medium 3</value>
+    <value>Olejne</value>
   </data>
   <data name="Filters_Medium_4" xml:space="preserve">
-    <value>Medium 4</value>
+    <value>Lakier</value>
   </data>
   <data name="Filters_Medium_5" xml:space="preserve">
-    <value>Medium 5</value>
+    <value>Alkoholowy</value>
   </data>
   <data name="Filters_Medium_99" xml:space="preserve">
-    <value>Inne media</value>
+    <value>Inne lub nieznane</value>
   </data>
   <data name="Filters_Clear" xml:space="preserve">
     <value>Wyczyść filtry</value>

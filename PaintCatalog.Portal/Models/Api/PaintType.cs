@@ -3,15 +3,15 @@ namespace PaintCatalog.Portal.Models.Api
     public enum PaintType
     {
         Unknown = 0,
-        Type1 = 1,
-        Type2 = 2,
-        Type3 = 3,
-        Type4 = 4,
-        Type5 = 5,
-        Type6 = 6,
-        Type7 = 7,
-        Type8 = 8,
-        Type9 = 9,
-        Type10 = 10
+        Base = 1,
+        Layer = 2,
+        Contrast = 3,
+        Shade = 4,
+        Dry = 5,
+        Technical = 6,
+        Air = 7,
+        Primer = 8,
+        Varnish = 9,
+        Medium = 10
     }
 }
