@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -117,6 +118,38 @@ namespace PaintCatalog.Portal.Controllers
             {
                 var payload = await _apiClient.GetBrandSeriesRawAsync(brandSlug);
                 return Content(payload, "application/json");
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, new { error = "Paint catalog API unavailable", detail = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Unexpected server error", detail = ex.Message });
+            }
+        }
+
+        [HttpGet("paints/{brandSlug}/{seriesSlug}/{paintSlug}")]
+        [HttpGet("{culture:regex(^pl$)}/paints/{brandSlug}/{seriesSlug}/{paintSlug}")]
+        public async Task<IActionResult> Details(string brandSlug, string seriesSlug, string paintSlug)
+        {
+            try
+            {
+                var paintJson = await _apiClient.GetPaintBySlugsRawAsync(brandSlug, seriesSlug, paintSlug);
+
+                var vm = new PaintDetailsViewModel
+                {
+                    BrandSlug = brandSlug,
+                    SeriesSlug = seriesSlug,
+                    PaintSlug = paintSlug,
+                    PaintJson = paintJson
+                };
+
+                return View(vm);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                return NotFound();
             }
             catch (HttpRequestException ex)
             {

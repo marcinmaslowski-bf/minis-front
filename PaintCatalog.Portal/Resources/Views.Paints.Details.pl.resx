@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Page_Title" xml:space="preserve">
+    <value>Szczegóły farby - Paint Catalog Portal</value>
+  </data>
+  <data name="Page_Description" xml:space="preserve">
+    <value>Podgląd pojedynczej farby zwróconej przez minis API.</value>
+  </data>
+  <data name="Details_Breadcrumb" xml:space="preserve">
+    <value>Profil farby</value>
+  </data>
+  <data name="Details_Title" xml:space="preserve">
+    <value>Szczegóły farby</value>
+  </data>
+  <data name="Details_Subtitle" xml:space="preserve">
+    <value>Widok po slugach pokazujący informacje o farbie, marce i serii.</value>
+  </data>
+  <data name="Details_Back" xml:space="preserve">
+    <value>Wróć do wyszukiwarki</value>
+  </data>
+  <data name="Details_Debug" xml:space="preserve">
+    <value>Surowy payload API</value>
+  </data>
+  <data name="Details_Error_Title" xml:space="preserve">
+    <value>Farba niedostępna</value>
+  </data>
+  <data name="Details_Error_Description" xml:space="preserve">
+    <value>Nie udało się wczytać tej farby z katalogu. Spróbuj ponownie później.</value>
+  </data>
+  <data name="Card_Label_Type" xml:space="preserve">
+    <value>Rodzaj</value>
+  </data>
+  <data name="Card_Label_Finish" xml:space="preserve">
+    <value>Wykończenie</value>
+  </data>
+  <data name="Card_Label_Medium" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="Card_Label_Sku" xml:space="preserve">
+    <value>SKU</value>
+  </data>
+</root>

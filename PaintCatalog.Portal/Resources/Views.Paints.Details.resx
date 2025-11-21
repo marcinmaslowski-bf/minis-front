@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Page_Title" xml:space="preserve">
+    <value>Paint details - Paint Catalog Portal</value>
+  </data>
+  <data name="Page_Description" xml:space="preserve">
+    <value>Explore a single paint entry from the minis API.</value>
+  </data>
+  <data name="Details_Breadcrumb" xml:space="preserve">
+    <value>Paint profile</value>
+  </data>
+  <data name="Details_Title" xml:space="preserve">
+    <value>Paint details</value>
+  </data>
+  <data name="Details_Subtitle" xml:space="preserve">
+    <value>Slug-based view that shows the paint, brand, and series info.</value>
+  </data>
+  <data name="Details_Back" xml:space="preserve">
+    <value>Back to search</value>
+  </data>
+  <data name="Details_Debug" xml:space="preserve">
+    <value>Raw API payload</value>
+  </data>
+  <data name="Details_Error_Title" xml:space="preserve">
+    <value>Paint unavailable</value>
+  </data>
+  <data name="Details_Error_Description" xml:space="preserve">
+    <value>We could not load this paint from the catalog. Please try again later.</value>
+  </data>
+  <data name="Card_Label_Type" xml:space="preserve">
+    <value>Type</value>
+  </data>
+  <data name="Card_Label_Finish" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="Card_Label_Medium" xml:space="preserve">
+    <value>Medium</value>
+  </data>
+  <data name="Card_Label_Sku" xml:space="preserve">
+    <value>SKU</value>
+  </data>
+</root>
