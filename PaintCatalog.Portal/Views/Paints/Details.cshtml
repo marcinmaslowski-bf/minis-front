@@ -83,6 +83,7 @@
 </section>
 
 @section Scripts {
+    <script src="~/js/paint-swatch.js"></script>
     <script>
         (function() {
             const bootstrap = @Html.Raw(bootstrapJson);
@@ -94,6 +95,18 @@
                 seriesSlug: bootstrap.seriesSlug,
                 paintSlug: bootstrap.paintSlug,
             };
+
+            const swatchUtils = window.paintSwatchUtils || {};
+            const normalizeHex = swatchUtils.normalizeHex || (value => {
+                if (!value) return null;
+                const hex = String(value).trim();
+                if (!hex) return null;
+                return hex.startsWith('#') ? hex : `#${hex}`;
+            });
+            const buildPaintSwatch = swatchUtils.buildPaintSwatch || ((paint, fallbackHex, options = {}) => {
+                const hex = normalizeHex(options.defaultHex) || normalizeHex(fallbackHex) || '#0f172a';
+                return { background: hex, label: hex };
+            });
 
             function parsePaint() {
                 if (!rawJson) return null;
@@ -149,6 +162,7 @@
                 const mediumName = paint?.mediumName || paint?.medium?.name || paint?.medium || '—';
                 const sku = paint?.sku || paint?.code || '—';
                 const colorHex = paint?.hex || paint?.colorHex || paint?.hexCode || paint?.swatchHex || '#0f172a';
+                const swatch = buildPaintSwatch(paint, colorHex, { defaultHex: '#0f172a' });
                 const tags = Array.isArray(paint?.tags) ? paint.tags : [];
 
                 if (elements.brand) {
@@ -188,11 +202,11 @@
                 }
 
                 if (elements.swatch) {
-                    elements.swatch.style.background = `linear-gradient(135deg, ${colorHex}, #0f172a)`;
+                    elements.swatch.style.background = swatch.background || colorHex;
                 }
 
                 if (elements.hex) {
-                    elements.hex.textContent = colorHex;
+                    elements.hex.textContent = swatch.label || colorHex;
                 }
 
                 if (elements.json) {

@@ -277,6 +277,7 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/paint-swatch.js"></script>
     <script>
         window.__PAINTS_DATA = {
             config: @Html.Raw(bootstrapJson),
@@ -295,6 +296,17 @@
             const hasInitialQueryParams = Array.from(initialQueryParams.keys()).length > 0;
             const DEFAULT_PAGE = 1;
             const DEFAULT_PAGE_SIZE = 24;
+            const swatchUtils = window.paintSwatchUtils || {};
+            const normalizeHex = swatchUtils.normalizeHex || (value => {
+                if (!value) return null;
+                const hex = String(value).trim();
+                if (!hex) return null;
+                return hex.startsWith('#') ? hex : `#${hex}`;
+            });
+            const buildPaintSwatch = swatchUtils.buildPaintSwatch || ((paint, fallbackHex, options = {}) => {
+                const hex = normalizeHex(options.defaultHex) || normalizeHex(fallbackHex) || '#475569';
+                return { background: hex, label: hex };
+            });
 
             const state = {
                 filters: {
@@ -1084,7 +1096,9 @@
                 const safeType = escapeHtml(typeName);
                 const safeMedium = escapeHtml(mediumName);
                 const safeSku = escapeHtml(sku);
-                const safeHex = escapeHtml(colorHex);
+                const swatch = buildPaintSwatch(paint, colorHex, { defaultHex: '#475569' });
+                const safeSwatchBackground = escapeHtml(swatch.background);
+                const safeHex = escapeHtml(swatch.label || colorHex);
                 const detailsUrl = generateDetailsUrl(brandSlug, seriesSlug, paintSlug);
 
                 const tagsMarkup = tags
@@ -1101,7 +1115,7 @@
                                 <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${safeName}</h3>
                                 ${safeSeries ? `<p class="text-xs text-slate-500">${labels.series || 'Series'}: ${safeSeries}</p>` : ''}
                             </div>
-                            <div class="h-12 w-12 rounded-full border border-slate-200" style="background: linear-gradient(135deg, ${safeHex}, #0f172a);"></div>
+                            <div class="h-12 w-12 rounded-full border border-slate-200" style="background: ${safeSwatchBackground};"></div>
                         </div>
                         ${safeDescription ? `<p class="mt-3 text-sm text-slate-500 dark:text-slate-300">${safeDescription}</p>` : ''}
                         <dl class="mt-4 grid grid-cols-2 gap-3 text-xs text-slate-500">
