@@ -51,4 +51,28 @@
   <data name="Card_Label_Sku" xml:space="preserve">
     <value>SKU</value>
   </data>
+  <data name="Card_Label_Discontinued" xml:space="preserve">
+    <value>Wycofana ze sprzedaży</value>
+  </data>
+  <data name="Card_Value_Discontinued_Yes" xml:space="preserve">
+    <value>Tak</value>
+  </data>
+  <data name="Card_Value_Discontinued_No" xml:space="preserve">
+    <value>Nie</value>
+  </data>
+  <data name="Card_Value_Discontinued_Unknown" xml:space="preserve">
+    <value>Brak danych</value>
+  </data>
+  <data name="Card_Label_BrandWebsite" xml:space="preserve">
+    <value>Strona internetowa marki</value>
+  </data>
+  <data name="Card_Value_BrandWebsite_Unavailable" xml:space="preserve">
+    <value>Brak strony marki</value>
+  </data>
+  <data name="Card_Label_Identifiers" xml:space="preserve">
+    <value>Identyfikatory</value>
+  </data>
+  <data name="Card_Value_Identifiers_None" xml:space="preserve">
+    <value>Brak identyfikatorów</value>
+  </data>
 </root>
