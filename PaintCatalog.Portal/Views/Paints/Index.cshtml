@@ -12,13 +12,9 @@
     var paintsDataEndpoint = Url.Action("Data", "Paints") ?? "/paints/data";
     var brandsEndpoint = Url.Action("Brands", "Paints") ?? "/paints/brands";
     var brandSeriesEndpoint = Url.Action("Series", "Paints") ?? "/paints/series";
-    var paintDetailsTemplate = Url.Action("Details", "Paints", new
-    {
-        brandSlug = "__brand__",
-        seriesSlug = "__series__",
-        paintSlug = "__paint__",
-        culture = PaintCatalog.Portal.Helpers.CultureHelpers.GetRouteCultureSegment()
-    }) ?? "/paints/__brand__/__series__/__paint__";
+    var paintDetailsTemplate = PaintCatalog.Portal.Helpers.CultureHelpers.GetRouteCultureSegment() is string cultureSegment
+        ? Url.RouteUrl("PaintDetailsLocalized", new { culture = cultureSegment, brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/pl/paints/__brand__/__series__/__paint__"
+        : Url.RouteUrl("PaintDetails", new { brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/paints/__brand__/__series__/__paint__";
 
     var initialPaintsJson = string.IsNullOrWhiteSpace(Model.InitialPaintsJson)
         ? "null"

@@ -129,8 +129,8 @@ namespace PaintCatalog.Portal.Controllers
             }
         }
 
-        [HttpGet("paints/{brandSlug}/{seriesSlug}/{paintSlug}")]
-        [HttpGet("{culture:regex(^pl$)}/paints/{brandSlug}/{seriesSlug}/{paintSlug}")]
+        [HttpGet("paints/{brandSlug}/{seriesSlug}/{paintSlug}", Name = "PaintDetails")]
+        [HttpGet("{culture:regex(^pl$)}/paints/{brandSlug}/{seriesSlug}/{paintSlug}", Name = "PaintDetailsLocalized")]
         public async Task<IActionResult> Details(string brandSlug, string seriesSlug, string paintSlug)
         {
             try
