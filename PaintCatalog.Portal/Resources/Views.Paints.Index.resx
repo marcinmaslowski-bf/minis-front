@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
@@ -85,34 +85,34 @@
     <value>All types</value>
   </data>
   <data name="Filters_Type_1" xml:space="preserve">
-    <value>Type 1</value>
+    <value>Base</value>
   </data>
   <data name="Filters_Type_2" xml:space="preserve">
-    <value>Type 2</value>
+    <value>Layer</value>
   </data>
   <data name="Filters_Type_3" xml:space="preserve">
-    <value>Type 3</value>
+    <value>Contrast</value>
   </data>
   <data name="Filters_Type_4" xml:space="preserve">
-    <value>Type 4</value>
+    <value>Shade</value>
   </data>
   <data name="Filters_Type_5" xml:space="preserve">
-    <value>Type 5</value>
+    <value>Dry</value>
   </data>
   <data name="Filters_Type_6" xml:space="preserve">
-    <value>Type 6</value>
+    <value>Technical</value>
   </data>
   <data name="Filters_Type_7" xml:space="preserve">
-    <value>Type 7</value>
+    <value>Air</value>
   </data>
   <data name="Filters_Type_8" xml:space="preserve">
-    <value>Type 8</value>
+    <value>Primer</value>
   </data>
   <data name="Filters_Type_9" xml:space="preserve">
-    <value>Type 9</value>
+    <value>Varnish</value>
   </data>
   <data name="Filters_Type_10" xml:space="preserve">
-    <value>Type 10</value>
+    <value>Medium</value>
   </data>
   <data name="Filters_Finish_Label" xml:space="preserve">
     <value>Finish</value>
@@ -121,22 +121,22 @@
     <value>All finishes</value>
   </data>
   <data name="Filters_Finish_1" xml:space="preserve">
-    <value>Finish 1</value>
+    <value>Matte</value>
   </data>
   <data name="Filters_Finish_2" xml:space="preserve">
-    <value>Finish 2</value>
+    <value>Satin</value>
   </data>
   <data name="Filters_Finish_3" xml:space="preserve">
-    <value>Finish 3</value>
+    <value>Gloss</value>
   </data>
   <data name="Filters_Finish_4" xml:space="preserve">
-    <value>Finish 4</value>
+    <value>Metallic</value>
   </data>
   <data name="Filters_Finish_5" xml:space="preserve">
-    <value>Finish 5</value>
+    <value>Fluorescent</value>
   </data>
   <data name="Filters_Finish_6" xml:space="preserve">
-    <value>Finish 6</value>
+    <value>Transparent</value>
   </data>
   <data name="Filters_Medium_Label" xml:space="preserve">
     <value>Medium</value>
@@ -145,22 +145,22 @@
     <value>All mediums</value>
   </data>
   <data name="Filters_Medium_1" xml:space="preserve">
-    <value>Medium 1</value>
+    <value>Acrylic</value>
   </data>
   <data name="Filters_Medium_2" xml:space="preserve">
-    <value>Medium 2</value>
+    <value>Enamel</value>
   </data>
   <data name="Filters_Medium_3" xml:space="preserve">
-    <value>Medium 3</value>
+    <value>Oil</value>
   </data>
   <data name="Filters_Medium_4" xml:space="preserve">
-    <value>Medium 4</value>
+    <value>Lacquer</value>
   </data>
   <data name="Filters_Medium_5" xml:space="preserve">
-    <value>Medium 5</value>
+    <value>Alcohol-based</value>
   </data>
   <data name="Filters_Medium_99" xml:space="preserve">
-    <value>Other mediums</value>
+    <value>Unknown medium</value>
   </data>
   <data name="Filters_Clear" xml:space="preserve">
     <value>Reset filters</value>

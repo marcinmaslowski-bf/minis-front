@@ -307,6 +307,19 @@
                 const hex = normalizeHex(options.defaultHex) || normalizeHex(fallbackHex) || '#475569';
                 return { background: hex, label: hex };
             });
+            const resolveEnumLabel = (dictionary, rawValue, fallback) => {
+                if (!dictionary) return fallback;
+
+                let value = rawValue;
+                if (value && typeof value === 'object') {
+                    value = value.id ?? value.value ?? value.type ?? value.finish ?? value.medium;
+                }
+
+                if (value === null || value === undefined) return fallback;
+
+                const key = String(value);
+                return dictionary[key] || fallback;
+            };
 
             const state = {
                 filters: {
@@ -1082,9 +1095,12 @@
                 const seriesName = (paint?.series?.name) || paint?.seriesName || '';
                 const seriesSlug = (paint?.series?.slug) || paint?.seriesSlug || paint?.series?.urlSlug || '';
                 const paintSlug = paint?.slug || paint?.paintSlug || '';
-                const finishName = paint?.finishName || paint?.finish?.name || paint?.finish || '';
-                const typeName = paint?.typeName || paint?.type?.name || paint?.type || '';
-                const mediumName = paint?.mediumName || paint?.medium?.name || paint?.medium || '';
+                const finishRaw = paint?.finishId ?? paint?.finish?.id ?? paint?.finish;
+                const typeRaw = paint?.typeId ?? paint?.type?.id ?? paint?.type;
+                const mediumRaw = paint?.mediumId ?? paint?.medium?.id ?? paint?.medium;
+                const finishName = resolveEnumLabel(filterDictionaries.finish, finishRaw, paint?.finishName || paint?.finish?.name || paint?.finish || '');
+                const typeName = resolveEnumLabel(filterDictionaries.type, typeRaw, paint?.typeName || paint?.type?.name || paint?.type || '');
+                const mediumName = resolveEnumLabel(filterDictionaries.medium, mediumRaw, paint?.mediumName || paint?.medium?.name || paint?.medium || '');
                 const sku = paint?.sku || paint?.code || '';
                 const colorHex = (paint?.hex) || paint?.colorHex || paint?.hexCode || paint?.swatchHex || '#475569';
                 const tags = Array.isArray(paint?.tags) ? paint.tags : [];
