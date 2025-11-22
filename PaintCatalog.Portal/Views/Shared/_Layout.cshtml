@@ -4,9 +4,14 @@
 @using PaintCatalog.Portal.Helpers
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer LayoutLocalizer
 
-@{
+@{ 
     var uiLang = CultureHelpers.GetCurrentLangTwoLetter();
     var isPl = CultureHelpers.IsPl();
+
+    var isAuthenticated = Context.User?.Identity?.IsAuthenticated ?? false;
+    var displayName = Context.User?.Claims?.FirstOrDefault(c => c.Type == "name")?.Value
+        ?? Context.User?.Identity?.Name
+        ?? LayoutLocalizer["Auth_UnknownUser"].Value;
 
     var path = Context.Request.Path.HasValue ? Context.Request.Path.Value : "/";
 
@@ -52,6 +57,7 @@
 
     var navHomeUrl = Url.LocalizedAction("Index", "Home");
     var navPaintsUrl = Url.LocalizedAction("Index", "paints");
+    var returnUrl = path + Context.Request.QueryString;
 
     var pageTitle = ViewData["Title"]?.ToString();
     var metaDescription = ViewData["MetaDescription"]?.ToString();
@@ -197,6 +203,27 @@
                                 PL
                             </a>
                         </div>
+
+                        @if (isAuthenticated)
+                        {
+                            <div class="flex items-center gap-2">
+                                <span class="hidden text-slate-600 dark:text-slate-200 sm:inline">@LayoutLocalizer["Auth_SignedInAs", displayName]</span>
+                                <form method="post" action="@Url.Action("Logout", "Account")" class="m-0">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit"
+                                            class="rounded-full border border-emerald-500 px-3 py-1 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-500 hover:text-slate-950 dark:border-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-400 dark:hover:text-slate-900">
+                                        @LayoutLocalizer["Auth_Logout"]
+                                    </button>
+                                </form>
+                            </div>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Login", "Account", new { returnUrl })"
+                               class="rounded-full border border-emerald-500 px-3 py-1 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-500 hover:text-slate-950 dark:border-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-400 dark:hover:text-slate-900">
+                                @LayoutLocalizer["Auth_Login"]
+                            </a>
+                        }
 
                         <button type="button" class="md:hidden" onclick="toggleMobileMenu()" aria-label="Toggle navigation">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-800 dark:text-slate-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
