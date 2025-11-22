@@ -39,6 +39,15 @@
   <data name="Details_Error_Description" xml:space="preserve">
     <value>We could not load this paint from the catalog. Please try again later.</value>
   </data>
+  <data name="Details_Error_Unauthorized" xml:space="preserve">
+    <value>You need to sign in to view this paint.</value>
+  </data>
+  <data name="Details_Error_ApiUnavailable" xml:space="preserve">
+    <value>The paint catalog API is unavailable right now. Please try again in a moment.</value>
+  </data>
+  <data name="Details_Error_Unexpected" xml:space="preserve">
+    <value>Something went wrong while loading this paint. Please try again later.</value>
+  </data>
   <data name="Card_Label_Type" xml:space="preserve">
     <value>Type</value>
   </data>

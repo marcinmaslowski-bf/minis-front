@@ -48,6 +48,18 @@
 
     var bootstrapJson = JsonSerializer.Serialize(bootstrap, jsonOptions);
     var backToSearchUrl = Url.LocalizedAction("Index", "Paints");
+
+    var errorMessage = Model.ErrorMessage;
+    if (string.IsNullOrWhiteSpace(errorMessage))
+    {
+        errorMessage = Model.ErrorCode switch
+        {
+            "unauthorized" => Localizer["Details_Error_Unauthorized"].Value,
+            "api_unavailable" => Localizer["Details_Error_ApiUnavailable"].Value,
+            "unexpected" => Localizer["Details_Error_Unexpected"].Value,
+            _ => Localizer["Details_Error_Description"].Value
+        };
+    }
 }
 
 <section class="space-y-8">
@@ -110,7 +122,7 @@
 
     <div id="paint-error" class="hidden rounded-xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
         <p class="font-semibold">@Localizer["Details_Error_Title"]</p>
-        <p class="text-sm">@Localizer["Details_Error_Description"]</p>
+        <p class="text-sm">@errorMessage</p>
     </div>
 </section>
 
