@@ -3,29 +3,24 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Http;
 
 namespace PaintCatalog.Portal.Helpers
 {
     public class BearerTokenHandler : DelegatingHandler
     {
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IAccessTokenProvider _accessTokenProvider;
 
-        public BearerTokenHandler(IHttpContextAccessor httpContextAccessor)
+        public BearerTokenHandler(IAccessTokenProvider accessTokenProvider)
         {
-            _httpContextAccessor = httpContextAccessor;
+            _accessTokenProvider = accessTokenProvider;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request,
             CancellationToken cancellationToken)
         {
-            var httpContext = _httpContextAccessor.HttpContext;
-
-            var accessToken = GetAccessTokenFromRequest(httpContext) ?? await GetAccessTokenAsync(httpContext);
+            var accessToken = await _accessTokenProvider.GetAccessTokenAsync();
 
             if (!string.IsNullOrEmpty(accessToken))
             {
@@ -33,50 +28,6 @@ namespace PaintCatalog.Portal.Helpers
             }
 
             return await base.SendAsync(request, cancellationToken);
-        }
-
-        private static async Task<string?> GetAccessTokenAsync(HttpContext? httpContext)
-        {
-            if (httpContext?.User?.Identity?.IsAuthenticated != true)
-            {
-                return null;
-            }
-
-            var accessToken = await httpContext.GetTokenAsync("access_token");
-            if (!string.IsNullOrEmpty(accessToken))
-            {
-                return accessToken;
-            }
-
-            accessToken = await httpContext.GetTokenAsync(CookieAuthenticationDefaults.AuthenticationScheme, "access_token");
-            if (!string.IsNullOrEmpty(accessToken))
-            {
-                return accessToken;
-            }
-
-            return await httpContext.GetTokenAsync(OpenIdConnectDefaults.AuthenticationScheme, "access_token");
-        }
-
-        private static string? GetAccessTokenFromRequest(HttpContext? httpContext)
-        {
-            if (httpContext == null)
-            {
-                return null;
-            }
-
-            if (!httpContext.Request.Headers.TryGetValue("Authorization", out var authorizationHeader))
-            {
-                return null;
-            }
-
-            if (!AuthenticationHeaderValue.TryParse(authorizationHeader, out var headerValue))
-            {
-                return null;
-            }
-
-            return string.Equals(headerValue.Scheme, "Bearer", StringComparison.OrdinalIgnoreCase)
-                ? headerValue.Parameter
-                : null;
         }
     }
 }

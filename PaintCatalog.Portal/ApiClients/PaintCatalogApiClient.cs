@@ -1,17 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using PaintCatalog.Portal.Helpers;
 
 namespace PaintCatalog.Portal.ApiClients
 {
     public class PaintCatalogApiClient : IPaintCatalogApiClient
     {
         private readonly HttpClient _httpClient;
+        private readonly IAccessTokenProvider _accessTokenProvider;
 
-        public PaintCatalogApiClient(HttpClient httpClient)
+        public PaintCatalogApiClient(HttpClient httpClient, IAccessTokenProvider accessTokenProvider)
         {
             _httpClient = httpClient;
+            _accessTokenProvider = accessTokenProvider;
         }
 
         public async Task<string> GetPaintsRawAsync(
@@ -55,7 +59,7 @@ namespace PaintCatalog.Portal.ApiClients
                 url += "?" + string.Join("&", queryParts);
             }
 
-            using var response = await _httpClient.GetAsync(url);
+            using var response = await SendGetAsync(url);
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsStringAsync();
@@ -65,7 +69,7 @@ namespace PaintCatalog.Portal.ApiClients
         {
             const string url = "/api/v1/brands";
 
-            using var response = await _httpClient.GetAsync(url);
+            using var response = await SendGetAsync(url);
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsStringAsync();
@@ -80,7 +84,7 @@ namespace PaintCatalog.Portal.ApiClients
 
             var url = $"/api/v1/brands/{Uri.EscapeDataString(brandSlug)}/series";
 
-            using var response = await _httpClient.GetAsync(url);
+            using var response = await SendGetAsync(url);
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsStringAsync();
@@ -105,10 +109,23 @@ namespace PaintCatalog.Portal.ApiClients
 
             var url = $"/api/v1/paints/{Uri.EscapeDataString(brandSlug)}/{Uri.EscapeDataString(seriesSlug)}/{Uri.EscapeDataString(paintSlug)}";
 
-            using var response = await _httpClient.GetAsync(url);
+            using var response = await SendGetAsync(url);
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsStringAsync();
+        }
+
+        private async Task<HttpResponseMessage> SendGetAsync(string url)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+
+            var accessToken = await _accessTokenProvider.GetAccessTokenAsync();
+            if (!string.IsNullOrWhiteSpace(accessToken))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+            }
+
+            return await _httpClient.SendAsync(request);
         }
     }
 }
