@@ -39,6 +39,15 @@
   <data name="Details_Error_Description" xml:space="preserve">
     <value>Nie udało się wczytać tej farby z katalogu. Spróbuj ponownie później.</value>
   </data>
+  <data name="Details_Error_Unauthorized" xml:space="preserve">
+    <value>Musisz się zalogować, aby zobaczyć tę farbę.</value>
+  </data>
+  <data name="Details_Error_ApiUnavailable" xml:space="preserve">
+    <value>API katalogu farb jest obecnie niedostępne. Spróbuj ponownie za chwilę.</value>
+  </data>
+  <data name="Details_Error_Unexpected" xml:space="preserve">
+    <value>Coś poszło nie tak podczas wczytywania farby. Spróbuj ponownie później.</value>
+  </data>
   <data name="Card_Label_Type" xml:space="preserve">
     <value>Rodzaj</value>
   </data>
