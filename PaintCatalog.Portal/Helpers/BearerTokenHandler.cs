@@ -1,3 +1,4 @@
+using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -24,7 +25,7 @@ namespace PaintCatalog.Portal.Helpers
         {
             var httpContext = _httpContextAccessor.HttpContext;
 
-            var accessToken = await GetAccessTokenAsync(httpContext);
+            var accessToken = GetAccessTokenFromRequest(httpContext) ?? await GetAccessTokenAsync(httpContext);
 
             if (!string.IsNullOrEmpty(accessToken))
             {
@@ -54,6 +55,28 @@ namespace PaintCatalog.Portal.Helpers
             }
 
             return await httpContext.GetTokenAsync(OpenIdConnectDefaults.AuthenticationScheme, "access_token");
+        }
+
+        private static string? GetAccessTokenFromRequest(HttpContext? httpContext)
+        {
+            if (httpContext == null)
+            {
+                return null;
+            }
+
+            if (!httpContext.Request.Headers.TryGetValue("Authorization", out var authorizationHeader))
+            {
+                return null;
+            }
+
+            if (!AuthenticationHeaderValue.TryParse(authorizationHeader, out var headerValue))
+            {
+                return null;
+            }
+
+            return string.Equals(headerValue.Scheme, "Bearer", StringComparison.OrdinalIgnoreCase)
+                ? headerValue.Parameter
+                : null;
         }
     }
 }
