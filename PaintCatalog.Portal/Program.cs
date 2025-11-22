@@ -1,9 +1,12 @@
 using System.Globalization;
 using System.Linq;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using PaintCatalog.Portal.ApiClients;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -32,6 +35,52 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
             UIRouteDataStringKey = "culture"
         }
     };
+});
+
+// Authentication & Authorization
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+    })
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.LoginPath = "/login";
+        options.LogoutPath = "/logout";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+        options.SlidingExpiration = true;
+    })
+    .AddOpenIdConnect(options =>
+    {
+        options.Authority = "http://54.38.52.93:30150/realms/Local";
+        options.ClientId = "tournapal-front";
+        options.ClientSecret = "W1W1aU4P6Xk7betzV52eGFVHSaHxK2Fq";
+        options.ResponseType = "code";
+        options.SaveTokens = true;
+        options.Scope.Add("openid");
+        options.Scope.Add("profile");
+        options.Scope.Add("email");
+        options.GetClaimsFromUserInfoEndpoint = true;
+        options.UseTokenLifetime = true;
+        options.RequireHttpsMetadata = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(10)
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
 });
 
 // HttpClient for PaintCatalog.Api
@@ -89,6 +138,9 @@ app.UseRouting();
 var locOptions = app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>();
 app.UseRequestLocalization(locOptions.Value);
 
+app.UseSession();
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 // Routing: allow default routes without culture segment and an optional "pl" prefix

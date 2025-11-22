@@ -33,4 +33,16 @@
   <data name="Footer_Contact" xml:space="preserve">
     <value>Kontakt</value>
   </data>
+  <data name="Auth_Login" xml:space="preserve">
+    <value>Zaloguj</value>
+  </data>
+  <data name="Auth_Logout" xml:space="preserve">
+    <value>Wyloguj</value>
+  </data>
+  <data name="Auth_SignedInAs" xml:space="preserve">
+    <value>Zalogowany jako {0}</value>
+  </data>
+  <data name="Auth_UnknownUser" xml:space="preserve">
+    <value>Użytkownik</value>
+  </data>
 </root>
