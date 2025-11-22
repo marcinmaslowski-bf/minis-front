@@ -85,6 +85,7 @@ builder.Services.AddSession(options =>
 });
 
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IAccessTokenProvider, AccessTokenProvider>();
 builder.Services.AddTransient<BearerTokenHandler>();
 
 // HttpClient for PaintCatalog.Api
