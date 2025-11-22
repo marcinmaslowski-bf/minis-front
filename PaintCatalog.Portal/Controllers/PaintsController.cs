@@ -10,7 +10,6 @@ using PaintCatalog.Portal.Models;
 
 namespace PaintCatalog.Portal.Controllers
 {
-    [Authorize]
     public class PaintsController : Controller
     {
         private readonly IPaintCatalogApiClient _apiClient;
