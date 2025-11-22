@@ -21,8 +21,17 @@
   <data name="Message_401" xml:space="preserve">
     <value>Twoja sesja wygasła lub nie masz uprawnień, aby wyświetlić tę stronę.</value>
   </data>
+  <data name="Message_403" xml:space="preserve">
+    <value>Nie masz uprawnień do dostępu do tego zasobu.</value>
+  </data>
   <data name="Message_404" xml:space="preserve">
     <value>Strona, której szukasz, nie została znaleziona.</value>
+  </data>
+  <data name="Message_500" xml:space="preserve">
+    <value>Wystąpił nieoczekiwany błąd serwera. Spróbuj ponownie później.</value>
+  </data>
+  <data name="Message_503" xml:space="preserve">
+    <value>Usługa jest tymczasowo niedostępna. Spróbuj ponownie za chwilę.</value>
   </data>
   <data name="Message_Default" xml:space="preserve">
     <value>Coś poszło nie tak. Spróbuj ponownie później.</value>
@@ -33,8 +42,17 @@
   <data name="Title_401" xml:space="preserve">
     <value>Brak autoryzacji</value>
   </data>
+  <data name="Title_403" xml:space="preserve">
+    <value>Brak dostępu</value>
+  </data>
   <data name="Title_404" xml:space="preserve">
     <value>Nie znaleziono</value>
+  </data>
+  <data name="Title_500" xml:space="preserve">
+    <value>Błąd serwera</value>
+  </data>
+  <data name="Title_503" xml:space="preserve">
+    <value>Usługa niedostępna</value>
   </data>
   <data name="Title_Default" xml:space="preserve">
     <value>Nieoczekiwany błąd</value>

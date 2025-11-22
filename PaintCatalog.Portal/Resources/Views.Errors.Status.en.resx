@@ -21,8 +21,17 @@
   <data name="Message_401" xml:space="preserve">
     <value>Your session expired or you lack permission to view this page.</value>
   </data>
+  <data name="Message_403" xml:space="preserve">
+    <value>You do not have permission to access this resource.</value>
+  </data>
   <data name="Message_404" xml:space="preserve">
     <value>The page you are looking for could not be found.</value>
+  </data>
+  <data name="Message_500" xml:space="preserve">
+    <value>An unexpected server error occurred. Please try again later.</value>
+  </data>
+  <data name="Message_503" xml:space="preserve">
+    <value>The service is temporarily unavailable. Please try again shortly.</value>
   </data>
   <data name="Message_Default" xml:space="preserve">
     <value>Something went wrong. Please try again later.</value>
@@ -33,8 +42,17 @@
   <data name="Title_401" xml:space="preserve">
     <value>Unauthorized</value>
   </data>
+  <data name="Title_403" xml:space="preserve">
+    <value>Forbidden</value>
+  </data>
   <data name="Title_404" xml:space="preserve">
     <value>Not found</value>
+  </data>
+  <data name="Title_500" xml:space="preserve">
+    <value>Server error</value>
+  </data>
+  <data name="Title_503" xml:space="preserve">
+    <value>Service unavailable</value>
   </data>
   <data name="Title_Default" xml:space="preserve">
     <value>Unexpected error</value>

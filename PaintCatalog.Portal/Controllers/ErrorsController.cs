@@ -11,11 +11,12 @@ namespace PaintCatalog.Portal.Controllers
         public IActionResult Status(int statusCode)
         {
             var reExecute = HttpContext.Features.Get<IStatusCodeReExecuteFeature>();
+            var exceptionFeature = HttpContext.Features.Get<IExceptionHandlerPathFeature>();
 
             var model = new ErrorStatusViewModel
             {
                 StatusCode = statusCode,
-                OriginalPath = reExecute?.OriginalPath
+                OriginalPath = reExecute?.OriginalPath ?? exceptionFeature?.Path
             };
 
             Response.StatusCode = statusCode;
