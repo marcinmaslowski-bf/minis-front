@@ -130,7 +130,7 @@ app.Use(async (context, next) =>
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/errors/500");
     app.UseHsts();
 }
 
@@ -147,6 +147,8 @@ app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseStatusCodePagesWithReExecute("/errors/{0}", "?path={1}");
 
 // Routing: allow default routes without culture segment and an optional "pl" prefix
 app.MapControllerRoute(

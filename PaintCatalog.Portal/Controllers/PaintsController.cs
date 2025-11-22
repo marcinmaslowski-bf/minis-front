@@ -153,41 +153,15 @@ namespace PaintCatalog.Portal.Controllers
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
             {
-                Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-
-                return View(new PaintDetailsViewModel
-                {
-                    BrandSlug = brandSlug,
-                    SeriesSlug = seriesSlug,
-                    PaintSlug = paintSlug,
-                    ErrorCode = "unauthorized"
-                });
+                return StatusCode((int)HttpStatusCode.Unauthorized);
             }
             catch (HttpRequestException ex)
             {
-                Response.StatusCode = (int)HttpStatusCode.ServiceUnavailable;
-
-                return View(new PaintDetailsViewModel
-                {
-                    BrandSlug = brandSlug,
-                    SeriesSlug = seriesSlug,
-                    PaintSlug = paintSlug,
-                    ErrorCode = "api_unavailable",
-                    ErrorMessage = ex.Message
-                });
+                return StatusCode((int)HttpStatusCode.ServiceUnavailable, new { error = "Paint catalog API unavailable", detail = ex.Message });
             }
             catch (Exception ex)
             {
-                Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
-                return View(new PaintDetailsViewModel
-                {
-                    BrandSlug = brandSlug,
-                    SeriesSlug = seriesSlug,
-                    PaintSlug = paintSlug,
-                    ErrorCode = "unexpected",
-                    ErrorMessage = ex.Message
-                });
+                return StatusCode((int)HttpStatusCode.InternalServerError, new { error = "Unexpected server error", detail = ex.Message });
             }
         }
     }

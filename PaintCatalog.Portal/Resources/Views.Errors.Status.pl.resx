@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="BrowsePaints" xml:space="preserve">
+    <value>Przeglądaj farby</value>
+  </data>
+  <data name="GoHome" xml:space="preserve">
+    <value>Przejdź na stronę główną</value>
+  </data>
+  <data name="Message_401" xml:space="preserve">
+    <value>Twoja sesja wygasła lub nie masz uprawnień, aby wyświetlić tę stronę.</value>
+  </data>
+  <data name="Message_404" xml:space="preserve">
+    <value>Strona, której szukasz, nie została znaleziona.</value>
+  </data>
+  <data name="Message_Default" xml:space="preserve">
+    <value>Coś poszło nie tak. Spróbuj ponownie później.</value>
+  </data>
+  <data name="RequestedPathLabel" xml:space="preserve">
+    <value>Żądana ścieżka:</value>
+  </data>
+  <data name="Title_401" xml:space="preserve">
+    <value>Brak autoryzacji</value>
+  </data>
+  <data name="Title_404" xml:space="preserve">
+    <value>Nie znaleziono</value>
+  </data>
+  <data name="Title_Default" xml:space="preserve">
+    <value>Nieoczekiwany błąd</value>
+  </data>
+</root>
