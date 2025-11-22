@@ -53,9 +53,8 @@
 <section class="space-y-8">
     <div class="flex items-center justify-between gap-4">
         <div>
-            <p class="text-xs uppercase tracking-wide text-emerald-400">@Localizer["Details_Breadcrumb"]</p>
-            <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white">@Localizer["Details_Title"]</h1>
-            <p class="mt-1 text-sm text-slate-500 dark:text-slate-300">@Localizer["Details_Subtitle"]</p>
+            <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white" id="paint-name"></h1>
+            <p class="mt-1 text-sm text-slate-500 dark:text-slate-300"><span id="paint-brand"></span>: <span id="paint-series"></span></p>
         </div>
         <a href="@backToSearchUrl" class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">
             <span aria-hidden="true">←</span>
@@ -65,10 +64,11 @@
 
     <div id="paint-details" class="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
         <div class="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:items-start lg:gap-8">
-            <div class="space-y-3 lg:col-span-2">
-                <p class="text-xs uppercase tracking-wide text-slate-400" id="paint-brand"></p>
-                <h2 class="text-2xl font-bold text-slate-900 dark:text-white" id="paint-name"></h2>
-                <p class="text-sm text-slate-500 dark:text-slate-300" id="paint-series"></p>
+            <div class="lg:order-2 space-y-2 lg:col-span-1 lg:justify-self-end lg:w-full">
+                <div class="h-28 w-full rounded-2xl border border-2 border-slate-200 shadow-inner dark:border-slate-800 sm:h-32 sm:w-full lg:h-36 lg:w-full" id="paint-swatch"></div>
+            </div>
+            <div class="lg:order-1 space-y-3 lg:col-span-2">
+                <h2 class="text-2xl font-bold text-slate-900 dark:text-white"></h2>                
                 <p class="text-sm text-slate-500 dark:text-slate-300" id="paint-description"></p>
                 <dl class="grid grid-cols-2 gap-4 text-sm text-slate-600 dark:text-slate-200">
                     <div>
@@ -104,15 +104,7 @@
                 </dl>
                 <div class="flex flex-wrap gap-2" id="paint-tags"></div>
             </div>
-            <div class="space-y-2 lg:col-span-1 lg:justify-self-end">
-                <div class="h-28 w-full rounded-2xl border border-2 border-slate-200 shadow-inner dark:border-slate-800 sm:h-32 sm:w-40 lg:h-36 lg:w-48" id="paint-swatch"></div>
-                <div class="text-center text-sm text-slate-500 dark:text-slate-300" id="paint-hex">#000000</div>
-            </div>
-        </div>
-
-        <div id="paint-debug" class="rounded-xl bg-slate-50 p-4 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-200">
-            <p class="mb-2 font-semibold uppercase tracking-wide text-slate-500">@Localizer["Details_Debug"]</p>
-            <pre class="whitespace-pre-wrap" id="paint-json"></pre>
+            
         </div>
     </div>
 
@@ -391,7 +383,7 @@
                 const identifiers = normalizeIdentifiers(paint?.identifiers || paint?.ids || paint?.codes || paint?.references);
 
                 if (elements.brand) {
-                    const brandLabel = brandSlug ? `${brandName || 'Brand'} (${brandSlug})` : (brandName || 'Brand');
+                    const brandLabel = `${brandName}`;
                     elements.brand.textContent = brandLabel;
                 }
 
@@ -400,7 +392,7 @@
                 }
 
                 if (elements.series) {
-                    const seriesLabel = seriesSlug ? `${seriesName || 'Series'} (${seriesSlug})` : (seriesName || 'Series');
+                    const seriesLabel = `${seriesName}`;
                     elements.series.textContent = seriesLabel;
                 }
 
@@ -419,7 +411,7 @@
                 if (elements.brandWebsite) {
                     if (brandWebsite?.url) {
                         const label = brandWebsite.label || brandWebsite.url;
-                        elements.brandWebsite.innerHTML = `<a href="${escapeHtml(brandWebsite.url)}" target="_blank" rel="noreferrer noopener" class="text-emerald-600 hover:underline dark:text-emerald-400">${escapeHtml(label)}</a>`;
+                        elements.brandWebsite.innerHTML = `<a href="${escapeHtml(brandWebsite.url)}" target="_blank" rel="nofollow noreferrer noopener" class="text-emerald-600 hover:underline dark:text-emerald-400">${escapeHtml(label)}</a>`;
                     } else {
                         elements.brandWebsite.textContent = localized.brandWebsiteUnavailable;
                     }

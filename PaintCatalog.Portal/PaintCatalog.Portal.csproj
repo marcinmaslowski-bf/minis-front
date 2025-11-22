@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.22" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Ensure culture-specific resource files show as dependent items in VS -->
     <EmbeddedResource Update="Resources\Views.Shared._Layout.pl.resx">
       <DependentUpon>Views.Shared._Layout.resx</DependentUpon>
