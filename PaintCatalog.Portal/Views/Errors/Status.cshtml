@@ -3,12 +3,12 @@
 
 @{
     ViewData["Title"] = Localizer[$"Title_{Model.StatusCode}"];
-    var description = Localizer[$"Message_{Model.StatusCode}"];
+    var description = Localizer.GetString($"Message_{Model.StatusCode}");
 
     if (description.ResourceNotFound)
     {
         ViewData["Title"] = Localizer["Title_Default"];
-        description = Localizer["Message_Default"];
+        description = Localizer.GetString("Message_Default");
     }
 }
 
@@ -18,7 +18,7 @@
             <div class="col-lg-8">
                 <div class="display-4 mb-3">@Model.StatusCode</div>
                 <h1 class="mb-3">@ViewData["Title"]</h1>
-                <p class="lead mb-4">@description</p>
+                <p class="lead mb-4">@description.Value</p>
 
                 @if (!string.IsNullOrEmpty(Model.OriginalPath))
                 {
