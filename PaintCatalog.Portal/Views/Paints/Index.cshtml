@@ -1128,9 +1128,9 @@
                                     <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${safeName}</h3>
                                     ${safeSeries ? `<p class="text-xs text-slate-500">${labels.series || 'Series'}: ${safeSeries}</p>` : ''}
                                 </div>
-                                <div class="flex items-start gap-2 text-right text-[11px] text-slate-500 dark:text-slate-300">
+                                <div class="flex flex-col items-end gap-2 text-right text-[11px] text-slate-500 dark:text-slate-300">
                                     <div class="h-12 w-12 rounded-xl border border-2 border-slate-200 dark:border-slate-700" style="background: ${safeSwatchBackground};"></div>
-                                    <div>
+                                    <div class="space-y-0.5">
                                         <p class="font-semibold uppercase tracking-wide text-slate-400">${labels.color || 'Color'}</p>
                                         <p class="font-mono text-xs text-slate-700 dark:text-slate-100">${safeHex}</p>
                                     </div>
