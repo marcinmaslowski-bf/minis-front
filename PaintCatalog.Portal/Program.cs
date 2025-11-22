@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PaintCatalog.Portal.ApiClients;
+using PaintCatalog.Portal.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,6 +84,9 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(30);
 });
 
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddTransient<BearerTokenHandler>();
+
 // HttpClient for PaintCatalog.Api
 builder.Services.AddHttpClient<IPaintCatalogApiClient, PaintCatalogApiClient>((sp, client) =>
 {
@@ -94,7 +98,8 @@ builder.Services.AddHttpClient<IPaintCatalogApiClient, PaintCatalogApiClient>((s
     }
 
     client.BaseAddress = new Uri(baseUrl);
-});
+})
+    .AddHttpMessageHandler<BearerTokenHandler>();
 
 var app = builder.Build();
 
