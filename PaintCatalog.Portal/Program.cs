@@ -148,7 +148,9 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseStatusCodePagesWithReExecute("/errors/{0}", "?path={1}");
+// Re-execute pipeline for status code pages; the original path is available via
+// IStatusCodeReExecuteFeature, so we don't need to inject it into the query string.
+app.UseStatusCodePagesWithReExecute("/errors/{0}");
 
 // Routing: allow default routes without culture segment and an optional "pl" prefix
 app.MapControllerRoute(
