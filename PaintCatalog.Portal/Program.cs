@@ -54,8 +54,8 @@ builder.Services
     .AddOpenIdConnect(options =>
     {
         options.Authority = "http://54.38.52.93:30150/realms/Local";
-        options.ClientId = "tournapal-front";
-        options.ClientSecret = "W1W1aU4P6Xk7betzV52eGFVHSaHxK2Fq";
+        options.ClientId = "hobbium-front";
+        options.ClientSecret = "T2allV4ojAWVvtFqiujGccuuA76hjKDF";
         options.ResponseType = "code";
         options.SaveTokens = true;
         options.Scope.Add("openid");
