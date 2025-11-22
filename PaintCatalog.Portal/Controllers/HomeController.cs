@@ -1,10 +1,12 @@
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using PaintCatalog.Portal.ApiClients;
 using PaintCatalog.Portal.Models;
 
 namespace PaintCatalog.Portal.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly IPaintCatalogApiClient _apiClient;
