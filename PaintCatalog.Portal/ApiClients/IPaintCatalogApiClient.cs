@@ -30,5 +30,7 @@ namespace PaintCatalog.Portal.ApiClients
         Task<string> CreateCommentAsync(int threadId, CreateCommentRequest request);
 
         Task<string> UpdateCommentAsync(int threadId, int commentId, UpdateCommentRequest request);
+
+        Task EnsureCurrentUserExistsAsync();
     }
 }

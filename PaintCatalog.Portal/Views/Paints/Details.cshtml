@@ -661,8 +661,9 @@
 
             function getCommentAuthorId(comment) {
                 if (!comment) return '';
-                const author = comment.author || comment.user || {};
+                const author = comment.author || comment.user || comment.createdBy || {};
                 return comment.authorId
+                    ?? comment.createdById
                     ?? author.id
                     ?? author.userId
                     ?? comment.userId
@@ -683,6 +684,7 @@
 
             function canEditComment(comment) {
                 if (!state.auth.isAuthenticated) return false;
+                if (comment?.canEdit === true || comment?.isEditable === true) return true;
                 const authorId = getCommentAuthorId(comment);
                 if (!authorId || !state.auth.userId) return false;
                 return String(authorId) === String(state.auth.userId);

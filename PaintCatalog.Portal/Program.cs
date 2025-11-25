@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PaintCatalog.Portal.ApiClients;
 using PaintCatalog.Portal.Helpers;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +72,26 @@ builder.Services
             ValidateAudience = true,
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(10)
+        };
+
+        options.Events = new OpenIdConnectEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var logger = context.HttpContext.RequestServices
+                    .GetRequiredService<ILoggerFactory>()
+                    .CreateLogger("Authentication");
+
+                try
+                {
+                    var apiClient = context.HttpContext.RequestServices.GetRequiredService<IPaintCatalogApiClient>();
+                    await apiClient.EnsureCurrentUserExistsAsync();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to ensure user exists via /api/v1/users/me after login.");
+                }
+            }
         };
     });
 
