@@ -170,6 +170,13 @@ namespace PaintCatalog.Portal.ApiClients
             return await response.Content.ReadAsStringAsync();
         }
 
+        public async Task<HttpResponseMessage> GetAttachmentAsync(int attachmentId)
+        {
+            var url = $"/api/v1/attachments/{attachmentId}";
+
+            return await SendGetAsync(url);
+        }
+
         public async Task EnsureCurrentUserExistsAsync()
         {
             const string url = "/api/v1/users/me";

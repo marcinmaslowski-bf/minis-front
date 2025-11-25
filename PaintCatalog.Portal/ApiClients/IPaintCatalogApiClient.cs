@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading.Tasks;
 using PaintCatalog.Portal.Models.Api;
 
@@ -30,6 +31,8 @@ namespace PaintCatalog.Portal.ApiClients
         Task<string> CreateCommentAsync(int threadId, CreateCommentRequest request);
 
         Task<string> UpdateCommentAsync(int threadId, int commentId, UpdateCommentRequest request);
+
+        Task<HttpResponseMessage> GetAttachmentAsync(int attachmentId);
 
         Task EnsureCurrentUserExistsAsync();
     }

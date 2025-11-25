@@ -820,6 +820,9 @@
                             ?? attachment?.data
                             ?? null;
 
+                        const downloadUrl = getAttachmentDownloadUrl(attachment);
+                        const resolvedUrl = resolveAttachmentUrl(attachment) ?? downloadUrl;
+
                         return {
                             id: attachment?.id ?? attachment?.attachmentId ?? `${comment?.id || 'comment'}-${index}`,
                             fileName: attachment?.fileName
@@ -832,12 +835,26 @@
                                 || attachment?.contentMimeType
                                 || '',
                             type: attachment?.type ?? attachment?.attachmentType ?? null,
-                            url: resolveAttachmentUrl(attachment),
+                            url: resolvedUrl,
                             thumbnailUrl: attachment?.thumbnailUrl || attachment?.previewUrl || null,
                             content
                         };
                     })
                     .filter(attachment => attachment.url || attachment.thumbnailUrl || attachment.content);
+            }
+
+            function getAttachmentDownloadUrl(attachment) {
+                const id = attachment?.id ?? attachment?.attachmentId;
+                if (id === undefined || id === null) {
+                    return null;
+                }
+
+                const numericId = Number(id);
+                if (!Number.isFinite(numericId)) {
+                    return null;
+                }
+
+                return `/attachments/${encodeURIComponent(numericId)}`;
             }
 
             function resolveAttachmentUrl(attachment) {
@@ -876,7 +893,7 @@
                     }
                 }
 
-                return null;
+                return getAttachmentDownloadUrl(attachment);
             }
 
             function isImageAttachment(attachment) {
