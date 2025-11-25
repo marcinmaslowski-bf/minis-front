@@ -1272,7 +1272,9 @@
                 const tags = Array.isArray(paint?.tags) ? paint.tags : [];
                 const threadId = extractCommentThreadId(paint);
                 const commentCountRaw = resolveCommentCount(paint);
-                const commentCount = Number.isFinite(Number(commentCountRaw)) ? Number(commentCountRaw) : null;
+                const commentCount = (commentCountRaw !== null && commentCountRaw !== undefined && Number.isFinite(Number(commentCountRaw)))
+                    ? Number(commentCountRaw)
+                    : null;
                 const safeName = escapeHtml(paint?.name || 'Untitled paint');
                 const safeDescription = escapeHtml(paint?.description || '');
                 const safeBrand = escapeHtml(brandName);
