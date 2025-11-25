@@ -142,20 +142,14 @@
     <section id="comments-section" class="hidden rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <span class="grid h-12 w-12 place-items-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3h6m6 0a8.25 8.25 0 1 1-16.5 0 8.25 8.25 0 0 1 16.5 0Z" />
-                    </svg>
-                </span>
+                <span class="grid h-12 w-12 place-items-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300" data-icon="comment"></span>
                 <div>
                     <p class="text-lg font-semibold text-slate-900 dark:text-white">@Localizer["Comments_Title"]</p>
                     <p class="text-sm text-slate-500 dark:text-slate-300">@Localizer["Comments_Subtitle"]</p>
                 </div>
             </div>
             <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-100">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3h6m6 0a8.25 8.25 0 1 1-16.5 0 8.25 8.25 0 0 1 16.5 0Z" />
-                </svg>
+                <span data-icon="comment"></span>
                 <span id="comments-count">0</span>
             </span>
         </div>
@@ -173,6 +167,20 @@
                 <div class="space-y-1">
                     <label for="comment-input" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Comments_Form_Label"]</label>
                     <textarea id="comment-input" rows="3" placeholder="@Localizer["Comments_Form_Placeholder"]" class="w-full rounded-xl border border-slate-300 bg-white/80 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100"></textarea>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex items-center gap-2">
+                        <label for="comment-attachment-input" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Comments_Attachments_Label"]</label>
+                        <span class="text-xs text-slate-500 dark:text-slate-400">@Localizer["Comments_Attachments_Help"]</span>
+                    </div>
+                    <input id="comment-attachment-input" type="file" class="hidden" multiple />
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button id="comment-attachment-button" type="button" class="flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">
+                            <span class="rounded-lg bg-emerald-500/10 p-1 text-emerald-600 dark:text-emerald-300" data-icon="attachment"></span>
+                            <span>@Localizer["Comments_Attachments_Add"]</span>
+                        </button>
+                        <div id="comment-attachments" class="flex flex-wrap items-center gap-2"></div>
+                    </div>
                 </div>
                 <div class="flex flex-wrap items-center gap-3">
                     <button id="comment-submit" type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600">@Localizer["Comments_Submit"]</button>
@@ -204,12 +212,31 @@
                     updated: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Status_Updated"].Value, jsonOptions)),
                     loginCta: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Login_Cta"].Value, jsonOptions)),
                     edit: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Edit"].Value, jsonOptions)),
-                    editedLabel: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Edited_Label"].Value, jsonOptions))
+                    editedLabel: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Edited_Label"].Value, jsonOptions)),
+                    attachmentsEmpty: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_Empty"].Value, jsonOptions)),
+                    attachmentsRemove: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_Remove"].Value, jsonOptions)),
+                    attachmentsTooLarge: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_TooLarge"].Value, jsonOptions)),
+                    attachmentsLimit: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_Limit"].Value, jsonOptions)),
+                    attachmentsReadError: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_ReadError"].Value, jsonOptions))
                 }
             };
 
             const commentEndpoints = bootstrap.commentEndpoints || {};
             const auth = bootstrap.auth || {};
+
+            const getIconMarkup = (id, fallback = '') => {
+                try {
+                    const markup = window.appIcons?.get?.(id);
+                    return markup || fallback;
+                } catch (_) {
+                    return fallback;
+                }
+            };
+
+            const icons = {
+                comment: getIconMarkup('icon-comment', '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 13.5c0 1.682-.5 3.256-1.368 4.59-.316.5-.102 1.159.383 1.488.554.374.845 1 .699 1.641a1.678 1.678 0 0 1-1.148 1.215c-1.046.323-2.226-.057-2.968-.92a8.73 8.73 0 0 1-1.182-1.868c-.396-.8-1.289-1.246-2.175-1.014a8.42 8.42 0 0 1-2.665.259c-3.958-.343-7.151-3.54-7.49-7.501C1.91 6.22 6.16 2.25 11.22 2.25c5.059 0 9.03 4.162 9.03 9.3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 10.125h.007m3.743 0H12m3.743 0h.007" /></svg>'),
+                attachment: getIconMarkup('icon-attachment', '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6.75 8.982 13.5a2.25 2.25 0 1 0 3.182 3.183l5.143-5.144a3.75 3.75 0 0 0-5.304-5.304L6.86 10.125" /></svg>')
+            };
 
             const state = {
                 paint: null,
@@ -220,6 +247,7 @@
                 comments: [],
                 commentCount: null,
                 commentsLoading: false,
+                attachments: [],
                 commentError: '',
                 isSubmittingComment: false,
                 editingCommentId: null,
@@ -241,10 +269,29 @@
                 loginNotice: document.getElementById('comments-login-notice'),
                 form: document.getElementById('comment-form'),
                 input: document.getElementById('comment-input'),
+                attachmentInput: document.getElementById('comment-attachment-input'),
+                attachmentButton: document.getElementById('comment-attachment-button'),
+                attachments: document.getElementById('comment-attachments'),
                 submit: document.getElementById('comment-submit'),
                 cancelEdit: document.getElementById('comment-cancel-edit'),
                 status: document.getElementById('comment-status')
             };
+
+            function injectIcons() {
+                document.querySelectorAll('[data-icon="comment"]').forEach(el => {
+                    if (icons.comment) {
+                        el.innerHTML = icons.comment;
+                    }
+                });
+
+                document.querySelectorAll('[data-icon="attachment"]').forEach(el => {
+                    if (icons.attachment) {
+                        el.innerHTML = icons.attachment;
+                    }
+                });
+            }
+
+            injectIcons();
 
             const swatchUtils = window.paintSwatchUtils || {};
             const normalizeHex = swatchUtils.normalizeHex || (value => {
@@ -767,6 +814,120 @@
                 }
             }
 
+            const MAX_ATTACHMENTS = 5;
+            const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+
+            function renderAttachments() {
+                if (!commentElements.attachments) return;
+
+                if (!Array.isArray(state.attachments) || state.attachments.length === 0) {
+                    commentElements.attachments.innerHTML = `<span class="text-xs text-slate-500 dark:text-slate-400">${escapeHtml(localized.comments?.attachmentsEmpty || 'Brak załączników')}</span>`;
+                    return;
+                }
+
+                commentElements.attachments.innerHTML = state.attachments.map((attachment, index) => {
+                    const fileName = escapeHtml(attachment.fileName || 'attachment');
+                    const sizeLabel = attachment.sizeLabel ? escapeHtml(attachment.sizeLabel) : '';
+
+                    return `<span class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
+                                <span class="text-emerald-600 dark:text-emerald-300">${icons.attachment}</span>
+                                <span class="max-w-[160px] truncate" title="${fileName}${sizeLabel ? ` (${sizeLabel})` : ''}">${fileName}</span>
+                                ${sizeLabel ? `<span class="text-[11px] font-normal text-slate-500 dark:text-slate-400">${sizeLabel}</span>` : ''}
+                                <button type="button" class="rounded-full p-1 text-slate-500 transition hover:bg-slate-100 hover:text-rose-600 dark:hover:bg-slate-800" data-remove-attachment="${index}" aria-label="${escapeHtml(localized.comments?.attachmentsRemove || 'Remove attachment')}">
+                                    &times;
+                                </button>
+                            </span>`;
+                }).join('');
+            }
+
+            function formatBytes(bytes) {
+                if (!Number.isFinite(bytes) || bytes <= 0) return '';
+                const units = ['B', 'KB', 'MB'];
+                const exponent = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1);
+                const value = bytes / Math.pow(1024, exponent);
+                return `${value.toFixed(value >= 10 ? 0 : 1)} ${units[exponent]}`;
+            }
+
+            function removeAttachment(index) {
+                if (!Array.isArray(state.attachments)) return;
+                state.attachments.splice(index, 1);
+                renderAttachments();
+            }
+
+            function clearAttachments() {
+                state.attachments = [];
+                renderAttachments();
+            }
+
+            function handleAttachmentButtonClick() {
+                if (commentElements.attachmentInput && !commentElements.attachmentInput.disabled) {
+                    commentElements.attachmentInput.click();
+                }
+            }
+
+            function handleAttachmentSelection(event) {
+                const files = Array.from(event?.target?.files || []);
+                if (!files.length) return;
+
+                if (state.attachments.length >= MAX_ATTACHMENTS) {
+                    setCommentStatus(localized.comments?.attachmentsLimit || 'Osiągnięto limit załączników');
+                    if (commentElements.attachmentInput) {
+                        commentElements.attachmentInput.value = '';
+                    }
+                    return;
+                }
+
+                const remainingSlots = MAX_ATTACHMENTS - state.attachments.length;
+                const selectedFiles = files.slice(0, remainingSlots);
+
+                selectedFiles.forEach(file => {
+                    if (file.size > MAX_ATTACHMENT_BYTES) {
+                        setCommentError(localized.comments?.attachmentsTooLarge || 'Załącznik jest zbyt duży');
+                        return;
+                    }
+
+                    readFileAsBase64(file)
+                        .then(content => {
+                            state.attachments.push({
+                                type: 1,
+                                content,
+                                fileName: file.name,
+                                contentType: file.type || 'application/octet-stream',
+                                sizeLabel: formatBytes(file.size)
+                            });
+                            renderAttachments();
+                        })
+                        .catch(() => {
+                            setCommentError(localized.comments?.attachmentsReadError || 'Nie udało się odczytać załącznika');
+                        });
+                });
+
+                if (files.length > selectedFiles.length) {
+                    setCommentStatus(localized.comments?.attachmentsLimit || 'Osiągnięto limit załączników');
+                }
+
+                if (commentElements.attachmentInput) {
+                    commentElements.attachmentInput.value = '';
+                }
+            }
+
+            function readFileAsBase64(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const result = reader.result;
+                        if (typeof result === 'string') {
+                            const base64 = result.includes(',') ? result.split(',').pop() : result;
+                            resolve(base64 || '');
+                        } else {
+                            reject(new Error('Invalid file content'));
+                        }
+                    };
+                    reader.onerror = () => reject(reader.error || new Error('Failed to read file'));
+                    reader.readAsDataURL(file);
+                });
+            }
+
             function clearCommentStatus() {
                 setCommentStatus('');
             }
@@ -787,6 +948,7 @@
 
             function applyCommentAuthState() {
                 const isAuthenticated = !!state.auth.isAuthenticated;
+                const shouldDisableAttachments = state.isSubmittingComment || !isAuthenticated || state.editingCommentId !== null;
                 if (commentElements.loginNotice) {
                     commentElements.loginNotice.classList.toggle('hidden', isAuthenticated);
                 }
@@ -800,6 +962,15 @@
                         ? @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Submit"].Value, jsonOptions))
                         : localized.comments?.loginCta || 'Log in to comment';
                     commentElements.submit.disabled = state.isSubmittingComment || !isAuthenticated;
+                }
+
+                if (commentElements.attachmentButton) {
+                    commentElements.attachmentButton.disabled = shouldDisableAttachments;
+                    commentElements.attachmentButton.classList.toggle('opacity-60', shouldDisableAttachments);
+                }
+
+                if (commentElements.attachmentInput) {
+                    commentElements.attachmentInput.disabled = shouldDisableAttachments;
                 }
 
                 if (!isAuthenticated && commentElements.cancelEdit) {
@@ -884,6 +1055,7 @@
                 if (!comment) return;
 
                 state.editingCommentId = commentId;
+                clearAttachments();
                 if (commentElements.input) {
                     commentElements.input.value = comment?.content || '';
                     commentElements.input.focus();
@@ -898,6 +1070,7 @@
                 }
 
                 clearCommentStatus();
+                applyCommentAuthState();
             }
 
             function cancelCommentEdit() {
@@ -912,6 +1085,8 @@
                     commentElements.cancelEdit.classList.add('hidden');
                 }
                 clearCommentStatus();
+                clearAttachments();
+                applyCommentAuthState();
             }
 
             function redirectToLogin() {
@@ -943,6 +1118,16 @@
                     ? formatCommentEndpoint(commentEndpoints.update, state.commentThreadId, state.editingCommentId)
                     : formatCommentEndpoint(commentEndpoints.create, state.commentThreadId);
 
+                const payload = { content };
+                if (!isEditing && Array.isArray(state.attachments) && state.attachments.length) {
+                    payload.attachments = state.attachments.map(attachment => ({
+                        type: attachment.type ?? 1,
+                        content: attachment.content,
+                        fileName: attachment.fileName,
+                        contentType: attachment.contentType
+                    }));
+                }
+
                 if (!url) {
                     setCommentError(localized.comments?.unavailable || 'Comments unavailable');
                     return;
@@ -960,7 +1145,7 @@
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({ content })
+                        body: JSON.stringify(payload)
                     });
 
                     if (response.status === 401) {
@@ -978,6 +1163,7 @@
                     if (commentElements.input) {
                         commentElements.input.value = '';
                     }
+                    clearAttachments();
                     await loadComments();
                     await refreshCommentCount();
                     setCommentStatus(isEditing ? localized.comments?.updated : localized.comments?.saved);
@@ -1017,6 +1203,25 @@
                     commentElements.cancelEdit.addEventListener('click', cancelCommentEdit);
                 }
 
+                if (commentElements.attachmentButton) {
+                    commentElements.attachmentButton.addEventListener('click', handleAttachmentButtonClick);
+                }
+
+                if (commentElements.attachmentInput) {
+                    commentElements.attachmentInput.addEventListener('change', handleAttachmentSelection);
+                }
+
+                if (commentElements.attachments) {
+                    commentElements.attachments.addEventListener('click', event => {
+                        const target = event.target.closest('[data-remove-attachment]');
+                        if (!target) return;
+                        const index = Number(target.getAttribute('data-remove-attachment'));
+                        if (Number.isFinite(index)) {
+                            removeAttachment(index);
+                        }
+                    });
+                }
+
                 if (commentElements.list) {
                     commentElements.list.addEventListener('click', event => {
                         const editBtn = event.target.closest('[data-edit-comment]');
@@ -1029,6 +1234,7 @@
                 }
             }
 
+            renderAttachments();
             applyCommentAuthState();
             wireCommentEvents();
 

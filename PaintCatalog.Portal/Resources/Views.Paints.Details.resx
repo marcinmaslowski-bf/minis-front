@@ -138,4 +138,28 @@
   <data name="Comments_Edited_Label" xml:space="preserve">
     <value>Edited</value>
   </data>
+  <data name="Comments_Attachments_Label" xml:space="preserve">
+    <value>Attachments</value>
+  </data>
+  <data name="Comments_Attachments_Help" xml:space="preserve">
+    <value>Up to 5 files, 5 MB each.</value>
+  </data>
+  <data name="Comments_Attachments_Add" xml:space="preserve">
+    <value>Add attachment</value>
+  </data>
+  <data name="Comments_Attachments_Empty" xml:space="preserve">
+    <value>No attachments yet.</value>
+  </data>
+  <data name="Comments_Attachments_Remove" xml:space="preserve">
+    <value>Remove attachment</value>
+  </data>
+  <data name="Comments_Attachments_TooLarge" xml:space="preserve">
+    <value>Attachment is too large (max 5 MB).</value>
+  </data>
+  <data name="Comments_Attachments_Limit" xml:space="preserve">
+    <value>Attachment limit reached (5).</value>
+  </data>
+  <data name="Comments_Attachments_ReadError" xml:space="preserve">
+    <value>Unable to read attachment.</value>
+  </data>
 </root>
