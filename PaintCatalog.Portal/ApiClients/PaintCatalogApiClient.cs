@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Text;
+using System.Text.Json;
 using PaintCatalog.Portal.Helpers;
+using PaintCatalog.Portal.Models.Api;
 
 namespace PaintCatalog.Portal.ApiClients
 {
@@ -115,9 +118,71 @@ namespace PaintCatalog.Portal.ApiClients
             return await response.Content.ReadAsStringAsync();
         }
 
+        public async Task<string> GetCommentsByThreadIdAsync(int threadId)
+        {
+            var url = $"/api/v1/comment-threads/{threadId}/comments";
+
+            using var response = await SendGetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> GetCommentCountByThreadIdAsync(int threadId)
+        {
+            var url = $"/api/v1/comment-threads/{threadId}/comments/count";
+
+            using var response = await SendGetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> CreateCommentAsync(int threadId, CreateCommentRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            var url = $"/api/v1/comment-threads/{threadId}/comments";
+            var payload = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            using var response = await SendAsync(HttpMethod.Post, url, payload);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> UpdateCommentAsync(int threadId, int commentId, UpdateCommentRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            var url = $"/api/v1/comment-threads/{threadId}/comments/{commentId}";
+            var payload = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            using var response = await SendAsync(HttpMethod.Put, url, payload);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
         private async Task<HttpResponseMessage> SendGetAsync(string url)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            return await SendAsync(HttpMethod.Get, url);
+        }
+
+        private async Task<HttpResponseMessage> SendAsync(HttpMethod method, string url, HttpContent? content = null)
+        {
+            var request = new HttpRequestMessage(method, url);
+
+            if (content != null)
+            {
+                request.Content = content;
+            }
 
             var accessToken = await _accessTokenProvider.GetAccessTokenAsync();
             if (!string.IsNullOrWhiteSpace(accessToken))

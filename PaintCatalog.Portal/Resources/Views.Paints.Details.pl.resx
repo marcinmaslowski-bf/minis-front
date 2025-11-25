@@ -84,4 +84,58 @@
   <data name="Card_Value_Identifiers_None" xml:space="preserve">
     <value>Brak identyfikatorów</value>
   </data>
+  <data name="Comments_Title" xml:space="preserve">
+    <value>Komentarze</value>
+  </data>
+  <data name="Comments_Subtitle" xml:space="preserve">
+    <value>Podziel się opinią o tej farbie.</value>
+  </data>
+  <data name="Comments_Loading" xml:space="preserve">
+    <value>Ładowanie komentarzy...</value>
+  </data>
+  <data name="Comments_Empty" xml:space="preserve">
+    <value>Brak komentarzy. Bądź pierwszą osobą, która coś doda.</value>
+  </data>
+  <data name="Comments_Login_Prompt" xml:space="preserve">
+    <value>Zaloguj się, aby dodać komentarz.</value>
+  </data>
+  <data name="Comments_Login_Link" xml:space="preserve">
+    <value>Zaloguj się</value>
+  </data>
+  <data name="Comments_Form_Label" xml:space="preserve">
+    <value>Dodaj komentarz</value>
+  </data>
+  <data name="Comments_Form_Placeholder" xml:space="preserve">
+    <value>Podziel się swoim doświadczeniem z tą farbą...</value>
+  </data>
+  <data name="Comments_Submit" xml:space="preserve">
+    <value>Dodaj komentarz</value>
+  </data>
+  <data name="Comments_Update" xml:space="preserve">
+    <value>Zapisz zmiany</value>
+  </data>
+  <data name="Comments_CancelEdit" xml:space="preserve">
+    <value>Anuluj</value>
+  </data>
+  <data name="Comments_Error_Generic" xml:space="preserve">
+    <value>Nie udało się wczytać komentarzy.</value>
+  </data>
+  <data name="Comments_Error_Unavailable" xml:space="preserve">
+    <value>Komentarze dla tej farby są niedostępne.</value>
+  </data>
+  <data name="Comments_Status_Saved" xml:space="preserve">
+    <value>Komentarz dodany.</value>
+  </data>
+  <data name="Comments_Status_Updated" xml:space="preserve">
+    <value>Komentarz zaktualizowany.</value>
+  </data>
+  <data name="Comments_Login_Cta" xml:space="preserve">
+    <value>Zaloguj się, aby komentować</value>
+  </data>
+  <data name="Comments_Edit" xml:space="preserve">
+    <value>Edytuj</value>
+  </data>
+  <data name="Comments_Edited_Label" xml:space="preserve">
+    <value>Edytowano</value>
+  </data>
 </root>

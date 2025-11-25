@@ -234,4 +234,7 @@
   <data name="Card_Label_Color" xml:space="preserve">
     <value>Color</value>
   </data>
+  <data name="Card_Label_Comments" xml:space="preserve">
+    <value>Comments</value>
+  </data>
 </root>
