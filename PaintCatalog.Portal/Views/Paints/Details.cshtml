@@ -201,7 +201,7 @@
                     </div>
                     <span class="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300" id="comment-gallery-count">0</span>
                 </div>
-                <div id="comment-gallery-grid" class="grid max-h-96 grid-cols-2 content-start gap-3 overflow-y-auto pr-1 sm:grid-cols-3"></div>
+                <div id="comment-gallery-grid" class="grid grid-cols-2 content-start gap-3 sm:grid-cols-3"></div>
             </aside>
         </div>
     </section>
@@ -762,12 +762,12 @@
                 }
 
                 const items = sortComments(state.comments);
-                commentElements.list.innerHTML = items.map(renderCommentItem).join('');
+                commentElements.list.innerHTML = items.map((comment, index) => renderCommentItem(comment, index)).join('');
                 renderCommentGallery(items);
                 updateCommentEmptyState();
             }
 
-            function renderCommentItem(comment) {
+            function renderCommentItem(comment, index = 0) {
                 const authorName = escapeHtml(getCommentAuthorName(comment) || '');
                 const content = escapeHtml(comment?.content || '');
                 const dateLabel = formatTimestamp(getCommentDate(comment));
@@ -781,11 +781,12 @@
                     : '';
 
                 const attachments = normalizeCommentAttachments(comment);
+                const attachmentsGroup = getCommentMediaGroupId(comment, index);
                 const attachmentsMarkup = attachments.length
                     ? `<div class="mt-3 space-y-2">
                             <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">${escapeHtml(localized.comments?.attachmentsLabel || localized.comments?.attachments || 'Załączniki')}</p>
-                            <div class="max-h-64 overflow-y-auto pr-1">
-                                <div class="flex flex-wrap gap-3">${attachments.map(renderCommentAttachment).join('')}</div>
+                            <div class="pr-1">
+                                <div class="flex flex-wrap gap-3">${attachments.map((attachment, idx) => renderCommentAttachment(attachment, attachmentsGroup, idx)).join('')}</div>
                             </div>
                        </div>`
                     : '';
@@ -824,10 +825,7 @@
                                 ? raw.results
                                 : [];
 
-                const contextId = comment?.id
-                    ?? comment?.commentId
-                    ?? comment?.commentID
-                    ?? null;
+                const contextId = getCommentId(comment);
 
                 return normalizeAttachments(collection, {
                     contextId: contextId || undefined,
@@ -835,15 +833,35 @@
                 });
             }
 
-            function renderCommentAttachment(attachment) {
+            function getCommentId(comment) {
+                return comment?.id
+                    ?? comment?.commentId
+                    ?? comment?.commentID
+                    ?? null;
+            }
+
+            function getCommentMediaGroupId(comment, index = 0) {
+                const id = getCommentId(comment);
+                if (id !== null && id !== undefined) {
+                    return `comment-${id}`;
+                }
+
+                return `comment-${index}`;
+            }
+
+            function renderCommentAttachment(attachment, groupId, index = 0) {
                 const name = escapeHtml(attachment.fileName || 'attachment');
                 const url = escapeHtml(attachment.url || attachment.thumbnailUrl || '');
                 const isImage = isImageAttachment(attachment);
                 const isVideo = isVideoAttachment(attachment);
                 const previewType = isVideo ? 'video' : 'image';
+                const safeIndex = Number.isFinite(Number(index)) ? Number(index) : 0;
+                const groupAttr = groupId
+                    ? ` data-media-group="${escapeHtml(groupId)}" data-media-index="${safeIndex}"`
+                    : '';
 
                 if ((isImage || isVideo) && url) {
-                    const mediaAttrs = `data-media-preview data-media-type="${previewType}" data-media-title="${name}"`;
+                    const mediaAttrs = `data-media-preview data-media-type="${previewType}" data-media-title="${name}"${groupAttr}`;
                     const previewContent = isVideo
                         ? `<div class="relative h-24 w-full overflow-hidden bg-slate-100 dark:bg-slate-900/60">
                                 <div class="absolute inset-0 grid place-items-center">
@@ -892,14 +910,16 @@
                 }
 
                 commentElements.galleryCount.textContent = attachments.length;
+                const galleryGroupId = 'comment-gallery';
                 commentElements.galleryGrid.innerHTML = attachments
-                    .map(attachment => {
+                    .map((attachment, index) => {
                         const url = escapeHtml(attachment.url || attachment.thumbnailUrl || '');
                         const name = escapeHtml(attachment.fileName || 'attachment');
                         const mediaType = isVideoAttachment(attachment) ? 'video' : 'image';
+                        const groupAttrs = `data-media-group="${galleryGroupId}" data-media-index="${index}"`;
 
                         if (mediaType === 'video') {
-                            return `<a href="${url}" data-media-preview data-media-type="video" data-media-title="${name}" class="group relative block overflow-hidden rounded-lg border border-slate-200 bg-gradient-to-br from-slate-800 to-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-700">
+                            return `<a href="${url}" ${groupAttrs} data-media-preview data-media-type="video" data-media-title="${name}" class="group relative block overflow-hidden rounded-lg border border-slate-200 bg-gradient-to-br from-slate-800 to-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-700">
                                         <div class="flex h-24 items-center justify-center">
                                             <span class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-950/60 text-white shadow-md">▶</span>
                                         </div>
@@ -907,7 +927,7 @@
                                     </a>`;
                         }
 
-                        return `<a href="${url}" data-media-preview data-media-type="image" data-media-title="${name}" class="group relative block overflow-hidden rounded-lg border border-slate-200 bg-white/90 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60">
+                        return `<a href="${url}" ${groupAttrs} data-media-preview data-media-type="image" data-media-title="${name}" class="group relative block overflow-hidden rounded-lg border border-slate-200 bg-white/90 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60">
                                     <img src="${url}" alt="${name}" loading="lazy" class="h-24 w-full object-cover transition duration-150 ease-out group-hover:scale-[1.02]" />
                                     <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/70 to-transparent px-2 py-1 text-[11px] font-semibold text-white drop-shadow-sm">${name}</div>
                                 </a>`;
