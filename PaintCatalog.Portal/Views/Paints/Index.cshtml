@@ -1152,9 +1152,20 @@
                         if (typeof json === 'number') {
                             resolved = json;
                         } else if (json && typeof json === 'object') {
-                            const candidate = json.count ?? json.comments ?? json.total ?? json.commentCount ?? json.commentsCount;
-                            if (Number.isFinite(candidate)) {
-                                resolved = candidate;
+                            const candidate = json.count
+                                ?? json.comments
+                                ?? json.total
+                                ?? json.commentCount
+                                ?? json.commentsCount
+                                ?? json?.data?.count
+                                ?? json?.data?.total
+                                ?? json?.data?.comments
+                                ?? json?.result?.count
+                                ?? json?.result?.total;
+
+                            const numericCandidate = Number(candidate);
+                            if (Number.isFinite(numericCandidate)) {
+                                resolved = numericCandidate;
                             }
                         }
                     } catch {
