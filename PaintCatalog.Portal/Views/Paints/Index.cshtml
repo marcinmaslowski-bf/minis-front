@@ -12,6 +12,7 @@
     var paintsDataEndpoint = Url.Action("Data", "Paints") ?? "/paints/data";
     var brandsEndpoint = Url.Action("Brands", "Paints") ?? "/paints/brands";
     var brandSeriesEndpoint = Url.Action("Series", "Paints") ?? "/paints/series";
+    var commentCountEndpoint = Url.Action("Count", "Comments", new { threadId = "__thread__" }) ?? "/comments/__thread__/count";
     var paintDetailsTemplate = PaintCatalog.Portal.Helpers.CultureHelpers.GetRouteCultureSegment() is string cultureSegment
         ? Url.RouteUrl("PaintDetailsLocalized", new { culture = cultureSegment, brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/pl/paints/__brand__/__series__/__paint__"
         : Url.RouteUrl("PaintDetails", new { brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/paints/__brand__/__series__/__paint__";
@@ -47,7 +48,7 @@
 
     var bootstrap = new
     {
-        endpoints = new { data = paintsDataEndpoint, brands = brandsEndpoint, series = brandSeriesEndpoint, details = paintDetailsTemplate },
+        endpoints = new { data = paintsDataEndpoint, brands = brandsEndpoint, series = brandSeriesEndpoint, details = paintDetailsTemplate, comments = new { count = commentCountEndpoint } },
         labels = new
         {
             brand = Localizer["Card_Label_Brand"].Value,
@@ -57,7 +58,8 @@
             medium = Localizer["Card_Label_Medium"].Value,
             tags = Localizer["Card_Label_Tags"].Value,
             sku = Localizer["Card_Label_Sku"].Value,
-            color = Localizer["Card_Label_Color"].Value
+            color = Localizer["Card_Label_Color"].Value,
+            comments = Localizer["Card_Label_Comments"].Value
         },
         filters = new
         {
@@ -287,6 +289,7 @@
             const labels = config.labels || {};
             const filterDictionaries = config.filters || {};
             const endpoints = config.endpoints || {};
+            const commentEndpoints = endpoints.comments || {};
             const initialQueryString = window.location?.search || '';
             const initialQueryParams = new URLSearchParams(initialQueryString);
             const hasInitialQueryParams = Array.from(initialQueryParams.keys()).length > 0;
@@ -334,7 +337,8 @@
                 items: [],
                 brands: normalizeBrandPayload(bootstrap.brands),
                 brandSeries: {},
-                loading: false
+                loading: false,
+                commentCounts: {}
             };
 
             primeBrandSeriesCacheFromBrands(state.brands);
@@ -497,6 +501,7 @@
                 targetState.total = normalized.total;
                 targetState.pagination.page = normalized.page;
                 targetState.pagination.pageSize = normalized.pageSize;
+                primeCommentCounts(targetState.items);
 
                 if (elements.pageSizeSelect) {
                     elements.pageSizeSelect.value = String(targetState.pagination.pageSize);
@@ -1071,6 +1076,144 @@
                 });
             }
 
+            function extractCommentThreadId(paint) {
+                const candidate = paint?.commentThreadId
+                    ?? paint?.commentThreadID
+                    ?? paint?.commentsThreadId
+                    ?? paint?.commentThread?.id
+                    ?? paint?.commentThread?.threadId
+                    ?? paint?.commentThread;
+
+                if (candidate === null || candidate === undefined) {
+                    return null;
+                }
+
+                if (typeof candidate === 'object') {
+                    const nested = candidate.id ?? candidate.threadId ?? candidate.threadID ?? candidate.commentThreadId;
+                    const numericNested = Number(nested);
+                    if (Number.isFinite(numericNested)) return numericNested;
+
+                    if (typeof nested === 'string' && nested.trim()) {
+                        const parsedNested = Number(nested);
+                        return Number.isFinite(parsedNested) ? parsedNested : null;
+                    }
+                }
+
+                const numeric = Number(candidate);
+                return Number.isFinite(numeric) ? numeric : null;
+            }
+
+            function extractCommentCountFromPaint(paint) {
+                const candidate = paint?.commentCount
+                    ?? paint?.commentsCount
+                    ?? paint?.comment_count
+                    ?? paint?.comments_count
+                    ?? paint?.commentThread?.commentCount
+                    ?? paint?.commentThread?.commentsCount
+                    ?? paint?.commentThread?.count;
+
+                const numeric = Number(candidate);
+                return Number.isFinite(numeric) ? numeric : null;
+            }
+
+            function formatCommentEndpoint(template, threadId) {
+                if (!template || !threadId) return null;
+                return template.replace('__thread__', encodeURIComponent(threadId));
+            }
+
+            async function fetchCommentCount(threadId) {
+                if (!threadId || !commentEndpoints.count) return null;
+
+                if (state.commentCounts[threadId] !== undefined) {
+                    return state.commentCounts[threadId];
+                }
+
+                const url = formatCommentEndpoint(commentEndpoints.count, threadId);
+                if (!url) return null;
+
+                try {
+                    const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                    if (!response.ok) return null;
+
+                    const payload = await response.text();
+                    let resolved = null;
+
+                    try {
+                        const json = JSON.parse(payload);
+                        if (typeof json === 'number') {
+                            resolved = json;
+                        } else if (json && typeof json === 'object') {
+                            const candidate = json.count ?? json.comments ?? json.total ?? json.commentCount ?? json.commentsCount;
+                            if (Number.isFinite(candidate)) {
+                                resolved = candidate;
+                            }
+                        }
+                    } catch {
+                        const numeric = Number(payload);
+                        if (Number.isFinite(numeric)) {
+                            resolved = numeric;
+                        }
+                    }
+
+                    if (resolved !== null) {
+                        state.commentCounts[threadId] = resolved;
+                        return resolved;
+                    }
+                } catch (error) {
+                    console.warn('Unable to fetch comment count', error);
+                }
+
+                return null;
+            }
+
+            function primeCommentCounts(paints) {
+                if (!commentEndpoints.count || !Array.isArray(paints)) return;
+
+                const threadsToFetch = [];
+                const seen = new Set();
+
+                paints.forEach(paint => {
+                    const threadId = extractCommentThreadId(paint);
+                    if (!threadId || seen.has(threadId)) return;
+                    seen.add(threadId);
+
+                    if (state.commentCounts[threadId] !== undefined) {
+                        return;
+                    }
+
+                    const countFromPayload = extractCommentCountFromPaint(paint);
+                    if (countFromPayload !== null) {
+                        state.commentCounts[threadId] = countFromPayload;
+                        return;
+                    }
+
+                    threadsToFetch.push(threadId);
+                });
+
+                threadsToFetch.forEach(threadId => {
+                    fetchCommentCount(threadId).then(count => {
+                        if (count !== null && count !== undefined) {
+                            state.commentCounts[threadId] = count;
+                            renderPaintCards();
+                        }
+                    });
+                });
+            }
+
+            function resolveCommentCount(paint) {
+                const threadId = extractCommentThreadId(paint);
+                if (threadId && state.commentCounts[threadId] !== undefined) {
+                    return state.commentCounts[threadId];
+                }
+
+                const fromPayload = extractCommentCountFromPaint(paint);
+                if (threadId && fromPayload !== null && state.commentCounts[threadId] === undefined) {
+                    state.commentCounts[threadId] = fromPayload;
+                }
+
+                return fromPayload;
+            }
+
             function renderPaintCards() {
                 const container = elements.results;
                 if (!container) return;
@@ -1100,6 +1243,9 @@
                 const sku = paint?.sku || paint?.code || '';
                 const colorHex = (paint?.hex) || paint?.colorHex || paint?.hexCode || paint?.swatchHex || '#475569';
                 const tags = Array.isArray(paint?.tags) ? paint.tags : [];
+                const threadId = extractCommentThreadId(paint);
+                const commentCountRaw = resolveCommentCount(paint);
+                const commentCount = Number.isFinite(Number(commentCountRaw)) ? Number(commentCountRaw) : null;
                 const safeName = escapeHtml(paint?.name || 'Untitled paint');
                 const safeDescription = escapeHtml(paint?.description || '');
                 const safeBrand = escapeHtml(brandName);
@@ -1118,6 +1264,15 @@
                     .filter(Boolean)
                     .map(tag => `<span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(tag)}</span>`)
                     .join('');
+
+                const commentBadge = (threadId || commentCount !== null)
+                    ? `<span class="inline-flex items-center gap-1 rounded-full border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-200" title="${escapeHtml(labels.comments || 'Comments')}">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3h6m6 0a8.25 8.25 0 1 1-16.5 0 8.25 8.25 0 0 1 16.5 0Z" />
+                            </svg>
+                            <span>${commentCount !== null ? commentCount : '—'}</span>
+                       </span>`
+                    : '';
 
                 const card = `
                     <article class="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-800 dark:bg-slate-900/80">
@@ -1152,9 +1307,12 @@
                                 <dd class="text-sm text-slate-900 dark:text-slate-100">${safeSku || '—'}</dd>
                             </div>
                         </dl>
-                        <div class="mt-4 flex items-center gap-2 text-xs text-slate-500">
-                            <span class="font-semibold uppercase tracking-wide">${labels.color || 'Color'}</span>
-                            <span class="rounded-full border border-slate-200 px-2 py-0.5 text-slate-700 dark:border-slate-700 dark:text-slate-200">${safeHex}</span>
+                        <div class="mt-4 flex items-center justify-between gap-3 text-xs text-slate-500">
+                            <div class="flex items-center gap-2">
+                                <span class="font-semibold uppercase tracking-wide">${labels.color || 'Color'}</span>
+                                <span class="rounded-full border border-slate-200 px-2 py-0.5 text-slate-700 dark:border-slate-700 dark:text-slate-200">${safeHex}</span>
+                            </div>
+                            ${commentBadge}
                         </div>
                         ${tagsMarkup ? `<div class="mt-4 flex flex-wrap gap-2">${tagsMarkup}</div>` : ''}
                     </article>`;

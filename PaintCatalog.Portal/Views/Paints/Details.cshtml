@@ -38,6 +38,20 @@
         brandSlug = Model.BrandSlug,
         seriesSlug = Model.SeriesSlug,
         paintSlug = Model.PaintSlug,
+        commentEndpoints = new
+        {
+            thread = Url.Action("Thread", "Comments", new { threadId = "__thread__" }) ?? "/comments/__thread__",
+            count = Url.Action("Count", "Comments", new { threadId = "__thread__" }) ?? "/comments/__thread__/count",
+            create = Url.Action("Create", "Comments", new { threadId = "__thread__" }) ?? "/comments/__thread__",
+            update = Url.Action("Update", "Comments", new { threadId = "__thread__", commentId = "__comment__" }) ?? "/comments/__thread__/__comment__"
+        },
+        auth = new
+        {
+            isAuthenticated = User?.Identity?.IsAuthenticated ?? false,
+            userId = User?.FindFirst("sub")?.Value ?? User?.FindFirst("preferred_username")?.Value ?? User?.Identity?.Name ?? string.Empty,
+            userName = User?.FindFirst("name")?.Value ?? User?.Identity?.Name ?? string.Empty,
+            loginUrl = Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/login"
+        },
         enumLabels = new
         {
             type = typeLabels,
@@ -124,6 +138,50 @@
         <p class="font-semibold">@Localizer["Details_Error_Title"]</p>
         <p class="text-sm">@errorMessage</p>
     </div>
+
+    <section id="comments-section" class="hidden rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <span class="grid h-12 w-12 place-items-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3h6m6 0a8.25 8.25 0 1 1-16.5 0 8.25 8.25 0 0 1 16.5 0Z" />
+                    </svg>
+                </span>
+                <div>
+                    <p class="text-lg font-semibold text-slate-900 dark:text-white">@Localizer["Comments_Title"]</p>
+                    <p class="text-sm text-slate-500 dark:text-slate-300">@Localizer["Comments_Subtitle"]</p>
+                </div>
+            </div>
+            <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-100">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3h6m6 0a8.25 8.25 0 1 1-16.5 0 8.25 8.25 0 0 1 16.5 0Z" />
+                </svg>
+                <span id="comments-count">0</span>
+            </span>
+        </div>
+
+        <div id="comments-error" class="mt-4 hidden rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/60 dark:text-red-100"></div>
+        <div id="comments-loading" class="mt-4 hidden rounded-lg border border-slate-200 bg-white/70 p-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">@Localizer["Comments_Loading"]</div>
+        <div id="comments-empty" class="mt-4 hidden rounded-lg border border-slate-200 bg-white/70 p-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">@Localizer["Comments_Empty"]</div>
+        <div id="comment-list" class="mt-4 space-y-3"></div>
+
+        <div class="mt-6 border-t border-slate-200 pt-4 dark:border-slate-700">
+            <div id="comments-login-notice" class="mb-3 hidden rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-100">
+                @Localizer["Comments_Login_Prompt"] <a href="@(Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/login")" class="font-semibold text-emerald-600 underline dark:text-emerald-400">@Localizer["Comments_Login_Link"]</a>.
+            </div>
+            <form id="comment-form" class="space-y-3">
+                <div class="space-y-1">
+                    <label for="comment-input" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Comments_Form_Label"]</label>
+                    <textarea id="comment-input" rows="3" placeholder="@Localizer["Comments_Form_Placeholder"]" class="w-full rounded-xl border border-slate-300 bg-white/80 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100"></textarea>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <button id="comment-submit" type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600">@Localizer["Comments_Submit"]</button>
+                    <button id="comment-cancel-edit" type="button" class="hidden rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">@Localizer["Comments_CancelEdit"]</button>
+                    <span id="comment-status" class="hidden text-xs text-slate-500 dark:text-slate-400"></span>
+                </div>
+            </form>
+        </div>
+    </section>
 </section>
 
 @section Scripts {
@@ -138,14 +196,54 @@
                 discontinuedNo: @Html.Raw(JsonSerializer.Serialize(Localizer["Card_Value_Discontinued_No"].Value, jsonOptions)),
                 discontinuedUnknown: @Html.Raw(JsonSerializer.Serialize(Localizer["Card_Value_Discontinued_Unknown"].Value, jsonOptions)),
                 brandWebsiteUnavailable: @Html.Raw(JsonSerializer.Serialize(Localizer["Card_Value_BrandWebsite_Unavailable"].Value, jsonOptions)),
-                identifiersNone: @Html.Raw(JsonSerializer.Serialize(Localizer["Card_Value_Identifiers_None"].Value, jsonOptions))
+                identifiersNone: @Html.Raw(JsonSerializer.Serialize(Localizer["Card_Value_Identifiers_None"].Value, jsonOptions)),
+                comments: {
+                    error: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Error_Generic"].Value, jsonOptions)),
+                    unavailable: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Error_Unavailable"].Value, jsonOptions)),
+                    saved: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Status_Saved"].Value, jsonOptions)),
+                    updated: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Status_Updated"].Value, jsonOptions)),
+                    loginCta: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Login_Cta"].Value, jsonOptions)),
+                    edit: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Edit"].Value, jsonOptions)),
+                    editedLabel: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Edited_Label"].Value, jsonOptions))
+                }
             };
+
+            const commentEndpoints = bootstrap.commentEndpoints || {};
+            const auth = bootstrap.auth || {};
 
             const state = {
                 paint: null,
                 brandSlug: bootstrap.brandSlug,
                 seriesSlug: bootstrap.seriesSlug,
                 paintSlug: bootstrap.paintSlug,
+                commentThreadId: null,
+                comments: [],
+                commentCount: null,
+                commentsLoading: false,
+                commentError: '',
+                isSubmittingComment: false,
+                editingCommentId: null,
+                auth: {
+                    isAuthenticated: !!auth.isAuthenticated,
+                    userId: auth.userId || '',
+                    userName: auth.userName || '',
+                    loginUrl: auth.loginUrl || '/login'
+                }
+            };
+
+            const commentElements = {
+                section: document.getElementById('comments-section'),
+                count: document.getElementById('comments-count'),
+                list: document.getElementById('comment-list'),
+                empty: document.getElementById('comments-empty'),
+                error: document.getElementById('comments-error'),
+                loading: document.getElementById('comments-loading'),
+                loginNotice: document.getElementById('comments-login-notice'),
+                form: document.getElementById('comment-form'),
+                input: document.getElementById('comment-input'),
+                submit: document.getElementById('comment-submit'),
+                cancelEdit: document.getElementById('comment-cancel-edit'),
+                status: document.getElementById('comment-status')
             };
 
             const swatchUtils = window.paintSwatchUtils || {};
@@ -463,6 +561,8 @@
                     elements.hex.textContent = swatch.label || colorHex;
                 }
 
+                initializeComments(paint);
+
                 if (elements.json) {
                     try {
                         elements.json.textContent = JSON.stringify(paint, null, 2);
@@ -476,6 +576,459 @@
                     elements.container.classList.remove('hidden');
                 }
             }
+
+            function formatCommentEndpoint(template, threadId, commentId) {
+                if (!template || !threadId) return null;
+                let url = template.replace('__thread__', encodeURIComponent(threadId));
+                if (commentId !== undefined && commentId !== null) {
+                    url = url.replace('__comment__', encodeURIComponent(commentId));
+                }
+                return url;
+            }
+
+            function resolveCommentThreadId(paint) {
+                const candidate = paint?.commentThreadId
+                    ?? paint?.commentThreadID
+                    ?? paint?.commentThread?.id
+                    ?? paint?.commentThread?.threadId
+                    ?? paint?.commentThread;
+
+                if (candidate === null || candidate === undefined) return null;
+
+                if (typeof candidate === 'object') {
+                    const nested = candidate.id ?? candidate.threadId ?? candidate.commentThreadId;
+                    const numericNested = Number(nested);
+                    if (Number.isFinite(numericNested)) return numericNested;
+                    if (typeof nested === 'string' && nested.trim()) {
+                        const parsedNested = Number(nested);
+                        return Number.isFinite(parsedNested) ? parsedNested : null;
+                    }
+                }
+
+                const numeric = Number(candidate);
+                return Number.isFinite(numeric) ? numeric : null;
+            }
+
+            function resolveCommentCountFromPaint(paint) {
+                const candidate = paint?.commentCount
+                    ?? paint?.commentsCount
+                    ?? paint?.commentThread?.commentCount
+                    ?? paint?.commentThread?.commentsCount
+                    ?? paint?.commentThread?.count;
+
+                const numeric = Number(candidate);
+                return Number.isFinite(numeric) ? numeric : null;
+            }
+
+            function parseJsonSafe(payload) {
+                if (typeof payload !== 'string') return payload;
+                try {
+                    return JSON.parse(payload);
+                } catch {
+                    return payload;
+                }
+            }
+
+            function normalizeComments(payload) {
+                if (!payload) return [];
+                const raw = parseJsonSafe(payload);
+
+                if (Array.isArray(raw)) return raw;
+                if (Array.isArray(raw?.items)) return raw.items;
+                if (Array.isArray(raw?.data)) return raw.data;
+                if (Array.isArray(raw?.results)) return raw.results;
+                if (Array.isArray(raw?.comments)) return raw.comments;
+
+                return [];
+            }
+
+            function sortComments(comments) {
+                return [...comments].sort((a, b) => (getCommentDate(a) ?? 0) - (getCommentDate(b) ?? 0));
+            }
+
+            function getCommentDate(comment) {
+                const raw = comment?.updatedAt
+                    ?? comment?.updatedOn
+                    ?? comment?.updatedDate
+                    ?? comment?.createdAt
+                    ?? comment?.createdOn
+                    ?? comment?.created
+                    ?? comment?.timestamp;
+
+                const date = raw ? new Date(raw) : null;
+                return date?.getTime?.() ?? 0;
+            }
+
+            function getCommentAuthorId(comment) {
+                if (!comment) return '';
+                const author = comment.author || comment.user || {};
+                return comment.authorId
+                    ?? author.id
+                    ?? author.userId
+                    ?? comment.userId
+                    ?? '';
+            }
+
+            function getCommentAuthorName(comment) {
+                const author = comment?.author || comment?.user || {};
+                return comment?.authorName
+                    ?? author.displayName
+                    ?? author.name
+                    ?? author.username
+                    ?? author.fullName
+                    ?? comment?.createdBy
+                    ?? comment?.userName
+                    ?? '';
+            }
+
+            function canEditComment(comment) {
+                if (!state.auth.isAuthenticated) return false;
+                const authorId = getCommentAuthorId(comment);
+                if (!authorId || !state.auth.userId) return false;
+                return String(authorId) === String(state.auth.userId);
+            }
+
+            function renderComments() {
+                if (!commentElements.list) return;
+                if (!Array.isArray(state.comments)) {
+                    state.comments = [];
+                }
+
+                const items = sortComments(state.comments);
+                commentElements.list.innerHTML = items.map(renderCommentItem).join('');
+                updateCommentEmptyState();
+            }
+
+            function renderCommentItem(comment) {
+                const authorName = escapeHtml(getCommentAuthorName(comment) || '');
+                const content = escapeHtml(comment?.content || '');
+                const dateLabel = formatTimestamp(getCommentDate(comment));
+                const edited = comment?.updatedAt && comment?.updatedAt !== comment?.createdAt;
+                const editButton = canEditComment(comment) && comment?.id
+                    ? `<button type="button" class="text-xs font-semibold text-emerald-600 transition hover:text-emerald-500" data-edit-comment="${comment.id}">${escapeHtml(localized.comments?.edit || 'Edit')}</button>`
+                    : '';
+
+                const editedBadge = edited
+                    ? `<span class="ml-2 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(localized.comments?.editedLabel || 'Edited')}</span>`
+                    : '';
+
+                return `<article class="rounded-xl border border-slate-200 bg-white/80 p-3 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-200">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="font-semibold text-slate-900 dark:text-white">${authorName || 'Anon'}</p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">${escapeHtml(dateLabel || '')}${editedBadge}</p>
+                        </div>
+                        ${editButton}
+                    </div>
+                    <p class="mt-2 whitespace-pre-line">${content}</p>
+                </article>`;
+            }
+
+            function formatTimestamp(timestamp) {
+                if (!timestamp) return '';
+                const date = new Date(timestamp);
+                if (Number.isNaN(date.getTime())) return '';
+                return date.toLocaleString();
+            }
+
+            function toggleCommentSection(shouldShow) {
+                if (commentElements.section) {
+                    commentElements.section.classList.toggle('hidden', !shouldShow);
+                }
+            }
+
+            function setCommentsLoading(isLoading) {
+                state.commentsLoading = !!isLoading;
+                if (commentElements.loading) {
+                    commentElements.loading.classList.toggle('hidden', !isLoading);
+                }
+                if (commentElements.submit) {
+                    commentElements.submit.disabled = isLoading || state.isSubmittingComment || !state.auth.isAuthenticated;
+                }
+                if (commentElements.input) {
+                    commentElements.input.disabled = !state.auth.isAuthenticated || isLoading;
+                }
+            }
+
+            function setCommentError(message) {
+                state.commentError = message || '';
+                if (commentElements.error) {
+                    commentElements.error.textContent = message || '';
+                    commentElements.error.classList.toggle('hidden', !message);
+                }
+            }
+
+            function setCommentStatus(message) {
+                if (commentElements.status) {
+                    commentElements.status.textContent = message || '';
+                    commentElements.status.classList.toggle('hidden', !message);
+                }
+            }
+
+            function clearCommentStatus() {
+                setCommentStatus('');
+            }
+
+            function updateCommentEmptyState() {
+                if (!commentElements.empty) return;
+                const shouldShow = !state.commentsLoading && Array.isArray(state.comments) && state.comments.length === 0 && !state.commentError;
+                commentElements.empty.classList.toggle('hidden', !shouldShow);
+            }
+
+            function updateCommentCountDisplay() {
+                const rawCount = state.commentCount ?? (Array.isArray(state.comments) ? state.comments.length : 0) ?? 0;
+                const count = Number(rawCount);
+                if (commentElements.count) {
+                    commentElements.count.textContent = Number.isFinite(count) ? count : '0';
+                }
+            }
+
+            function applyCommentAuthState() {
+                const isAuthenticated = !!state.auth.isAuthenticated;
+                if (commentElements.loginNotice) {
+                    commentElements.loginNotice.classList.toggle('hidden', isAuthenticated);
+                }
+
+                if (commentElements.input) {
+                    commentElements.input.disabled = !isAuthenticated;
+                }
+
+                if (commentElements.submit) {
+                    commentElements.submit.textContent = isAuthenticated
+                        ? @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Submit"].Value, jsonOptions))
+                        : localized.comments?.loginCta || 'Log in to comment';
+                    commentElements.submit.disabled = state.isSubmittingComment || !isAuthenticated;
+                }
+
+                if (!isAuthenticated && commentElements.cancelEdit) {
+                    commentElements.cancelEdit.classList.add('hidden');
+                }
+            }
+
+            async function refreshCommentCount() {
+                if (!state.commentThreadId) return;
+                const url = formatCommentEndpoint(commentEndpoints.count, state.commentThreadId);
+                if (!url) return;
+
+                try {
+                    const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                    if (!response.ok) return;
+                    const payload = await response.text();
+                    const parsed = parseJsonSafe(payload);
+                    const numeric = typeof parsed === 'number'
+                        ? parsed
+                        : Number(parsed?.count ?? parsed?.commentsCount ?? parsed?.total ?? parsed);
+                    if (Number.isFinite(numeric)) {
+                        state.commentCount = numeric;
+                        updateCommentCountDisplay();
+                    }
+                } catch (error) {
+                    console.warn('Unable to refresh comment count', error);
+                }
+            }
+
+            async function loadComments() {
+                if (!state.commentThreadId) {
+                    toggleCommentSection(false);
+                    return;
+                }
+
+                toggleCommentSection(true);
+                setCommentsLoading(true);
+                setCommentError('');
+
+                const url = formatCommentEndpoint(commentEndpoints.thread, state.commentThreadId);
+                if (!url) {
+                    setCommentError(localized.comments?.unavailable || 'Comments unavailable');
+                    setCommentsLoading(false);
+                    return;
+                }
+
+                try {
+                    const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                    if (response.status === 401) {
+                        state.auth.isAuthenticated = false;
+                        applyCommentAuthState();
+                    }
+
+                    if (!response.ok) {
+                        throw new Error('Unable to load comments');
+                    }
+
+                    const payload = await response.text();
+                    state.comments = normalizeComments(payload);
+                    if (state.commentCount === null || state.commentCount === undefined) {
+                        state.commentCount = state.comments.length;
+                    }
+
+                    renderComments();
+                    updateCommentCountDisplay();
+                } catch (error) {
+                    console.error(error);
+                    setCommentError(localized.comments?.error || 'Unable to load comments');
+                } finally {
+                    setCommentsLoading(false);
+                    updateCommentEmptyState();
+                }
+            }
+
+            function beginEditComment(commentId) {
+                if (!state.auth.isAuthenticated) {
+                    redirectToLogin();
+                    return;
+                }
+
+                const comment = state.comments.find(c => Number(c?.id) === Number(commentId));
+                if (!comment) return;
+
+                state.editingCommentId = commentId;
+                if (commentElements.input) {
+                    commentElements.input.value = comment?.content || '';
+                    commentElements.input.focus();
+                }
+
+                if (commentElements.submit) {
+                    commentElements.submit.textContent = @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Update"].Value, jsonOptions));
+                }
+
+                if (commentElements.cancelEdit) {
+                    commentElements.cancelEdit.classList.remove('hidden');
+                }
+
+                clearCommentStatus();
+            }
+
+            function cancelCommentEdit() {
+                state.editingCommentId = null;
+                if (commentElements.input) {
+                    commentElements.input.value = '';
+                }
+                if (commentElements.submit) {
+                    commentElements.submit.textContent = @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Submit"].Value, jsonOptions));
+                }
+                if (commentElements.cancelEdit) {
+                    commentElements.cancelEdit.classList.add('hidden');
+                }
+                clearCommentStatus();
+            }
+
+            function redirectToLogin() {
+                if (state.auth.loginUrl) {
+                    window.location.href = state.auth.loginUrl;
+                }
+            }
+
+            async function handleCommentSubmit(event) {
+                event.preventDefault();
+                if (!state.auth.isAuthenticated) {
+                    redirectToLogin();
+                    return;
+                }
+
+                if (!state.commentThreadId) {
+                    setCommentError(localized.comments?.unavailable || 'Comments unavailable');
+                    return;
+                }
+
+                const content = commentElements.input?.value?.trim();
+                if (!content) {
+                    setCommentError(localized.comments?.error || 'Comment content is required');
+                    return;
+                }
+
+                const isEditing = state.editingCommentId !== null;
+                const url = isEditing
+                    ? formatCommentEndpoint(commentEndpoints.update, state.commentThreadId, state.editingCommentId)
+                    : formatCommentEndpoint(commentEndpoints.create, state.commentThreadId);
+
+                if (!url) {
+                    setCommentError(localized.comments?.unavailable || 'Comments unavailable');
+                    return;
+                }
+
+                state.isSubmittingComment = true;
+                setCommentError('');
+                clearCommentStatus();
+                setCommentsLoading(true);
+
+                try {
+                    const response = await fetch(url, {
+                        method: isEditing ? 'PUT' : 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ content })
+                    });
+
+                    if (response.status === 401) {
+                        state.auth.isAuthenticated = false;
+                        applyCommentAuthState();
+                        redirectToLogin();
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error('Failed to submit comment');
+                    }
+
+                    cancelCommentEdit();
+                    if (commentElements.input) {
+                        commentElements.input.value = '';
+                    }
+                    await loadComments();
+                    await refreshCommentCount();
+                    setCommentStatus(isEditing ? localized.comments?.updated : localized.comments?.saved);
+                } catch (error) {
+                    console.error(error);
+                    setCommentError(localized.comments?.error || 'Unable to submit comment');
+                } finally {
+                    state.isSubmittingComment = false;
+                    setCommentsLoading(false);
+                    applyCommentAuthState();
+                }
+            }
+
+            function initializeComments(paint) {
+                state.commentThreadId = resolveCommentThreadId(paint);
+                state.commentCount = resolveCommentCountFromPaint(paint);
+                applyCommentAuthState();
+                updateCommentCountDisplay();
+
+                if (!state.commentThreadId) {
+                    setCommentError(localized.comments?.unavailable || 'Comments unavailable');
+                    toggleCommentSection(false);
+                    return;
+                }
+
+                toggleCommentSection(true);
+                loadComments();
+                refreshCommentCount();
+            }
+
+            function wireCommentEvents() {
+                if (commentElements.form) {
+                    commentElements.form.addEventListener('submit', handleCommentSubmit);
+                }
+
+                if (commentElements.cancelEdit) {
+                    commentElements.cancelEdit.addEventListener('click', cancelCommentEdit);
+                }
+
+                if (commentElements.list) {
+                    commentElements.list.addEventListener('click', event => {
+                        const editBtn = event.target.closest('[data-edit-comment]');
+                        if (!editBtn) return;
+                        const id = Number(editBtn.getAttribute('data-edit-comment'));
+                        if (Number.isFinite(id)) {
+                            beginEditComment(id);
+                        }
+                    });
+                }
+            }
+
+            applyCommentAuthState();
+            wireCommentEvents();
 
             function escapeHtml(value) {
                 if (value === null || value === undefined) {
@@ -498,6 +1051,10 @@
                 }
                 if (container) {
                     container.classList.toggle('hidden', isError);
+                }
+
+                if (isError) {
+                    toggleCommentSection(false);
                 }
             }
 

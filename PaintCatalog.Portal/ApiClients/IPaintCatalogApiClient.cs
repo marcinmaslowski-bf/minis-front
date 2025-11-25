@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using PaintCatalog.Portal.Models.Api;
 
 namespace PaintCatalog.Portal.ApiClients
 {
@@ -21,5 +22,13 @@ namespace PaintCatalog.Portal.ApiClients
         Task<string> GetBrandSeriesRawAsync(string brandSlug);
 
         Task<string> GetPaintBySlugsRawAsync(string brandSlug, string seriesSlug, string paintSlug);
+
+        Task<string> GetCommentsByThreadIdAsync(int threadId);
+
+        Task<string> GetCommentCountByThreadIdAsync(int threadId);
+
+        Task<string> CreateCommentAsync(int threadId, CreateCommentRequest request);
+
+        Task<string> UpdateCommentAsync(int threadId, int commentId, UpdateCommentRequest request);
     }
 }

@@ -84,4 +84,58 @@
   <data name="Card_Value_Identifiers_None" xml:space="preserve">
     <value>No identifiers</value>
   </data>
+  <data name="Comments_Title" xml:space="preserve">
+    <value>Comments</value>
+  </data>
+  <data name="Comments_Subtitle" xml:space="preserve">
+    <value>Share feedback about this paint.</value>
+  </data>
+  <data name="Comments_Loading" xml:space="preserve">
+    <value>Loading comments...</value>
+  </data>
+  <data name="Comments_Empty" xml:space="preserve">
+    <value>No comments yet. Be the first to share your thoughts.</value>
+  </data>
+  <data name="Comments_Login_Prompt" xml:space="preserve">
+    <value>Sign in to add a comment.</value>
+  </data>
+  <data name="Comments_Login_Link" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="Comments_Form_Label" xml:space="preserve">
+    <value>Add a comment</value>
+  </data>
+  <data name="Comments_Form_Placeholder" xml:space="preserve">
+    <value>Share your experience with this paint...</value>
+  </data>
+  <data name="Comments_Submit" xml:space="preserve">
+    <value>Add comment</value>
+  </data>
+  <data name="Comments_Update" xml:space="preserve">
+    <value>Save changes</value>
+  </data>
+  <data name="Comments_CancelEdit" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Comments_Error_Generic" xml:space="preserve">
+    <value>Unable to load comments right now.</value>
+  </data>
+  <data name="Comments_Error_Unavailable" xml:space="preserve">
+    <value>Comments are unavailable for this paint.</value>
+  </data>
+  <data name="Comments_Status_Saved" xml:space="preserve">
+    <value>Comment added.</value>
+  </data>
+  <data name="Comments_Status_Updated" xml:space="preserve">
+    <value>Comment updated.</value>
+  </data>
+  <data name="Comments_Login_Cta" xml:space="preserve">
+    <value>Sign in to comment</value>
+  </data>
+  <data name="Comments_Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Comments_Edited_Label" xml:space="preserve">
+    <value>Edited</value>
+  </data>
 </root>
