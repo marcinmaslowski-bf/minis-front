@@ -154,40 +154,55 @@
             </span>
         </div>
 
-        <div id="comments-error" class="mt-4 hidden rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/60 dark:text-red-100"></div>
-        <div id="comments-loading" class="mt-4 hidden rounded-lg border border-slate-200 bg-white/70 p-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">@Localizer["Comments_Loading"]</div>
-        <div id="comments-empty" class="mt-4 hidden rounded-lg border border-slate-200 bg-white/70 p-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">@Localizer["Comments_Empty"]</div>
-        <div id="comment-list" class="mt-4 space-y-3"></div>
+        <div class="mt-4 grid gap-6 lg:grid-cols-[1.7fr_minmax(260px,0.9fr)]">
+            <div class="space-y-4">
+                <div id="comments-error" class="hidden rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/60 dark:text-red-100"></div>
+                <div id="comments-loading" class="hidden rounded-lg border border-slate-200 bg-white/70 p-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">@Localizer["Comments_Loading"]</div>
+                <div id="comments-empty" class="hidden rounded-lg border border-slate-200 bg-white/70 p-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">@Localizer["Comments_Empty"]</div>
+                <div id="comment-list" class="space-y-3"></div>
 
-        <div class="mt-6 border-t border-slate-200 pt-4 dark:border-slate-700">
-            <div id="comments-login-notice" class="mb-3 hidden rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-100">
-                @Localizer["Comments_Login_Prompt"] <a href="@(Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/login")" class="font-semibold text-emerald-600 underline dark:text-emerald-400">@Localizer["Comments_Login_Link"]</a>.
+                <div class="border-t border-slate-200 pt-4 dark:border-slate-700">
+                    <div id="comments-login-notice" class="mb-3 hidden rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/60 dark:text-amber-100">
+                        @Localizer["Comments_Login_Prompt"] <a href="@(Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/login")" class="font-semibold text-emerald-600 underline dark:text-emerald-400">@Localizer["Comments_Login_Link"]</a>.
+                    </div>
+                    <form id="comment-form" class="space-y-3">
+                        <div class="space-y-1">
+                            <label for="comment-input" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Comments_Form_Label"]</label>
+                            <textarea id="comment-input" rows="3" placeholder="@Localizer["Comments_Form_Placeholder"]" class="w-full rounded-xl border border-slate-300 bg-white/80 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100"></textarea>
+                        </div>
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <label for="comment-attachment-input" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Comments_Attachments_Label"]</label>
+                                <span class="text-xs text-slate-500 dark:text-slate-400">@Localizer["Comments_Attachments_Help"]</span>
+                            </div>
+                            <input id="comment-attachment-input" type="file" class="hidden" multiple />
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button id="comment-attachment-button" type="button" class="flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">
+                                    <span class="rounded-lg bg-emerald-500/10 p-1 text-emerald-600 dark:text-emerald-300" data-icon="attachment"></span>
+                                    <span>@Localizer["Comments_Attachments_Add"]</span>
+                                </button>
+                                <div id="comment-attachments" class="flex flex-wrap items-center gap-2"></div>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <button id="comment-submit" type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600">@Localizer["Comments_Submit"]</button>
+                            <button id="comment-cancel-edit" type="button" class="hidden rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">@Localizer["Comments_CancelEdit"]</button>
+                            <span id="comment-status" class="hidden text-xs text-slate-500 dark:text-slate-400"></span>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <form id="comment-form" class="space-y-3">
-                <div class="space-y-1">
-                    <label for="comment-input" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Comments_Form_Label"]</label>
-                    <textarea id="comment-input" rows="3" placeholder="@Localizer["Comments_Form_Placeholder"]" class="w-full rounded-xl border border-slate-300 bg-white/80 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100"></textarea>
-                </div>
-                <div class="space-y-2">
-                    <div class="flex items-center gap-2">
-                        <label for="comment-attachment-input" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Comments_Attachments_Label"]</label>
-                        <span class="text-xs text-slate-500 dark:text-slate-400">@Localizer["Comments_Attachments_Help"]</span>
+
+            <aside id="comment-gallery" class="hidden space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-200">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900 dark:text-white">@Localizer["Comments_Gallery_Title"]</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">@Localizer["Comments_Gallery_Subtitle"]</p>
                     </div>
-                    <input id="comment-attachment-input" type="file" class="hidden" multiple />
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button id="comment-attachment-button" type="button" class="flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">
-                            <span class="rounded-lg bg-emerald-500/10 p-1 text-emerald-600 dark:text-emerald-300" data-icon="attachment"></span>
-                            <span>@Localizer["Comments_Attachments_Add"]</span>
-                        </button>
-                        <div id="comment-attachments" class="flex flex-wrap items-center gap-2"></div>
-                    </div>
+                    <span class="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300" id="comment-gallery-count">0</span>
                 </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <button id="comment-submit" type="submit" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50 disabled:hover:bg-emerald-600">@Localizer["Comments_Submit"]</button>
-                    <button id="comment-cancel-edit" type="button" class="hidden rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">@Localizer["Comments_CancelEdit"]</button>
-                    <span id="comment-status" class="hidden text-xs text-slate-500 dark:text-slate-400"></span>
-                </div>
-            </form>
+                <div id="comment-gallery-grid" class="grid grid-cols-2 gap-3 sm:grid-cols-3"></div>
+            </aside>
         </div>
     </section>
 </section>
@@ -274,7 +289,10 @@
                 attachments: document.getElementById('comment-attachments'),
                 submit: document.getElementById('comment-submit'),
                 cancelEdit: document.getElementById('comment-cancel-edit'),
-                status: document.getElementById('comment-status')
+                status: document.getElementById('comment-status'),
+                gallery: document.getElementById('comment-gallery'),
+                galleryGrid: document.getElementById('comment-gallery-grid'),
+                galleryCount: document.getElementById('comment-gallery-count')
             };
 
             function injectIcons() {
@@ -745,6 +763,7 @@
 
                 const items = sortComments(state.comments);
                 commentElements.list.innerHTML = items.map(renderCommentItem).join('');
+                renderCommentGallery(items);
                 updateCommentEmptyState();
             }
 
@@ -761,6 +780,14 @@
                     ? `<span class="ml-2 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(localized.comments?.editedLabel || 'Edited')}</span>`
                     : '';
 
+                const attachments = normalizeCommentAttachments(comment);
+                const attachmentsMarkup = attachments.length
+                    ? `<div class="mt-3 space-y-2">
+                            <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">${escapeHtml(localized.comments?.attachmentsLabel || localized.comments?.attachments || 'Załączniki')}</p>
+                            <div class="flex flex-wrap gap-3">${attachments.map(renderCommentAttachment).join('')}</div>
+                       </div>`
+                    : '';
+
                 return `<article class="rounded-xl border border-slate-200 bg-white/80 p-3 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-200">
                     <div class="flex items-start justify-between gap-3">
                         <div>
@@ -770,7 +797,131 @@
                         ${editButton}
                     </div>
                     <p class="mt-2 whitespace-pre-line">${content}</p>
+                    ${attachmentsMarkup}
                 </article>`;
+            }
+
+            function normalizeCommentAttachments(comment) {
+                const raw = comment?.attachments
+                    ?? comment?.files
+                    ?? comment?.media
+                    ?? [];
+
+                const collection = Array.isArray(raw)
+                    ? raw
+                    : Array.isArray(raw?.items)
+                        ? raw.items
+                        : [];
+
+                return collection
+                    .map((attachment, index) => ({
+                        id: attachment?.id ?? attachment?.attachmentId ?? `${comment?.id || 'comment'}-${index}`,
+                        fileName: attachment?.fileName || attachment?.name || attachment?.title || 'attachment',
+                        contentType: attachment?.contentType || attachment?.mimeType || '',
+                        type: attachment?.type ?? attachment?.attachmentType ?? null,
+                        url: resolveAttachmentUrl(attachment),
+                        thumbnailUrl: attachment?.thumbnailUrl || attachment?.previewUrl || null,
+                        content: attachment?.content || null
+                    }))
+                    .filter(attachment => attachment.url || attachment.thumbnailUrl || attachment.content);
+            }
+
+            function resolveAttachmentUrl(attachment) {
+                const candidates = [
+                    attachment?.url,
+                    attachment?.href,
+                    attachment?.link,
+                    attachment?.contentUrl,
+                    attachment?.contentUri,
+                    attachment?.fileUrl,
+                    attachment?.downloadUrl,
+                    attachment?.mediaUrl,
+                    attachment?.path
+                ];
+
+                const fromCandidates = candidates.find(value => typeof value === 'string' && value.trim());
+                if (fromCandidates) {
+                    return fromCandidates;
+                }
+
+                if (typeof attachment?.content === 'string' && attachment.content.trim()) {
+                    const content = attachment.content.trim();
+                    if (content.startsWith('http') || content.startsWith('data:')) {
+                        return content;
+                    }
+
+                    if (/^[A-Za-z0-9+/=]+$/.test(content) && content.length >= 12) {
+                        const mime = attachment?.contentType || 'application/octet-stream';
+                        return `data:${mime};base64,${content}`;
+                    }
+                }
+
+                return null;
+            }
+
+            function isImageAttachment(attachment) {
+                const contentType = String(attachment?.contentType || '').toLowerCase();
+                if (contentType.startsWith('image/')) return true;
+
+                const fileName = String(attachment?.fileName || '').toLowerCase();
+                return ['.jpg', '.jpeg', '.png', '.gif', '.webp'].some(ext => fileName.endsWith(ext));
+            }
+
+            function renderCommentAttachment(attachment) {
+                const name = escapeHtml(attachment.fileName || 'attachment');
+                const url = escapeHtml(attachment.url || attachment.thumbnailUrl || '');
+                const isImage = isImageAttachment(attachment);
+
+                if (isImage && url) {
+                    return `<a href="${url}" target="_blank" rel="noopener" class="group block w-32 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-800/40">
+                                <div class="relative h-24 w-full overflow-hidden bg-slate-100 dark:bg-slate-900/60">
+                                    <img src="${url}" alt="${name}" class="h-full w-full object-cover transition duration-150 ease-out group-hover:scale-[1.02]" loading="lazy" />
+                                </div>
+                                <p class="truncate px-3 py-2 text-[11px] font-semibold text-slate-600 dark:text-slate-200">${name}</p>
+                            </a>`;
+                }
+
+                const icon = icons.attachment || '📎';
+                return `<a href="${url || '#'}" ${url ? 'target="_blank" rel="noopener"' : ''} class="inline-flex max-w-[240px] items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-emerald-500 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
+                            <span class="text-emerald-600 dark:text-emerald-300">${icon}</span>
+                            <span class="truncate" title="${name}">${name}</span>
+                        </a>`;
+            }
+
+            function renderCommentGallery(comments) {
+                if (!commentElements.gallery || !commentElements.galleryGrid || !commentElements.galleryCount) return;
+
+                const collection = Array.isArray(comments) ? comments : [];
+                const seen = new Set();
+                const attachments = collection.flatMap(normalizeCommentAttachments)
+                    .filter(attachment => {
+                        const url = attachment.url || attachment.thumbnailUrl;
+                        if (!url || !isImageAttachment(attachment)) return false;
+                        if (seen.has(url)) return false;
+                        seen.add(url);
+                        return true;
+                    });
+
+                const shouldShow = attachments.length > 0;
+                commentElements.gallery.classList.toggle('hidden', !shouldShow);
+
+                if (!shouldShow) {
+                    commentElements.galleryGrid.innerHTML = '';
+                    commentElements.galleryCount.textContent = '0';
+                    return;
+                }
+
+                commentElements.galleryCount.textContent = attachments.length;
+                commentElements.galleryGrid.innerHTML = attachments
+                    .map(attachment => {
+                        const url = escapeHtml(attachment.url || attachment.thumbnailUrl || '');
+                        const name = escapeHtml(attachment.fileName || 'attachment');
+                        return `<a href="${url}" target="_blank" rel="noopener" class="group relative block overflow-hidden rounded-lg border border-slate-200 bg-white/90 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60">
+                                    <img src="${url}" alt="${name}" loading="lazy" class="h-24 w-full object-cover transition duration-150 ease-out group-hover:scale-[1.02]" />
+                                    <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/70 to-transparent px-2 py-1 text-[11px] font-semibold text-white drop-shadow-sm">${name}</div>
+                                </a>`;
+                    })
+                    .join('');
             }
 
             function formatTimestamp(timestamp) {
@@ -988,9 +1139,17 @@
                     if (!response.ok) return;
                     const payload = await response.text();
                     const parsed = parseJsonSafe(payload);
-                    const numeric = typeof parsed === 'number'
+                    const candidate = typeof parsed === 'number'
                         ? parsed
-                        : Number(parsed?.count ?? parsed?.commentsCount ?? parsed?.total ?? parsed);
+                        : parsed?.count
+                            ?? parsed?.commentsCount
+                            ?? parsed?.total
+                            ?? parsed?.commentCount
+                            ?? parsed?.data?.count
+                            ?? parsed?.data?.total
+                            ?? parsed?.data?.comments
+                            ?? parsed;
+                    const numeric = Number(candidate);
                     if (Number.isFinite(numeric)) {
                         state.commentCount = numeric;
                         updateCommentCountDisplay();
