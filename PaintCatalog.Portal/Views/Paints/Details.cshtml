@@ -904,22 +904,42 @@
                 return ['.jpg', '.jpeg', '.png', '.gif', '.webp'].some(ext => fileName.endsWith(ext));
             }
 
+            function isVideoAttachment(attachment) {
+                const contentType = String(attachment?.contentType || '').toLowerCase();
+                if (contentType.startsWith('video/')) return true;
+
+                const fileName = String(attachment?.fileName || '').toLowerCase();
+                return ['.mp4', '.mov', '.webm', '.avi', '.mkv'].some(ext => fileName.endsWith(ext));
+            }
+
             function renderCommentAttachment(attachment) {
                 const name = escapeHtml(attachment.fileName || 'attachment');
                 const url = escapeHtml(attachment.url || attachment.thumbnailUrl || '');
                 const isImage = isImageAttachment(attachment);
+                const isVideo = isVideoAttachment(attachment);
+                const previewType = isVideo ? 'video' : 'image';
 
-                if (isImage && url) {
-                    return `<a href="${url}" target="_blank" rel="noopener" class="group block w-32 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-800/40">
-                                <div class="relative h-24 w-full overflow-hidden bg-slate-100 dark:bg-slate-900/60">
-                                    <img src="${url}" alt="${name}" class="h-full w-full object-cover transition duration-150 ease-out group-hover:scale-[1.02]" loading="lazy" />
+                if ((isImage || isVideo) && url) {
+                    const mediaAttrs = `data-media-preview data-media-type="${previewType}" data-media-title="${name}"`;
+                    const previewContent = isVideo
+                        ? `<div class="relative h-24 w-full overflow-hidden bg-slate-100 dark:bg-slate-900/60">
+                                <div class="absolute inset-0 grid place-items-center">
+                                    <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-950/70 text-white shadow-md">▶</span>
                                 </div>
+                                <div class="h-full w-full bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-700"></div>
+                           </div>`
+                        : `<div class="relative h-24 w-full overflow-hidden bg-slate-100 dark:bg-slate-900/60">
+                                    <img src="${url}" alt="${name}" class="h-full w-full object-cover transition duration-150 ease-out group-hover:scale-[1.02]" loading="lazy" />
+                                </div>`;
+
+                    return `<a href="${url}" ${mediaAttrs} class="group block w-32 overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-800/40">
+                                ${previewContent}
                                 <p class="truncate px-3 py-2 text-[11px] font-semibold text-slate-600 dark:text-slate-200">${name}</p>
                             </a>`;
                 }
 
                 const icon = icons.attachment || '📎';
-                return `<a href="${url || '#'}" ${url ? 'target="_blank" rel="noopener"' : ''} class="inline-flex max-w-[240px] items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-emerald-500 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
+                return `<a href="${url || '#'}" class="inline-flex max-w-[240px] items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-emerald-500 hover:text-emerald-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
                             <span class="text-emerald-600 dark:text-emerald-300">${icon}</span>
                             <span class="truncate" title="${name}">${name}</span>
                         </a>`;
@@ -933,7 +953,7 @@
                 const attachments = collection.flatMap(normalizeCommentAttachments)
                     .filter(attachment => {
                         const url = attachment.url || attachment.thumbnailUrl;
-                        if (!url || !isImageAttachment(attachment)) return false;
+                        if (!url || (!isImageAttachment(attachment) && !isVideoAttachment(attachment))) return false;
                         if (seen.has(url)) return false;
                         seen.add(url);
                         return true;
@@ -953,7 +973,18 @@
                     .map(attachment => {
                         const url = escapeHtml(attachment.url || attachment.thumbnailUrl || '');
                         const name = escapeHtml(attachment.fileName || 'attachment');
-                        return `<a href="${url}" target="_blank" rel="noopener" class="group relative block overflow-hidden rounded-lg border border-slate-200 bg-white/90 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60">
+                        const mediaType = isVideoAttachment(attachment) ? 'video' : 'image';
+
+                        if (mediaType === 'video') {
+                            return `<a href="${url}" data-media-preview data-media-type="video" data-media-title="${name}" class="group relative block overflow-hidden rounded-lg border border-slate-200 bg-gradient-to-br from-slate-800 to-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-700">
+                                        <div class="flex h-24 items-center justify-center">
+                                            <span class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-slate-950/60 text-white shadow-md">▶</span>
+                                        </div>
+                                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/70 to-transparent px-2 py-1 text-[11px] font-semibold text-white drop-shadow-sm">${name}</div>
+                                    </a>`;
+                        }
+
+                        return `<a href="${url}" data-media-preview data-media-type="image" data-media-title="${name}" class="group relative block overflow-hidden rounded-lg border border-slate-200 bg-white/90 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60">
                                     <img src="${url}" alt="${name}" loading="lazy" class="h-24 w-full object-cover transition duration-150 ease-out group-hover:scale-[1.02]" />
                                     <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/70 to-transparent px-2 py-1 text-[11px] font-semibold text-white drop-shadow-sm">${name}</div>
                                 </a>`;
