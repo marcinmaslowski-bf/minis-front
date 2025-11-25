@@ -138,4 +138,28 @@
   <data name="Comments_Edited_Label" xml:space="preserve">
     <value>Edytowano</value>
   </data>
+  <data name="Comments_Attachments_Label" xml:space="preserve">
+    <value>Załączniki</value>
+  </data>
+  <data name="Comments_Attachments_Help" xml:space="preserve">
+    <value>Maks. 5 plików po 5 MB.</value>
+  </data>
+  <data name="Comments_Attachments_Add" xml:space="preserve">
+    <value>Dodaj załącznik</value>
+  </data>
+  <data name="Comments_Attachments_Empty" xml:space="preserve">
+    <value>Brak załączników.</value>
+  </data>
+  <data name="Comments_Attachments_Remove" xml:space="preserve">
+    <value>Usuń załącznik</value>
+  </data>
+  <data name="Comments_Attachments_TooLarge" xml:space="preserve">
+    <value>Załącznik jest za duży (max 5 MB).</value>
+  </data>
+  <data name="Comments_Attachments_Limit" xml:space="preserve">
+    <value>Osiągnięto limit 5 załączników.</value>
+  </data>
+  <data name="Comments_Attachments_ReadError" xml:space="preserve">
+    <value>Nie udało się odczytać załącznika.</value>
+  </data>
 </root>
