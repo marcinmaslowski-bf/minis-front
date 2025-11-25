@@ -18,10 +18,10 @@ namespace PaintCatalog.Portal.Models.Api
     public class CreateCommentAttachmentRequest
     {
         [JsonPropertyName("type")]
-        public int? Type { get; set; }
+        public int Type { get; set; }
 
-        [JsonPropertyName("location")]
-        public string? Location { get; set; }
+        [JsonPropertyName("content")]
+        public string? Content { get; set; }
 
         [JsonPropertyName("fileName")]
         public string? FileName { get; set; }
