@@ -170,6 +170,14 @@ namespace PaintCatalog.Portal.ApiClients
             return await response.Content.ReadAsStringAsync();
         }
 
+        public async Task EnsureCurrentUserExistsAsync()
+        {
+            const string url = "/api/v1/users/me";
+
+            using var response = await SendAsync(HttpMethod.Post, url);
+            response.EnsureSuccessStatusCode();
+        }
+
         private async Task<HttpResponseMessage> SendGetAsync(string url)
         {
             return await SendAsync(HttpMethod.Get, url);
