@@ -814,15 +814,29 @@
                         : [];
 
                 return collection
-                    .map((attachment, index) => ({
-                        id: attachment?.id ?? attachment?.attachmentId ?? `${comment?.id || 'comment'}-${index}`,
-                        fileName: attachment?.fileName || attachment?.name || attachment?.title || 'attachment',
-                        contentType: attachment?.contentType || attachment?.mimeType || '',
-                        type: attachment?.type ?? attachment?.attachmentType ?? null,
-                        url: resolveAttachmentUrl(attachment),
-                        thumbnailUrl: attachment?.thumbnailUrl || attachment?.previewUrl || null,
-                        content: attachment?.content || null
-                    }))
+                    .map((attachment, index) => {
+                        const content = attachment?.content
+                            ?? attachment?.contentBase64
+                            ?? attachment?.data
+                            ?? null;
+
+                        return {
+                            id: attachment?.id ?? attachment?.attachmentId ?? `${comment?.id || 'comment'}-${index}`,
+                            fileName: attachment?.fileName
+                                || attachment?.filename
+                                || attachment?.name
+                                || attachment?.title
+                                || 'attachment',
+                            contentType: attachment?.contentType
+                                || attachment?.mimeType
+                                || attachment?.contentMimeType
+                                || '',
+                            type: attachment?.type ?? attachment?.attachmentType ?? null,
+                            url: resolveAttachmentUrl(attachment),
+                            thumbnailUrl: attachment?.thumbnailUrl || attachment?.previewUrl || null,
+                            content
+                        };
+                    })
                     .filter(attachment => attachment.url || attachment.thumbnailUrl || attachment.content);
             }
 
@@ -836,6 +850,8 @@
                     attachment?.fileUrl,
                     attachment?.downloadUrl,
                     attachment?.mediaUrl,
+                    attachment?.attachmentUrl,
+                    attachment?.downloadLink,
                     attachment?.path
                 ];
 
@@ -844,8 +860,12 @@
                     return fromCandidates;
                 }
 
-                if (typeof attachment?.content === 'string' && attachment.content.trim()) {
-                    const content = attachment.content.trim();
+                const rawContent = attachment?.content
+                    ?? attachment?.contentBase64
+                    ?? attachment?.data;
+
+                if (typeof rawContent === 'string' && rawContent.trim()) {
+                    const content = rawContent.trim();
                     if (content.startsWith('http') || content.startsWith('data:')) {
                         return content;
                     }
