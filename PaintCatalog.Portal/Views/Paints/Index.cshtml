@@ -308,7 +308,8 @@
             });
             const getIconMarkup = (id, fallback = '') => {
                 try {
-                    const markup = window.appIcons?.get?.(id);
+                    const markup = window.appIcons?.get?.(id)
+                        || document.getElementById(id)?.innerHTML?.trim();
                     return markup || fallback;
                 } catch (_) {
                     return fallback;
@@ -329,8 +330,8 @@
                 return dictionary[key] || fallback;
             };
 
-            const state = {
-                filters: {
+                const state = {
+                    filters: {
                     brandId: null,
                     seriesId: null,
                     type: null,
@@ -347,7 +348,8 @@
                 brands: normalizeBrandPayload(bootstrap.brands),
                 brandSeries: {},
                 loading: false,
-                commentCounts: {}
+                commentCounts: {},
+                fetchedCommentThreads: new Set()
             };
 
             primeBrandSeriesCacheFromBrands(state.brands);
@@ -1199,13 +1201,15 @@
                     if (!threadId || seen.has(threadId)) return;
                     seen.add(threadId);
 
-                    if (state.commentCounts[threadId] !== undefined) {
-                        return;
+                    const countFromPayload = extractCommentCountFromPaint(paint);
+                    const hasCachedCount = state.commentCounts[threadId] !== undefined;
+                    const hasFetchedCount = state.fetchedCommentThreads.has(threadId);
+
+                    if (!hasCachedCount && countFromPayload !== null) {
+                        state.commentCounts[threadId] = countFromPayload;
                     }
 
-                    const countFromPayload = extractCommentCountFromPaint(paint);
-                    if (countFromPayload !== null) {
-                        state.commentCounts[threadId] = countFromPayload;
+                    if (hasFetchedCount) {
                         return;
                     }
 
@@ -1216,6 +1220,7 @@
                     fetchCommentCount(threadId).then(count => {
                         if (count !== null && count !== undefined) {
                             state.commentCounts[threadId] = count;
+                            state.fetchedCommentThreads.add(threadId);
                             renderPaintCards();
                         }
                     });
