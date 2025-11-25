@@ -6,6 +6,7 @@
     let titleElement;
     let prevButton;
     let nextButton;
+    let counterElement;
     let currentGroup = null;
     let groupItems = [];
     let currentIndex = -1;
@@ -42,10 +43,13 @@
         closeBtn.style.color = '#e2e8f0';
         closeBtn.style.backgroundColor = 'rgba(15, 23, 42, 0.6)';
         closeBtn.style.cursor = 'pointer';
-        closeBtn.style.fontSize = '24px';
+        closeBtn.style.fontSize = '22px';
+        closeBtn.style.fontWeight = '700';
         closeBtn.style.lineHeight = '1';
-        closeBtn.style.display = 'grid';
-        closeBtn.style.placeItems = 'center';
+        closeBtn.style.display = 'flex';
+        closeBtn.style.alignItems = 'center';
+        closeBtn.style.justifyContent = 'center';
+        closeBtn.style.padding = '0';
         closeBtn.addEventListener('click', hideOverlay);
 
         contentContainer = document.createElement('div');
@@ -56,6 +60,7 @@
         contentContainer.style.display = 'flex';
         contentContainer.style.flexDirection = 'column';
         contentContainer.style.gap = '12px';
+        contentContainer.style.position = 'relative';
 
         mediaElement = document.createElement('div');
         mediaElement.style.backgroundColor = 'rgba(15, 23, 42, 0.8)';
@@ -118,10 +123,25 @@
         nextButton.style.boxShadow = '0 10px 30px rgba(0,0,0,0.25)';
         nextButton.addEventListener('click', goToNext);
 
+        counterElement = document.createElement('div');
+        counterElement.style.position = 'absolute';
+        counterElement.style.left = '50%';
+        counterElement.style.bottom = '12px';
+        counterElement.style.transform = 'translateX(-50%)';
+        counterElement.style.padding = '6px 12px';
+        counterElement.style.borderRadius = '9999px';
+        counterElement.style.backgroundColor = 'rgba(15, 23, 42, 0.75)';
+        counterElement.style.color = '#e2e8f0';
+        counterElement.style.fontSize = '13px';
+        counterElement.style.fontWeight = '600';
+        counterElement.style.boxShadow = '0 10px 30px rgba(0,0,0,0.25)';
+        counterElement.style.display = 'none';
+
         contentContainer.appendChild(mediaElement);
         contentContainer.appendChild(titleElement);
         contentContainer.appendChild(prevButton);
         contentContainer.appendChild(nextButton);
+        contentContainer.appendChild(counterElement);
         overlay.appendChild(contentContainer);
         overlay.appendChild(closeBtn);
 
@@ -159,6 +179,7 @@
         groupItems = [];
         currentIndex = -1;
         updateNavigationVisibility();
+        updateCounterDisplay();
     }
 
     function showOverlay() {
@@ -209,6 +230,7 @@
 
         renderMedia(item.src, item.type, item.title);
         updateNavigationVisibility();
+        updateCounterDisplay();
     }
 
     function openMediaViewer(src, type, title, groupId = null, trigger = null) {
@@ -267,6 +289,19 @@
         const showNav = Array.isArray(groupItems) && groupItems.length > 1;
         prevButton.style.display = showNav ? 'flex' : 'none';
         nextButton.style.display = showNav ? 'flex' : 'none';
+    }
+
+    function updateCounterDisplay() {
+        if (!counterElement) return;
+        const total = Array.isArray(groupItems) ? groupItems.length : 0;
+        if (!total) {
+            counterElement.style.display = 'none';
+            counterElement.textContent = '';
+            return;
+        }
+
+        counterElement.style.display = 'flex';
+        counterElement.textContent = `${currentIndex + 1} / ${total}`;
     }
 
     function goToPrevious() {
