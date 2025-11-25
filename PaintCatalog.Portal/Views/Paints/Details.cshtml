@@ -801,6 +801,11 @@
                 </article>`;
             }
 
+            const attachmentUtils = window.AttachmentUtils || {};
+            const normalizeAttachments = attachmentUtils.normalizeAttachments || (() => []);
+            const isImageAttachment = attachmentUtils.isImageAttachment || (() => false);
+            const isVideoAttachment = attachmentUtils.isVideoAttachment || (() => false);
+
             function normalizeCommentAttachments(comment) {
                 const raw = comment?.attachments
                     ?? comment?.files
@@ -811,105 +816,21 @@
                     ? raw
                     : Array.isArray(raw?.items)
                         ? raw.items
-                        : [];
+                        : Array.isArray(raw?.data)
+                            ? raw.data
+                            : Array.isArray(raw?.results)
+                                ? raw.results
+                                : [];
 
-                return collection
-                    .map((attachment, index) => {
-                        const content = attachment?.content
-                            ?? attachment?.contentBase64
-                            ?? attachment?.data
-                            ?? null;
+                const contextId = comment?.id
+                    ?? comment?.commentId
+                    ?? comment?.commentID
+                    ?? null;
 
-                        const downloadUrl = getAttachmentDownloadUrl(attachment);
-                        const resolvedUrl = resolveAttachmentUrl(attachment) ?? downloadUrl;
-
-                        return {
-                            id: attachment?.id ?? attachment?.attachmentId ?? `${comment?.id || 'comment'}-${index}`,
-                            fileName: attachment?.fileName
-                                || attachment?.filename
-                                || attachment?.name
-                                || attachment?.title
-                                || 'attachment',
-                            contentType: attachment?.contentType
-                                || attachment?.mimeType
-                                || attachment?.contentMimeType
-                                || '',
-                            type: attachment?.type ?? attachment?.attachmentType ?? null,
-                            url: resolvedUrl,
-                            thumbnailUrl: attachment?.thumbnailUrl || attachment?.previewUrl || null,
-                            content
-                        };
-                    })
-                    .filter(attachment => attachment.url || attachment.thumbnailUrl || attachment.content);
-            }
-
-            function getAttachmentDownloadUrl(attachment) {
-                const id = attachment?.id ?? attachment?.attachmentId;
-                if (id === undefined || id === null) {
-                    return null;
-                }
-
-                const numericId = Number(id);
-                if (!Number.isFinite(numericId)) {
-                    return null;
-                }
-
-                return `/attachments/${encodeURIComponent(numericId)}`;
-            }
-
-            function resolveAttachmentUrl(attachment) {
-                const candidates = [
-                    attachment?.url,
-                    attachment?.href,
-                    attachment?.link,
-                    attachment?.contentUrl,
-                    attachment?.contentUri,
-                    attachment?.fileUrl,
-                    attachment?.downloadUrl,
-                    attachment?.mediaUrl,
-                    attachment?.attachmentUrl,
-                    attachment?.downloadLink,
-                    attachment?.path
-                ];
-
-                const fromCandidates = candidates.find(value => typeof value === 'string' && value.trim());
-                if (fromCandidates) {
-                    return fromCandidates;
-                }
-
-                const rawContent = attachment?.content
-                    ?? attachment?.contentBase64
-                    ?? attachment?.data;
-
-                if (typeof rawContent === 'string' && rawContent.trim()) {
-                    const content = rawContent.trim();
-                    if (content.startsWith('http') || content.startsWith('data:')) {
-                        return content;
-                    }
-
-                    if (/^[A-Za-z0-9+/=]+$/.test(content) && content.length >= 12) {
-                        const mime = attachment?.contentType || 'application/octet-stream';
-                        return `data:${mime};base64,${content}`;
-                    }
-                }
-
-                return getAttachmentDownloadUrl(attachment);
-            }
-
-            function isImageAttachment(attachment) {
-                const contentType = String(attachment?.contentType || '').toLowerCase();
-                if (contentType.startsWith('image/')) return true;
-
-                const fileName = String(attachment?.fileName || '').toLowerCase();
-                return ['.jpg', '.jpeg', '.png', '.gif', '.webp'].some(ext => fileName.endsWith(ext));
-            }
-
-            function isVideoAttachment(attachment) {
-                const contentType = String(attachment?.contentType || '').toLowerCase();
-                if (contentType.startsWith('video/')) return true;
-
-                const fileName = String(attachment?.fileName || '').toLowerCase();
-                return ['.mp4', '.mov', '.webm', '.avi', '.mkv'].some(ext => fileName.endsWith(ext));
+                return normalizeAttachments(collection, {
+                    contextId: contextId || undefined,
+                    idPrefix: 'comment'
+                });
             }
 
             function renderCommentAttachment(attachment) {
