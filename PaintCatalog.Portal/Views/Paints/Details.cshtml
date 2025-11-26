@@ -1330,6 +1330,10 @@
                     commentElements.loginNotice.classList.toggle('hidden', isAuthenticated);
                 }
 
+                if (commentElements.form) {
+                    commentElements.form.classList.toggle('hidden', !isAuthenticated);
+                }
+
                 if (commentElements.input) {
                     commentElements.input.disabled = !isAuthenticated;
                 }
