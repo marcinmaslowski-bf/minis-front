@@ -33,7 +33,7 @@
 
     function createEmptyBlock(defaultBody = '') {
         return {
-            subtitle: '',
+            header: '',
             body: defaultBody,
             image: null,
             paintIds: []
@@ -78,7 +78,7 @@
         const image = normalizeImage(block.image) || normalizeImage(block.images?.[0]);
 
         return {
-            subtitle: block.subtitle || block.header || '',
+            header: block.header || block.subtitle || '',
             body: block.body || '',
             image,
             paintIds: Array.isArray(block.paintIds) ? block.paintIds : extractPaintIds(block.body)
@@ -173,11 +173,11 @@
             const headerRow = document.createElement('div');
             headerRow.className = 'flex items-start justify-between gap-3';
 
-            const subtitleWrapper = document.createElement('div');
-            subtitleWrapper.className = 'space-y-1 w-full';
-            subtitleWrapper.innerHTML = `
+            const headerWrapper = document.createElement('div');
+            headerWrapper.className = 'space-y-1 w-full';
+            headerWrapper.innerHTML = `
                 <p class="text-xs font-semibold uppercase tracking-wide text-emerald-500">Block ${blockIndex + 1}</p>
-                <input type="text" value="${escapeHtml(block.subtitle)}" placeholder="Subtitle (optional)"
+                <input type="text" value="${escapeHtml(block.header)}" placeholder="Header (optional)"
                     class="w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" />
             `;
 
@@ -193,11 +193,11 @@
                 renderEditor();
             });
 
-            subtitleWrapper.querySelector('input')?.addEventListener('input', (event) => {
-                documentState.sections[sectionIndex].blocks[blockIndex].subtitle = event.target.value;
+            headerWrapper.querySelector('input')?.addEventListener('input', (event) => {
+                documentState.sections[sectionIndex].blocks[blockIndex].header = event.target.value;
             });
 
-            headerRow.appendChild(subtitleWrapper);
+            headerRow.appendChild(headerWrapper);
             headerRow.appendChild(removeButton);
             blockContainer.appendChild(headerRow);
 
@@ -398,13 +398,14 @@
                     const paintIds = extractPaintIds(block.body);
                     const normalizedImage = normalizeImage(block.image);
                     return {
-                        subtitle: (block.subtitle || '').trim(),
+                        header: (block.header || '').trim(),
+                        subHeaders: [],
                         body: (block.body || '').trim(),
                         paintIds,
-                        image: normalizedImage
+                        images: normalizedImage ? [normalizedImage] : null
                     };
                 })
-                .filter(block => block.subtitle || block.body || block.image);
+                .filter(block => block.header || block.body || block.images);
 
             return {
                 title: (section.title || '').trim(),

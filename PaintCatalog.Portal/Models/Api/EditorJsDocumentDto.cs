@@ -9,7 +9,7 @@ namespace PaintCatalog.Portal.Models.Api
         public List<TutorialSectionDto>? Sections { get; set; }
 
         [JsonPropertyName("blocks")]
-        public List<TutorialBlockDto>? BlocksLegacy { get; set; }
+        public List<TutorialBlockDto>? Blocks { get; set; }
 
         [JsonPropertyName("time")]
         public long? Time { get; set; }
