@@ -5,17 +5,14 @@ namespace PaintCatalog.Portal.Models.Api
 {
     public class TutorialBlockDto
     {
-        [JsonPropertyName("header")]
-        public string? Header { get; set; }
-
-        [JsonPropertyName("subHeaders")]
-        public List<string>? SubHeaders { get; set; }
-
-        [JsonPropertyName("images")]
-        public List<TutorialImageDto>? Images { get; set; }
+        [JsonPropertyName("subtitle")]
+        public string? Subtitle { get; set; }
 
         [JsonPropertyName("paintIds")]
         public List<int>? PaintIds { get; set; }
+
+        [JsonPropertyName("image")]
+        public TutorialImageDto? Image { get; set; }
 
         [JsonPropertyName("body")]
         public string? Body { get; set; }

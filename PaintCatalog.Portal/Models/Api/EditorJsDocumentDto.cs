@@ -5,8 +5,11 @@ namespace PaintCatalog.Portal.Models.Api
 {
     public class EditorJsDocumentDto
     {
+        [JsonPropertyName("sections")]
+        public List<TutorialSectionDto>? Sections { get; set; }
+
         [JsonPropertyName("blocks")]
-        public List<TutorialBlockDto>? Blocks { get; set; }
+        public List<TutorialBlockDto>? BlocksLegacy { get; set; }
 
         [JsonPropertyName("time")]
         public long? Time { get; set; }

@@ -66,13 +66,21 @@ namespace PaintCatalog.Portal.Controllers
                 {
                     Time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
                     Version = "2.29.0",
-                    Blocks = new List<TutorialBlockDto>
+                    Sections = new List<TutorialSectionDto>
                     {
-                        new TutorialBlockDto
+                        new TutorialSectionDto
                         {
-                            Header = "Intro",
-                            Body = "Add your tutorial steps here.",
-                            Images = new List<TutorialImageDto>()
+                            Title = "Intro",
+                            Blocks = new List<TutorialBlockDto>
+                            {
+                                new TutorialBlockDto
+                                {
+                                    Subtitle = "",
+                                    Body = "Add your tutorial steps here.",
+                                    Image = null,
+                                    PaintIds = new List<int>()
+                                }
+                            }
                         }
                     }
                 }, JsonOptions)
