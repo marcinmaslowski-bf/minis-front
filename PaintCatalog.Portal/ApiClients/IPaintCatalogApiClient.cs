@@ -8,6 +8,7 @@ namespace PaintCatalog.Portal.ApiClients
 {
     public interface IPaintCatalogApiClient
     {
+        // Paints
         Task<string> GetPaintsRawAsync(
             int? brandId = null,
             int? seriesId = null,
@@ -39,12 +40,14 @@ namespace PaintCatalog.Portal.ApiClients
 
         Task<string> SetVoteAsync(int threadId, SetVoteRequest request);
 
+        // Attachments
         Task<HttpResponseMessage> GetAttachmentAsync(int attachmentId);
 
         Task<int> UploadAttachmentAsync(IFormFile file);
 
         Task EnsureCurrentUserExistsAsync();
 
+        // Tutorials
         Task<string> GetTutorialsRawAsync(string? authorId = null, int? page = null, int? pageSize = null);
 
         Task<string> GetTutorialByIdAsync(int tutorialId);
