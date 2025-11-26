@@ -75,9 +75,9 @@ namespace PaintCatalog.Portal.Controllers
                             {
                                 new TutorialBlockDto
                                 {
-                                    Subtitle = "",
+                                    Header = string.Empty,
                                     Body = "Add your tutorial steps here.",
-                                    Image = null,
+                                    Images = new List<TutorialImageDto>(),
                                     PaintIds = new List<int>()
                                 }
                             }
