@@ -48,6 +48,9 @@
   <data name="Field_Content_Help" xml:space="preserve">
     <value>Wklej JSON zwrócony przez edytor blokowy (nagłówki, zdjęcia, akapity itp.).</value>
   </data>
+  <data name="Action_UploadTitleImage" xml:space="preserve">
+    <value>Prześlij okładkę</value>
+  </data>
   <data name="Action_Create" xml:space="preserve">
     <value>Utwórz</value>
   </data>
