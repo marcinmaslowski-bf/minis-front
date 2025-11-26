@@ -45,6 +45,11 @@
             create = Url.Action("Create", "Comments", new { threadId = "__thread__" }) ?? "/comments/__thread__",
             update = Url.Action("Update", "Comments", new { threadId = "__thread__", commentId = "__comment__" }) ?? "/comments/__thread__/__comment__"
         },
+        voteEndpoints = new
+        {
+            summary = Url.Action("SummaryById", "Votes", new { threadId = "__thread__" }) ?? "/votes/__thread__/summary",
+            set = Url.Action("Set", "Votes", new { threadId = "__thread__" }) ?? "/votes/__thread__"
+        },
         auth = new
         {
             isAuthenticated = User?.Identity?.IsAuthenticated ?? false,
@@ -92,6 +97,11 @@
         <div class="flex flex-col gap-6 lg:grid lg:grid-cols-3 lg:items-start lg:gap-8">
             <div class="lg:order-2 space-y-2 lg:col-span-1 lg:justify-self-end lg:w-full">
                 <div class="h-28 w-full rounded-2xl border border-2 border-slate-200 shadow-inner dark:border-slate-800 sm:h-32 sm:w-full lg:h-36 lg:w-full" id="paint-swatch"></div>
+                <div id="vote-controls" class="flex flex-wrap items-center justify-end gap-2 text-sm text-slate-600 dark:text-slate-200" hidden>
+                    <button id="vote-up" type="button" class="grid h-9 w-9 place-items-center rounded-full border border-slate-200 text-slate-500 transition hover:border-emerald-500 hover:text-emerald-600 disabled:opacity-60 dark:border-slate-700 dark:text-slate-300 dark:hover:border-emerald-500" aria-label="@Localizer["Card_Label_Vote_Up", "Upvote"]">▲</button>
+                    <span id="vote-score" class="min-w-[2.5rem] rounded-full border border-slate-200 px-3 py-1 text-center font-semibold dark:border-slate-700">—</span>
+                    <button id="vote-down" type="button" class="grid h-9 w-9 place-items-center rounded-full border border-slate-200 text-slate-500 transition hover:border-red-500 hover:text-red-600 disabled:opacity-60 dark:border-slate-700 dark:text-slate-300 dark:hover:border-red-400" aria-label="@Localizer["Card_Label_Vote_Down", "Downvote"]">▼</button>
+                </div>
             </div>
             <div class="lg:order-1 space-y-3 lg:col-span-2">
                 <h2 class="text-2xl font-bold text-slate-900 dark:text-white"></h2>                
@@ -237,6 +247,7 @@
             };
 
             const commentEndpoints = bootstrap.commentEndpoints || {};
+            const voteEndpoints = bootstrap.voteEndpoints || {};
             const auth = bootstrap.auth || {};
 
             const getIconMarkup = (id, fallback = '') => {
@@ -259,6 +270,9 @@
                 seriesSlug: bootstrap.seriesSlug,
                 paintSlug: bootstrap.paintSlug,
                 commentThreadId: null,
+                voteThreadId: null,
+                voteSummary: null,
+                voteLoading: false,
                 comments: [],
                 commentCount: null,
                 commentsLoading: false,
@@ -295,6 +309,13 @@
                 galleryCount: document.getElementById('comment-gallery-count')
             };
 
+            const voteElements = {
+                container: document.getElementById('vote-controls'),
+                up: document.getElementById('vote-up'),
+                down: document.getElementById('vote-down'),
+                score: document.getElementById('vote-score')
+            };
+
             function injectIcons() {
                 document.querySelectorAll('[data-icon="comment"]').forEach(el => {
                     if (icons.comment) {
@@ -310,6 +331,14 @@
             }
 
             injectIcons();
+
+            if (voteElements.up) {
+                voteElements.up.addEventListener('click', () => handleVote(1));
+            }
+
+            if (voteElements.down) {
+                voteElements.down.addEventListener('click', () => handleVote(-1));
+            }
 
             const swatchUtils = window.paintSwatchUtils || {};
             const normalizeHex = swatchUtils.normalizeHex || (value => {
@@ -512,6 +541,12 @@
                     return;
                 }
 
+                state.voteThreadId = resolveVoteThreadId(state.paint);
+                state.voteSummary = resolveVoteSummaryFromPaint(state.paint);
+                if (state.voteThreadId && !state.voteSummary) {
+                    fetchVoteSummary(state.voteThreadId);
+                }
+
                 render();
             }
 
@@ -626,6 +661,7 @@
                     elements.hex.textContent = swatch.label || colorHex;
                 }
 
+                renderVotes();
                 initializeComments(paint);
 
                 if (elements.json) {
@@ -649,6 +685,31 @@
                     url = url.replace('__comment__', encodeURIComponent(commentId));
                 }
                 return url;
+            }
+
+            function resolveVoteThreadId(paint) {
+                const candidate = paint?.voteThreadId
+                    ?? paint?.voteThreadID
+                    ?? paint?.votesThreadId
+                    ?? paint?.voteThread?.id
+                    ?? paint?.voteThread?.threadId
+                    ?? paint?.voteThread;
+
+                if (candidate === null || candidate === undefined) return null;
+
+                if (typeof candidate === 'object') {
+                    const nested = candidate.id ?? candidate.threadId ?? candidate.voteThreadId;
+                    const numericNested = Number(nested);
+                    if (Number.isFinite(numericNested)) return numericNested;
+
+                    if (typeof nested === 'string' && nested.trim()) {
+                        const parsedNested = Number(nested);
+                        return Number.isFinite(parsedNested) ? parsedNested : null;
+                    }
+                }
+
+                const numeric = Number(candidate);
+                return Number.isFinite(numeric) ? numeric : null;
             }
 
             function resolveCommentThreadId(paint) {
@@ -683,6 +744,160 @@
 
                 const numeric = Number(candidate);
                 return Number.isFinite(numeric) ? numeric : null;
+            }
+
+            function normalizeVoteSummary(raw, fallbackThreadId) {
+                if (!raw) return { threadId: fallbackThreadId, upVotes: 0, downVotes: 0, score: 0, userVote: 0 };
+
+                const threadId = Number(raw.threadId ?? raw.id ?? fallbackThreadId);
+                const upVotes = Number(raw.upVotes ?? raw.upvotes ?? raw.up ?? raw.upCount ?? raw.ups ?? raw.upVotesCount ?? 0);
+                const downVotes = Number(raw.downVotes ?? raw.downvotes ?? raw.down ?? raw.downCount ?? raw.downs ?? raw.downVotesCount ?? 0);
+                const scoreRaw = raw.score ?? raw.total ?? raw.sum ?? (Number.isFinite(upVotes) && Number.isFinite(downVotes) ? upVotes - downVotes : null);
+                const score = Number(scoreRaw);
+                const userVoteRaw = raw.userVote ?? raw.currentUserVote ?? raw.myVote ?? raw.vote ?? raw.value;
+                const userVote = Number.isFinite(Number(userVoteRaw)) ? Number(userVoteRaw) : 0;
+
+                return {
+                    threadId: Number.isFinite(threadId) ? threadId : fallbackThreadId ?? null,
+                    upVotes: Number.isFinite(upVotes) ? upVotes : 0,
+                    downVotes: Number.isFinite(downVotes) ? downVotes : 0,
+                    score: Number.isFinite(score) ? score : 0,
+                    userVote: Number.isFinite(userVote) ? userVote : 0
+                };
+            }
+
+            function resolveVoteSummaryFromPaint(paint) {
+                if (!paint) return null;
+
+                const candidate = paint.voteSummary
+                    ?? paint.votes
+                    ?? paint.voteThread?.summary
+                    ?? paint.voteThread?.votes
+                    ?? paint.voteThread?.summaryDto;
+
+                const threadId = resolveVoteThreadId(paint);
+                if (!candidate) return null;
+
+                return normalizeVoteSummary(candidate, threadId);
+            }
+
+            function formatVoteEndpoint(template, threadId) {
+                if (!template || !threadId) return null;
+                return template.replace('__thread__', encodeURIComponent(threadId));
+            }
+
+            async function fetchVoteSummary(threadId) {
+                if (!voteEndpoints.summary || !threadId) return null;
+
+                try {
+                    const url = formatVoteEndpoint(voteEndpoints.summary, threadId);
+                    if (!url) return null;
+
+                    state.voteLoading = true;
+                    const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                    if (!response.ok) {
+                        throw new Error('Request failed');
+                    }
+
+                    const payload = await response.json().catch(() => null);
+                    const summary = normalizeVoteSummary(payload, threadId);
+                    if (summary.threadId) {
+                        state.voteSummary = summary;
+                    }
+                    return summary;
+                } catch (error) {
+                    console.warn('Unable to fetch vote summary', error);
+                    return null;
+                } finally {
+                    state.voteLoading = false;
+                    renderVotes();
+                }
+            }
+
+            function renderVotes() {
+                const container = voteElements.container;
+                if (!container) return;
+
+                const threadId = state.voteThreadId;
+                const summary = state.voteSummary;
+
+                if (!threadId) {
+                    container.hidden = true;
+                    return;
+                }
+
+                const score = Number.isFinite(Number(summary?.score))
+                    ? Number(summary.score)
+                    : (Number(summary?.upVotes ?? 0) - Number(summary?.downVotes ?? 0));
+                const userVote = Number(summary?.userVote ?? 0) || 0;
+
+                container.hidden = false;
+
+                if (voteElements.score) {
+                    voteElements.score.textContent = Number.isFinite(score) ? score : '—';
+                }
+
+                if (voteElements.up) {
+                    voteElements.up.disabled = state.voteLoading;
+                    voteElements.up.classList.toggle('bg-emerald-500/20', userVote === 1);
+                    voteElements.up.classList.toggle('text-emerald-600', userVote === 1);
+                }
+
+                if (voteElements.down) {
+                    voteElements.down.disabled = state.voteLoading;
+                    voteElements.down.classList.toggle('bg-red-500/20', userVote === -1);
+                    voteElements.down.classList.toggle('text-red-600', userVote === -1);
+                }
+            }
+
+            async function handleVote(value) {
+                const threadId = state.voteThreadId;
+                if (!threadId || !voteEndpoints.set) return;
+
+                if (!state.auth?.isAuthenticated) {
+                    if (state.auth?.loginUrl) {
+                        window.location.href = state.auth.loginUrl;
+                    }
+                    return;
+                }
+
+                const currentVote = Number(state.voteSummary?.userVote ?? 0) || 0;
+                const desiredVote = currentVote === value ? 0 : value;
+                const url = formatVoteEndpoint(voteEndpoints.set, threadId);
+                if (!url) return;
+
+                state.voteLoading = true;
+                renderVotes();
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ value: desiredVote })
+                    });
+
+                    if (response.status === 401) {
+                        if (state.auth?.loginUrl) {
+                            window.location.href = state.auth.loginUrl;
+                        }
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error('Request failed');
+                    }
+
+                    const payload = await response.json().catch(() => null);
+                    state.voteSummary = normalizeVoteSummary(payload, threadId);
+                } catch (error) {
+                    console.error('Unable to submit vote', error);
+                } finally {
+                    state.voteLoading = false;
+                    renderVotes();
+                }
             }
 
             function parseJsonSafe(payload) {

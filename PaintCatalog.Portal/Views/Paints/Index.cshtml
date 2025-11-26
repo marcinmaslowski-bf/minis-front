@@ -13,6 +13,8 @@
     var brandsEndpoint = Url.Action("Brands", "Paints") ?? "/paints/brands";
     var brandSeriesEndpoint = Url.Action("Series", "Paints") ?? "/paints/series";
     var commentCountEndpoint = Url.Action("Count", "Comments", new { threadId = "__thread__" }) ?? "/comments/__thread__/count";
+    var voteSummaryEndpoint = Url.Action("Summary", "Votes") ?? "/votes/summary";
+    var voteSetEndpoint = Url.Action("Set", "Votes", new { threadId = "__thread__" }) ?? "/votes/__thread__";
     var paintDetailsTemplate = PaintCatalog.Portal.Helpers.CultureHelpers.GetRouteCultureSegment() is string cultureSegment
         ? Url.RouteUrl("PaintDetailsLocalized", new { culture = cultureSegment, brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/pl/paints/__brand__/__series__/__paint__"
         : Url.RouteUrl("PaintDetails", new { brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/paints/__brand__/__series__/__paint__";
@@ -48,7 +50,15 @@
 
     var bootstrap = new
     {
-        endpoints = new { data = paintsDataEndpoint, brands = brandsEndpoint, series = brandSeriesEndpoint, details = paintDetailsTemplate, comments = new { count = commentCountEndpoint } },
+        endpoints = new
+        {
+            data = paintsDataEndpoint,
+            brands = brandsEndpoint,
+            series = brandSeriesEndpoint,
+            details = paintDetailsTemplate,
+            comments = new { count = commentCountEndpoint },
+            votes = new { summary = voteSummaryEndpoint, set = voteSetEndpoint }
+        },
         labels = new
         {
             brand = Localizer["Card_Label_Brand"].Value,
@@ -59,7 +69,13 @@
             tags = Localizer["Card_Label_Tags"].Value,
             sku = Localizer["Card_Label_Sku"].Value,
             color = Localizer["Card_Label_Color"].Value,
-            comments = Localizer["Card_Label_Comments"].Value
+            comments = Localizer["Card_Label_Comments"].Value,
+            votes = new
+            {
+                title = Localizer["Card_Label_Votes", "Votes"].Value,
+                up = Localizer["Card_Label_Vote_Up", "Upvote"].Value,
+                down = Localizer["Card_Label_Vote_Down", "Downvote"].Value
+            }
         },
         filters = new
         {
@@ -74,6 +90,11 @@
         {
             previous = Localizer["Pagination_Previous"].Value,
             next = Localizer["Pagination_Next"].Value
+        },
+        auth = new
+        {
+            isAuthenticated = User?.Identity?.IsAuthenticated ?? false,
+            loginUrl = Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/login"
         }
     };
 
@@ -290,6 +311,8 @@
             const filterDictionaries = config.filters || {};
             const endpoints = config.endpoints || {};
             const commentEndpoints = endpoints.comments || {};
+            const voteEndpoints = endpoints.votes || {};
+            const auth = config.auth || {};
             const initialQueryString = window.location?.search || '';
             const initialQueryParams = new URLSearchParams(initialQueryString);
             const hasInitialQueryParams = Array.from(initialQueryParams.keys()).length > 0;
@@ -350,7 +373,10 @@
                 loading: false,
                 commentCounts: {},
                 fetchedCommentThreads: new Set(),
-                pendingCommentThreads: new Set()
+                pendingCommentThreads: new Set(),
+                voteSummaries: {},
+                fetchedVoteThreads: new Set(),
+                pendingVoteThreads: new Set()
             };
 
             primeBrandSeriesCacheFromBrands(state.brands);
@@ -514,6 +540,8 @@
                 targetState.pagination.page = normalized.page;
                 targetState.pagination.pageSize = normalized.pageSize;
                 primeCommentCounts(targetState.items);
+                primeVoteSummaries(targetState.items);
+                fetchVoteSummariesForPaints(targetState.items);
 
                 if (elements.pageSizeSelect) {
                     elements.pageSizeSelect.value = String(targetState.pagination.pageSize);
@@ -813,6 +841,23 @@
                         if (state.pagination.page >= totalPages) return;
                         state.pagination.page += 1;
                         fetchPaints();
+                    });
+                }
+
+                if (elements.results) {
+                    elements.results.addEventListener('click', event => {
+                        const button = event.target.closest('[data-vote-action]');
+                        if (!button) return;
+
+                        const threadId = Number(button.dataset.threadId);
+                        if (!Number.isFinite(threadId)) return;
+
+                        const action = button.dataset.voteAction;
+                        const summary = getVoteSummary(threadId) || {};
+                        const currentVote = Number(summary.userVote ?? 0) || 0;
+                        const desired = action === 'up' ? 1 : -1;
+                        const nextVote = currentVote === desired ? 0 : desired;
+                        submitVote(threadId, nextVote);
                     });
                 }
             }
@@ -1115,6 +1160,33 @@
                 return Number.isFinite(numeric) ? numeric : null;
             }
 
+            function extractVoteThreadId(paint) {
+                const candidate = paint?.voteThreadId
+                    ?? paint?.voteThreadID
+                    ?? paint?.votesThreadId
+                    ?? paint?.voteThread?.id
+                    ?? paint?.voteThread?.threadId
+                    ?? paint?.voteThread;
+
+                if (candidate === null || candidate === undefined) {
+                    return null;
+                }
+
+                if (typeof candidate === 'object') {
+                    const nested = candidate.id ?? candidate.threadId ?? candidate.voteThreadId;
+                    const numericNested = Number(nested);
+                    if (Number.isFinite(numericNested)) return numericNested;
+
+                    if (typeof nested === 'string' && nested.trim()) {
+                        const parsedNested = Number(nested);
+                        return Number.isFinite(parsedNested) ? parsedNested : null;
+                    }
+                }
+
+                const numeric = Number(candidate);
+                return Number.isFinite(numeric) ? numeric : null;
+            }
+
             function extractCommentCountFromPaint(paint) {
                 const candidate = paint?.commentCount
                     ?? paint?.commentsCount
@@ -1262,6 +1334,194 @@
                 return fromPayload;
             }
 
+            function normalizeVoteSummary(raw, fallbackThreadId) {
+                if (!raw) return { threadId: fallbackThreadId, upVotes: 0, downVotes: 0, score: 0, userVote: 0 };
+
+                const threadId = Number(raw.threadId ?? raw.id ?? fallbackThreadId);
+                const upVotes = Number(raw.upVotes ?? raw.upvotes ?? raw.up ?? raw.upCount ?? raw.ups ?? raw.upVotesCount ?? 0);
+                const downVotes = Number(raw.downVotes ?? raw.downvotes ?? raw.down ?? raw.downCount ?? raw.downs ?? raw.downVotesCount ?? 0);
+                const scoreRaw = raw.score ?? raw.total ?? raw.sum ?? (Number.isFinite(upVotes) && Number.isFinite(downVotes) ? upVotes - downVotes : null);
+                const score = Number(scoreRaw);
+                const userVoteRaw = raw.userVote ?? raw.currentUserVote ?? raw.myVote ?? raw.vote ?? raw.value;
+                const userVote = Number.isFinite(Number(userVoteRaw)) ? Number(userVoteRaw) : 0;
+
+                return {
+                    threadId: Number.isFinite(threadId) ? threadId : fallbackThreadId ?? null,
+                    upVotes: Number.isFinite(upVotes) ? upVotes : 0,
+                    downVotes: Number.isFinite(downVotes) ? downVotes : 0,
+                    score: Number.isFinite(score) ? score : 0,
+                    userVote: Number.isFinite(userVote) ? userVote : 0
+                };
+            }
+
+            function resolveVoteSummaryFromPaint(paint) {
+                if (!paint) return null;
+
+                const candidate = paint.voteSummary
+                    ?? paint.votes
+                    ?? paint.voteThread?.summary
+                    ?? paint.voteThread?.votes
+                    ?? paint.voteThread?.summaryDto;
+
+                const threadId = extractVoteThreadId(paint);
+                if (!candidate) return null;
+
+                return normalizeVoteSummary(candidate, threadId);
+            }
+
+            function primeVoteSummaries(paints) {
+                if (!Array.isArray(paints)) return;
+
+                paints.forEach(paint => {
+                    const threadId = extractVoteThreadId(paint);
+                    if (!threadId || state.fetchedVoteThreads.has(threadId)) return;
+
+                    const summary = resolveVoteSummaryFromPaint(paint);
+                    if (summary && summary.threadId) {
+                        state.voteSummaries[summary.threadId] = summary;
+                        state.fetchedVoteThreads.add(summary.threadId);
+                    }
+                });
+            }
+
+            function formatVoteEndpoint(template, threadId) {
+                if (!template || !threadId) return null;
+                return template.replace('__thread__', encodeURIComponent(threadId));
+            }
+
+            async function fetchVoteSummariesForPaints(paints) {
+                if (!voteEndpoints.summary || !Array.isArray(paints)) return;
+
+                const idsToFetch = [];
+                const seen = new Set();
+
+                paints.forEach(paint => {
+                    const threadId = extractVoteThreadId(paint);
+                    if (!threadId || seen.has(threadId)) return;
+                    seen.add(threadId);
+
+                    if (state.fetchedVoteThreads.has(threadId) || state.pendingVoteThreads.has(threadId)) {
+                        return;
+                    }
+
+                    const summary = resolveVoteSummaryFromPaint(paint);
+                    if (summary && summary.threadId) {
+                        state.voteSummaries[summary.threadId] = summary;
+                        state.fetchedVoteThreads.add(summary.threadId);
+                        return;
+                    }
+
+                    idsToFetch.push(threadId);
+                });
+
+                if (!idsToFetch.length) return;
+
+                idsToFetch.forEach(id => state.pendingVoteThreads.add(id));
+
+                try {
+                    const query = idsToFetch.map(id => `threadIds=${encodeURIComponent(id)}`).join('&');
+                    const separator = voteEndpoints.summary.includes('?') ? '&' : '?';
+                    const url = `${voteEndpoints.summary}${idsToFetch.length ? separator + query : ''}`;
+                    const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+                    if (!response.ok) {
+                        throw new Error('Request failed');
+                    }
+
+                    const payload = await response.json().catch(() => null);
+                    const summaries = [];
+
+                    if (Array.isArray(payload)) {
+                        summaries.push(...payload);
+                    } else if (Array.isArray(payload?.data)) {
+                        summaries.push(...payload.data);
+                    } else if (Array.isArray(payload?.items)) {
+                        summaries.push(...payload.items);
+                    } else if (payload && typeof payload === 'object') {
+                        Object.entries(payload).forEach(([key, value]) => {
+                            const threadId = Number(key);
+                            summaries.push({ threadId, ...(typeof value === 'object' ? value : { score: value }) });
+                        });
+                    }
+
+                    summaries.forEach(item => {
+                        const normalized = normalizeVoteSummary(item, item.threadId);
+                        if (normalized.threadId) {
+                            state.voteSummaries[normalized.threadId] = normalized;
+                            state.fetchedVoteThreads.add(normalized.threadId);
+                        }
+                    });
+                } catch (error) {
+                    console.warn('Unable to fetch vote summaries', error);
+                } finally {
+                    idsToFetch.forEach(id => state.pendingVoteThreads.delete(id));
+                }
+            }
+
+            function getVoteSummary(threadId, paint) {
+                if (threadId && state.voteSummaries[threadId]) {
+                    return state.voteSummaries[threadId];
+                }
+
+                const summary = resolveVoteSummaryFromPaint(paint);
+                if (threadId && summary && summary.threadId) {
+                    state.voteSummaries[threadId] = summary;
+                    return summary;
+                }
+
+                return summary;
+            }
+
+            async function submitVote(threadId, voteValue) {
+                if (!voteEndpoints.set || !threadId) return;
+
+                if (!auth.isAuthenticated) {
+                    if (auth.loginUrl) {
+                        window.location.href = auth.loginUrl;
+                    }
+                    return;
+                }
+
+                const url = formatVoteEndpoint(voteEndpoints.set, threadId);
+                if (!url) return;
+
+                state.pendingVoteThreads.add(threadId);
+                renderPaintCards();
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ value: voteValue })
+                    });
+
+                    if (response.status === 401) {
+                        if (auth.loginUrl) {
+                            window.location.href = auth.loginUrl;
+                        }
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error('Request failed');
+                    }
+
+                    const payload = await response.json().catch(() => null);
+                    const normalized = normalizeVoteSummary(payload, threadId);
+                    if (normalized.threadId) {
+                        state.voteSummaries[normalized.threadId] = normalized;
+                        state.fetchedVoteThreads.add(normalized.threadId);
+                    }
+                } catch (error) {
+                    console.error('Unable to submit vote', error);
+                } finally {
+                    state.pendingVoteThreads.delete(threadId);
+                    renderPaintCards();
+                }
+            }
+
             function renderPaintCards() {
                 const container = elements.results;
                 if (!container) return;
@@ -1296,6 +1556,14 @@
                 const commentCount = (commentCountRaw !== null && commentCountRaw !== undefined && Number.isFinite(Number(commentCountRaw)))
                     ? Number(commentCountRaw)
                     : null;
+                const voteThreadId = extractVoteThreadId(paint);
+                const voteSummary = getVoteSummary(voteThreadId, paint);
+                const voteScoreRaw = voteSummary?.score ?? null;
+                const voteScore = Number.isFinite(Number(voteScoreRaw)) ? Number(voteScoreRaw) : null;
+                const upVotes = Number.isFinite(Number(voteSummary?.upVotes)) ? Number(voteSummary?.upVotes) : null;
+                const downVotes = Number.isFinite(Number(voteSummary?.downVotes)) ? Number(voteSummary?.downVotes) : null;
+                const userVote = Number.isFinite(Number(voteSummary?.userVote)) ? Number(voteSummary?.userVote) : 0;
+                const votePending = voteThreadId && state.pendingVoteThreads.has(voteThreadId);
                 const safeName = escapeHtml(paint?.name || 'Untitled paint');
                 const safeDescription = escapeHtml(paint?.description || '');
                 const safeBrand = escapeHtml(brandName);
@@ -1320,6 +1588,14 @@
                             ${commentIcon}
                             <span>${commentCount !== null ? commentCount : '—'}</span>
                        </span>`
+                    : '';
+
+                const voteControls = voteThreadId
+                    ? `<div class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white/70 px-2 py-1 text-[11px] font-semibold text-slate-600 shadow-sm dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-200" data-vote-thread="${voteThreadId}">
+                            <button type="button" data-vote-action="up" data-thread-id="${voteThreadId}" ${votePending ? 'disabled' : ''} class="grid h-6 w-6 place-items-center rounded-full ${userVote === 1 ? 'bg-emerald-500/20 text-emerald-600' : 'text-slate-500'} ${votePending ? 'opacity-60' : ''}" aria-label="${escapeHtml(labels?.votes?.up || 'Upvote')}">▲</button>
+                            <span class="min-w-[1.75rem] text-center">${voteScore !== null ? voteScore : (Number.isFinite(upVotes) && Number.isFinite(downVotes) ? upVotes - downVotes : '—')}</span>
+                            <button type="button" data-vote-action="down" data-thread-id="${voteThreadId}" ${votePending ? 'disabled' : ''} class="grid h-6 w-6 place-items-center rounded-full ${userVote === -1 ? 'bg-red-500/20 text-red-600' : 'text-slate-500'} ${votePending ? 'opacity-60' : ''}" aria-label="${escapeHtml(labels?.votes?.down || 'Downvote')}">▼</button>
+                        </div>`
                     : '';
 
                 const card = `
@@ -1360,7 +1636,10 @@
                                 <span class="font-semibold uppercase tracking-wide">${labels.color || 'Color'}</span>
                                 <span class="rounded-full border border-slate-200 px-2 py-0.5 text-slate-700 dark:border-slate-700 dark:text-slate-200">${safeHex}</span>
                             </div>
-                            ${commentBadge}
+                            <div class="flex items-center gap-2">
+                                ${voteControls}
+                                ${commentBadge}
+                            </div>
                         </div>
                         ${tagsMarkup ? `<div class="mt-4 flex flex-wrap gap-2">${tagsMarkup}</div>` : ''}
                     </article>`;
