@@ -237,6 +237,90 @@ namespace PaintCatalog.Portal.ApiClients
             response.EnsureSuccessStatusCode();
         }
 
+        public async Task<string> GetTutorialsRawAsync(string? authorId = null, int? page = null, int? pageSize = null)
+        {
+            var queryParts = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(authorId))
+            {
+                queryParts.Add($"AuthorId={Uri.EscapeDataString(authorId)}");
+            }
+
+            if (page.HasValue)
+            {
+                queryParts.Add($"Page={page.Value}");
+            }
+
+            if (pageSize.HasValue)
+            {
+                queryParts.Add($"PageSize={pageSize.Value}");
+            }
+
+            var url = "/api/v1/tutorials";
+
+            if (queryParts.Count > 0)
+            {
+                url += "?" + string.Join("&", queryParts);
+            }
+
+            using var response = await SendGetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> GetTutorialByIdAsync(int tutorialId)
+        {
+            var url = $"/api/v1/tutorials/{tutorialId}";
+
+            using var response = await SendGetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> CreateTutorialAsync(CreateTutorialRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            const string url = "/api/v1/tutorials";
+            var payload = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            using var response = await SendAsync(HttpMethod.Post, url, payload);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> UpdateTutorialAsync(int tutorialId, UpdateTutorialRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            var url = $"/api/v1/tutorials/{tutorialId}";
+            var payload = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            using var response = await SendAsync(HttpMethod.Put, url, payload);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> DeleteTutorialAsync(int tutorialId)
+        {
+            var url = $"/api/v1/tutorials/{tutorialId}";
+
+            using var response = await SendAsync(HttpMethod.Delete, url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
         private async Task<HttpResponseMessage> SendGetAsync(string url)
         {
             return await SendAsync(HttpMethod.Get, url);

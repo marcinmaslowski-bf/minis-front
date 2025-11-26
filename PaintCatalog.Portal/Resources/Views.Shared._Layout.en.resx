@@ -24,6 +24,9 @@
   <data name="Nav_Paints" xml:space="preserve">
     <value>Paints catalog</value>
   </data>
+  <data name="Nav_Tutorials" xml:space="preserve">
+    <value>Tutorials</value>
+  </data>
   <data name="ThemeToggle_Label" xml:space="preserve">
     <value>Toggle theme</value>
   </data>

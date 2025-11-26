@@ -24,6 +24,9 @@
   <data name="Nav_Paints" xml:space="preserve">
     <value>Katalog farb</value>
   </data>
+  <data name="Nav_Tutorials" xml:space="preserve">
+    <value>Tutoriale</value>
+  </data>
   <data name="ThemeToggle_Label" xml:space="preserve">
     <value>Zmień motyw</value>
   </data>

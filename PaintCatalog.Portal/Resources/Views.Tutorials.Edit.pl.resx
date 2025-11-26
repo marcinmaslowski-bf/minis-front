@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Page_Title_Create" xml:space="preserve">
+    <value>Dodaj tutorial</value>
+  </data>
+  <data name="Page_Title_Edit" xml:space="preserve">
+    <value>Edytuj tutorial: {0}</value>
+  </data>
+  <data name="Page_Description" xml:space="preserve">
+    <value>Dodaj lub zaktualizuj treść tutoriala.</value>
+  </data>
+  <data name="Header_Badge" xml:space="preserve">
+    <value>Kreator tutoriali</value>
+  </data>
+  <data name="Header_Title_Create" xml:space="preserve">
+    <value>Nowy tutorial</value>
+  </data>
+  <data name="Header_Title_Edit" xml:space="preserve">
+    <value>Edytuj tutorial</value>
+  </data>
+  <data name="Header_Subtitle" xml:space="preserve">
+    <value>Uzupełnij metadane i JSON z edytora blokowego (Editor.js).</value>
+  </data>
+  <data name="Field_Title" xml:space="preserve">
+    <value>Tytuł</value>
+  </data>
+  <data name="Field_TitleImage" xml:space="preserve">
+    <value>ID załącznika okładki</value>
+  </data>
+  <data name="Field_TitleImage_Help" xml:space="preserve">
+    <value>Użyj istniejącego załącznika, który ma być okładką tutoriala.</value>
+  </data>
+  <data name="Field_Content" xml:space="preserve">
+    <value>Treść (JSON Editor.js)</value>
+  </data>
+  <data name="Field_Content_Help" xml:space="preserve">
+    <value>Wklej JSON zwrócony przez edytor blokowy (nagłówki, zdjęcia, akapity itp.).</value>
+  </data>
+  <data name="Action_Create" xml:space="preserve">
+    <value>Utwórz</value>
+  </data>
+  <data name="Action_Save" xml:space="preserve">
+    <value>Zapisz zmiany</value>
+  </data>
+  <data name="Action_Cancel" xml:space="preserve">
+    <value>Anuluj</value>
+  </data>
+</root>
