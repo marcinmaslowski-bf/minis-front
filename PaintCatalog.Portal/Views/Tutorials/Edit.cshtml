@@ -16,7 +16,7 @@
         <p class="text-sm text-slate-600 dark:text-slate-300">@Localizer["Header_Subtitle"]</p>
     </div>
 
-    <form method="post" class="space-y-5">
+    <form id="tutorial-form" method="post" class="space-y-5">
         @Html.AntiForgeryToken()
         <div class="space-y-2">
             <label class="block text-sm font-semibold text-slate-800 dark:text-slate-100" for="Title">@Localizer["Field_Title"]</label>
@@ -27,16 +27,35 @@
 
         <div class="space-y-2">
             <label class="block text-sm font-semibold text-slate-800 dark:text-slate-100" for="TitleImageAttachmentId">@Localizer["Field_TitleImage"]</label>
-            <input asp-for="TitleImageAttachmentId" type="number" min="1"
-                   class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" />
-            <p class="text-xs text-slate-500 dark:text-slate-400">@Localizer["Field_TitleImage_Help"]</p>
-            <span asp-validation-for="TitleImageAttachmentId" class="text-xs text-rose-600"></span>
+            <div class="space-y-3 rounded-xl border border-slate-200 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-950/40">
+                <div class="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+                    <div class="space-y-2">
+                        <input asp-for="TitleImageAttachmentId" type="number" min="1"
+                               class="w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" />
+                        <p class="text-xs text-slate-500 dark:text-slate-400">@Localizer["Field_TitleImage_Help"]</p>
+                        <span asp-validation-for="TitleImageAttachmentId" class="text-xs text-rose-600"></span>
+                    </div>
+                    <div class="space-y-2">
+                        <input id="title-image-file" type="file" accept="image/*" class="hidden" />
+                        <button id="title-image-upload" type="button" class="flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-500 px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 dark:border-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-400/10">
+                            <span class="rounded-lg bg-emerald-500/10 p-1 text-emerald-600 dark:text-emerald-200" data-icon="attachment"></span>
+                            <span>@Localizer["Action_Create"] @Localizer["Field_TitleImage"]</span>
+                        </button>
+                        <p id="title-image-status" class="text-xs text-slate-500 dark:text-slate-400"></p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="space-y-2">
-            <label class="block text-sm font-semibold text-slate-800 dark:text-slate-100" for="ContentJson">@Localizer["Field_Content"]</label>
+            <label class="block text-sm font-semibold text-slate-800 dark:text-slate-100">@Localizer["Field_Content"]</label>
+            <div id="tutorial-editor" class="space-y-3 rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm dark:border-slate-700 dark:bg-slate-950/40"></div>
+            <button id="tutorial-add-block" type="button" class="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">
+                <span class="rounded-lg bg-emerald-500/10 p-1 text-emerald-600 dark:text-emerald-300" data-icon="plus"></span>
+                <span>Add section</span>
+            </button>
             <textarea asp-for="ContentJson" rows="18"
-                      class="w-full rounded-xl border border-slate-300 bg-slate-950/90 px-3 py-2 font-mono text-xs text-emerald-100 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/90"></textarea>
+                      class="hidden"></textarea>
             <p class="text-xs text-slate-500 dark:text-slate-400">@Localizer["Field_Content_Help"]</p>
             <span asp-validation-for="ContentJson" class="text-xs text-rose-600"></span>
         </div>
@@ -57,3 +76,7 @@
         <div asp-validation-summary="All" class="text-sm text-rose-600"></div>
     </form>
 </section>
+
+@section Scripts {
+    <script src="~/js/tutorial-editor.js"></script>
+}

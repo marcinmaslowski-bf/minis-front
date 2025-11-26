@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using PaintCatalog.Portal.Models.Api;
 
 namespace PaintCatalog.Portal.ApiClients
@@ -39,6 +40,8 @@ namespace PaintCatalog.Portal.ApiClients
         Task<string> SetVoteAsync(int threadId, SetVoteRequest request);
 
         Task<HttpResponseMessage> GetAttachmentAsync(int attachmentId);
+
+        Task<int> UploadAttachmentAsync(IFormFile file);
 
         Task EnsureCurrentUserExistsAsync();
 
