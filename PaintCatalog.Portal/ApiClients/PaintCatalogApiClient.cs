@@ -247,13 +247,70 @@ namespace PaintCatalog.Portal.ApiClients
 
             var payload = await response.Content.ReadAsStringAsync();
             using var document = JsonDocument.Parse(payload);
-            if (document.RootElement.TryGetProperty("id", out var idElement)
-                && idElement.TryGetInt32(out var id))
+
+            if (TryExtractAttachmentId(document.RootElement, out var id))
             {
                 return id;
             }
 
             throw new InvalidOperationException("Attachment upload succeeded but response did not include an ID.");
+        }
+
+        private static bool TryExtractAttachmentId(JsonElement element, out int id)
+        {
+            static bool TryGetInt(JsonElement source, string propertyName, out int parsed)
+            {
+                parsed = default;
+                if (!source.TryGetProperty(propertyName, out var property))
+                {
+                    return false;
+                }
+
+                return TryParseInt(property, out parsed);
+            }
+
+            id = default;
+
+            if (TryParseInt(element, out id))
+            {
+                return true;
+            }
+
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                if (TryGetInt(element, "id", out id)
+                    || TryGetInt(element, "attachmentId", out id)
+                    || TryGetInt(element, "attachment_id", out id))
+                {
+                    return true;
+                }
+
+                if (element.TryGetProperty("data", out var dataElement)
+                    && dataElement.ValueKind == JsonValueKind.Object)
+                {
+                    return TryGetInt(dataElement, "id", out id)
+                        || TryGetInt(dataElement, "attachmentId", out id)
+                        || TryGetInt(dataElement, "attachment_id", out id);
+                }
+            }
+
+            return false;
+        }
+
+        private static bool TryParseInt(JsonElement element, out int value)
+        {
+            value = default;
+
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.Number:
+                    return element.TryGetInt32(out value);
+                case JsonValueKind.String:
+                    var raw = element.GetString();
+                    return int.TryParse(raw, out value);
+                default:
+                    return false;
+            }
         }
 
         public async Task EnsureCurrentUserExistsAsync()
