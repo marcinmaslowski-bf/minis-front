@@ -7,6 +7,7 @@
     const uploadInput = document.getElementById('title-image-file');
     const uploadStatus = document.getElementById('title-image-status');
     const titleImageInput = document.getElementById('TitleImageAttachmentId');
+    const titleImagePreview = document.getElementById('title-image-preview');
 
     if (!form || !contentInput || !editor) {
         return;
@@ -177,6 +178,21 @@
         uploadStatus.classList.toggle('text-slate-500', !isError);
     }
 
+    function updateTitleImagePreview(attachmentId) {
+        if (!titleImagePreview) return;
+
+        const parsedId = Number.parseInt(attachmentId, 10);
+        if (!Number.isInteger(parsedId) || parsedId <= 0) {
+            titleImagePreview.innerHTML = '<span class="text-xs text-slate-500 dark:text-slate-400">No title image selected.</span>';
+            return;
+        }
+
+        const safeId = encodeURIComponent(parsedId);
+        titleImagePreview.innerHTML = `
+            <img src="/attachments/${safeId}" alt="Tutorial cover" class="max-h-48 w-full rounded-md object-cover" />
+        `;
+    }
+
     async function uploadTitleImage(file) {
         if (!file) return;
         const token = form.querySelector('input[name="__RequestVerificationToken"]')?.value;
@@ -202,6 +218,7 @@
             if (payload?.id && titleImageInput) {
                 titleImageInput.value = payload.id;
             }
+            updateTitleImagePreview(payload?.id);
             setUploadStatus('Image uploaded. Attachment ID set.');
         } catch (error) {
             console.error(error);
@@ -214,6 +231,7 @@
     }
 
     renderBlocks();
+    updateTitleImagePreview(titleImageInput?.value);
 
     editor.addEventListener('click', handleEditorClick);
 
