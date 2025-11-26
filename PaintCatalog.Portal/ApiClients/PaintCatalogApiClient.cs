@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using PaintCatalog.Portal.Helpers;
 using PaintCatalog.Portal.Models.Api;
 
@@ -227,6 +228,32 @@ namespace PaintCatalog.Portal.ApiClients
             var url = $"/api/v1/attachments/{attachmentId}";
 
             return await SendGetAsync(url);
+        }
+
+        public async Task<int> UploadAttachmentAsync(IFormFile file)
+        {
+            if (file == null)
+            {
+                throw new ArgumentNullException(nameof(file));
+            }
+
+            using var content = new MultipartFormDataContent();
+            var streamContent = new StreamContent(file.OpenReadStream());
+            streamContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType ?? "application/octet-stream");
+            content.Add(streamContent, "file", file.FileName);
+
+            using var response = await SendAsync(HttpMethod.Post, "/api/v1/attachments", content);
+            response.EnsureSuccessStatusCode();
+
+            var payload = await response.Content.ReadAsStringAsync();
+            using var document = JsonDocument.Parse(payload);
+            if (document.RootElement.TryGetProperty("id", out var idElement)
+                && idElement.TryGetInt32(out var id))
+            {
+                return id;
+            }
+
+            throw new InvalidOperationException("Attachment upload succeeded but response did not include an ID.");
         }
 
         public async Task EnsureCurrentUserExistsAsync()

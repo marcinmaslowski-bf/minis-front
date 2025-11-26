@@ -2,6 +2,8 @@ using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using PaintCatalog.Portal.ApiClients;
 
@@ -15,6 +17,42 @@ namespace PaintCatalog.Portal.Controllers
         public AttachmentsController(IPaintCatalogApiClient apiClient)
         {
             _apiClient = apiClient;
+        }
+
+        [Authorize]
+        [HttpPost("upload")]
+        [RequestSizeLimit(10 * 1024 * 1024)]
+        public async Task<IActionResult> Upload(IFormFile? file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest(new
+                {
+                    error = "File is required"
+                });
+            }
+
+            try
+            {
+                var id = await _apiClient.UploadAttachmentAsync(file);
+                return Ok(new { id, fileName = file.FileName, contentType = file.ContentType });
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode((int)HttpStatusCode.ServiceUnavailable, new
+                {
+                    error = "Paint catalog API unavailable",
+                    detail = ex.Message
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new
+                {
+                    error = "Unexpected server error",
+                    detail = ex.Message
+                });
+            }
         }
 
         [HttpGet("{attachmentId:int}")]
