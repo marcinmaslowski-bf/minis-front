@@ -1,0 +1,60 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Page_Title_Create" xml:space="preserve">
+    <value>Create tutorial</value>
+  </data>
+  <data name="Page_Title_Edit" xml:space="preserve">
+    <value>Edit tutorial: {0}</value>
+  </data>
+  <data name="Page_Description" xml:space="preserve">
+    <value>Add or update tutorial content.</value>
+  </data>
+  <data name="Header_Badge" xml:space="preserve">
+    <value>Tutorial builder</value>
+  </data>
+  <data name="Header_Title_Create" xml:space="preserve">
+    <value>New tutorial</value>
+  </data>
+  <data name="Header_Title_Edit" xml:space="preserve">
+    <value>Edit tutorial</value>
+  </data>
+  <data name="Header_Subtitle" xml:space="preserve">
+    <value>Provide the required metadata and JSON payload for Editor.js content.</value>
+  </data>
+  <data name="Field_Title" xml:space="preserve">
+    <value>Title</value>
+  </data>
+  <data name="Field_TitleImage" xml:space="preserve">
+    <value>Title image attachment ID</value>
+  </data>
+  <data name="Field_TitleImage_Help" xml:space="preserve">
+    <value>Use an existing attachment ID that should be displayed as the tutorial cover.</value>
+  </data>
+  <data name="Field_Content" xml:space="preserve">
+    <value>Content (Editor.js JSON)</value>
+  </data>
+  <data name="Field_Content_Help" xml:space="preserve">
+    <value>Paste the JSON returned from your block editor (header, images, paragraphs, etc.).</value>
+  </data>
+  <data name="Action_Create" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="Action_Save" xml:space="preserve">
+    <value>Save changes</value>
+  </data>
+  <data name="Action_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+</root>

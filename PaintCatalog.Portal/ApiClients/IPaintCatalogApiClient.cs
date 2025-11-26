@@ -41,5 +41,15 @@ namespace PaintCatalog.Portal.ApiClients
         Task<HttpResponseMessage> GetAttachmentAsync(int attachmentId);
 
         Task EnsureCurrentUserExistsAsync();
+
+        Task<string> GetTutorialsRawAsync(string? authorId = null, int? page = null, int? pageSize = null);
+
+        Task<string> GetTutorialByIdAsync(int tutorialId);
+
+        Task<string> CreateTutorialAsync(CreateTutorialRequest request);
+
+        Task<string> UpdateTutorialAsync(int tutorialId, UpdateTutorialRequest request);
+
+        Task<string> DeleteTutorialAsync(int tutorialId);
     }
 }

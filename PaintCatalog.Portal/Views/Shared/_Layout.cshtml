@@ -57,6 +57,7 @@
 
     var navHomeUrl = Url.LocalizedAction("Index", "Home");
     var navPaintsUrl = Url.LocalizedAction("Index", "paints");
+    var navTutorialsUrl = Url.LocalizedAction("Index", "Tutorials");
     var returnUrl = path + Context.Request.QueryString;
 
     var pageTitle = ViewData["Title"]?.ToString();
@@ -237,6 +238,7 @@
                 <nav class="hidden w-full items-center gap-6 text-sm text-slate-600 dark:text-slate-300 md:flex">
                     <a href="@navHomeUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Home"]</a>
                     <a href="@navPaintsUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Paints"]</a>
+                    <a href="@navTutorialsUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Tutorials"]</a>
                 </nav>
             </div>
         </div>
@@ -245,6 +247,7 @@
             <div class="mx-auto max-w-6xl px-4">
                 <a href="@navHomeUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Home"]</a>
                 <a href="@navPaintsUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Paints"]</a>
+                <a href="@navTutorialsUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Tutorials"]</a>
             </div>
         </div>
     </header>
