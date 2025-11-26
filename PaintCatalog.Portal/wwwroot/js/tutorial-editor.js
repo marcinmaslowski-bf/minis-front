@@ -207,11 +207,20 @@
         try {
             const response = await fetch('/attachments/upload', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'include',
+                headers: token ? { 'RequestVerificationToken': token } : undefined
             });
 
             if (!response.ok) {
-                throw new Error('Upload failed');
+                let errorMessage = 'Upload failed';
+                try {
+                    const errorPayload = await response.json();
+                    errorMessage = errorPayload?.error || errorMessage;
+                } catch (jsonError) {
+                    console.warn('Could not parse upload error response', jsonError);
+                }
+                throw new Error(`${errorMessage} (status ${response.status})`);
             }
 
             const payload = await response.json();
@@ -222,7 +231,8 @@
             setUploadStatus('Image uploaded. Attachment ID set.');
         } catch (error) {
             console.error(error);
-            setUploadStatus('Could not upload image. Please try again.', true);
+            const message = error?.message || 'Could not upload image. Please try again.';
+            setUploadStatus(message, true);
         } finally {
             if (uploadInput) {
                 uploadInput.value = '';
