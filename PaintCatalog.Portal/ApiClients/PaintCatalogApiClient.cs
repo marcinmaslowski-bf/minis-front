@@ -170,6 +170,58 @@ namespace PaintCatalog.Portal.ApiClients
             return await response.Content.ReadAsStringAsync();
         }
 
+        public async Task<string> GetVoteSummaryAsync(int threadId)
+        {
+            var url = $"/api/v1/vote-threads/{threadId}/summary";
+
+            using var response = await SendGetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> GetVoteSummariesAsync(IEnumerable<int> threadIds)
+        {
+            if (threadIds == null)
+            {
+                throw new ArgumentNullException(nameof(threadIds));
+            }
+
+            var queryParts = new List<string>();
+            foreach (var id in threadIds)
+            {
+                if (id <= 0) continue;
+                queryParts.Add($"threadIds={id}");
+            }
+
+            var url = "/api/v1/vote-threads/summary";
+            if (queryParts.Count > 0)
+            {
+                url += "?" + string.Join("&", queryParts);
+            }
+
+            using var response = await SendGetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> SetVoteAsync(int threadId, SetVoteRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            var url = $"/api/v1/vote-threads/{threadId}/votes";
+            var payload = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            using var response = await SendAsync(HttpMethod.Post, url, payload);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
         public async Task<HttpResponseMessage> GetAttachmentAsync(int attachmentId)
         {
             var url = $"/api/v1/attachments/{attachmentId}";

@@ -32,6 +32,12 @@ namespace PaintCatalog.Portal.ApiClients
 
         Task<string> UpdateCommentAsync(int threadId, int commentId, UpdateCommentRequest request);
 
+        Task<string> GetVoteSummaryAsync(int threadId);
+
+        Task<string> GetVoteSummariesAsync(IEnumerable<int> threadIds);
+
+        Task<string> SetVoteAsync(int threadId, SetVoteRequest request);
+
         Task<HttpResponseMessage> GetAttachmentAsync(int attachmentId);
 
         Task EnsureCurrentUserExistsAsync();
