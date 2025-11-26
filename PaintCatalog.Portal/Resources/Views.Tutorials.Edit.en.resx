@@ -48,6 +48,9 @@
   <data name="Field_Content_Help" xml:space="preserve">
     <value>Paste the JSON returned from your block editor (header, images, paragraphs, etc.).</value>
   </data>
+  <data name="Action_UploadTitleImage" xml:space="preserve">
+    <value>Upload title image</value>
+  </data>
   <data name="Action_Create" xml:space="preserve">
     <value>Create</value>
   </data>
