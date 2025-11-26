@@ -537,7 +537,7 @@
             if (!results) return;
             results.innerHTML = '<p class="text-xs text-slate-500">Loading...</p>';
             try {
-                const url = `/api/v1/paints?search=${encodeURIComponent(term || '')}&pageSize=6`;
+                const url = `/paints/data?search=${encodeURIComponent(term || '')}&pageSize=6`;
                 const response = await fetch(url, { credentials: 'include' });
                 if (!response.ok) {
                     throw new Error(`Request failed with status ${response.status}`);
