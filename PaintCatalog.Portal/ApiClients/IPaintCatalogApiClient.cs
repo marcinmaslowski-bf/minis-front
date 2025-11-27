@@ -70,4 +70,6 @@ public interface IPaintCatalogApiClient
     Task<string> GetBookmarkCategoriesAsync(BookmarkItemType? itemType = null);
 
     Task<string> CreateBookmarkCategoryAsync(CreateBookmarkCategoryRequest request);
+
+    Task<string> GetBookmarksAsync();
 }
