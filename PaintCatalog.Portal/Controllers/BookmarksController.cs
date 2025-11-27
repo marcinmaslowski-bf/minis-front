@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -55,7 +59,9 @@ namespace PaintCatalog.Portal.Controllers
             try
             {
                 var payload = await _apiClient.GetBookmarksAsync();
-                return Content(payload, "application/json");
+                var enrichedPayload = await EnrichPaintBookmarksAsync(payload);
+
+                return Content(enrichedPayload, "application/json");
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
             {
@@ -151,6 +157,292 @@ namespace PaintCatalog.Portal.Controllers
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, new { error = "Failed to remove bookmark", detail = ex.Message });
             }
+        }
+
+        private async Task<string> EnrichPaintBookmarksAsync(string payload)
+        {
+            if (string.IsNullOrWhiteSpace(payload))
+            {
+                return payload;
+            }
+
+            JsonNode? root;
+            try
+            {
+                root = JsonNode.Parse(payload);
+            }
+            catch
+            {
+                return payload;
+            }
+
+            if (root is null)
+            {
+                return payload;
+            }
+
+            var bookmarkItems = ExtractBookmarkItems(root).ToList();
+            var paintIds = bookmarkItems
+                .Where(IsPaintItem)
+                .Select(GetBookmarkItemId)
+                .Where(id => id.HasValue && id.Value > 0)
+                .Select(id => id!.Value)
+                .Distinct()
+                .ToList();
+
+            if (paintIds.Count == 0)
+            {
+                return payload;
+            }
+
+            Dictionary<int, PaintSlugInfo> paintSlugs;
+            try
+            {
+                paintSlugs = await FetchPaintSlugsAsync(paintIds);
+            }
+            catch
+            {
+                return payload;
+            }
+
+            if (paintSlugs.Count == 0)
+            {
+                return payload;
+            }
+
+            foreach (var bookmark in bookmarkItems)
+            {
+                var itemId = GetBookmarkItemId(bookmark);
+                if (!itemId.HasValue || !paintSlugs.TryGetValue(itemId.Value, out var slugs))
+                {
+                    continue;
+                }
+
+                ApplyValue(bookmark, "brandSlug", slugs.BrandSlug);
+                ApplyValue(bookmark, "seriesSlug", slugs.SeriesSlug);
+                ApplyValue(bookmark, "paintSlug", slugs.PaintSlug);
+
+                var hasUrl = TryGetString(bookmark, out var existingUrl, "url", "link", "href") && !string.IsNullOrWhiteSpace(existingUrl);
+                if (!hasUrl && slugs.IsComplete)
+                {
+                    bookmark["url"] = $"/paints/{slugs.BrandSlug}/{slugs.SeriesSlug}/{slugs.PaintSlug}";
+                }
+            }
+
+            return root.ToJsonString(new JsonSerializerOptions { WriteIndented = false });
+        }
+
+        private static IEnumerable<JsonObject> ExtractBookmarkItems(JsonNode root)
+        {
+            if (root is JsonArray rootArray)
+            {
+                return rootArray.OfType<JsonObject>();
+            }
+
+            if (root is JsonObject rootObject && rootObject["items"] is JsonArray itemsArray)
+            {
+                return itemsArray.OfType<JsonObject>();
+            }
+
+            return Enumerable.Empty<JsonObject>();
+        }
+
+        private async Task<Dictionary<int, PaintSlugInfo>> FetchPaintSlugsAsync(IEnumerable<int> paintIds)
+        {
+            var payload = await _apiClient.GetPaintsRawAsync(ids: paintIds);
+
+            JsonNode? root;
+            try
+            {
+                root = JsonNode.Parse(payload);
+            }
+            catch
+            {
+                return new Dictionary<int, PaintSlugInfo>();
+            }
+
+            var paintItems = new List<JsonObject>();
+
+            if (root is JsonArray array)
+            {
+                paintItems.AddRange(array.OfType<JsonObject>());
+            }
+            else if (root is JsonObject obj && obj["items"] is JsonArray itemsArray)
+            {
+                paintItems.AddRange(itemsArray.OfType<JsonObject>());
+            }
+
+            var paintSlugs = new Dictionary<int, PaintSlugInfo>();
+
+            foreach (var paint in paintItems)
+            {
+                var paintId = GetInt(paint, "id");
+                if (!paintId.HasValue)
+                {
+                    continue;
+                }
+
+                var brandSlug = FindBrandSlug(paint);
+                var seriesSlug = FindSeriesSlug(paint);
+                var paintSlug = FindPaintSlug(paint);
+
+                paintSlugs[paintId.Value] = new PaintSlugInfo(brandSlug, seriesSlug, paintSlug);
+            }
+
+            return paintSlugs;
+        }
+
+        private static string? FindBrandSlug(JsonObject paint)
+        {
+            var brandObject = paint["brand"] as JsonObject;
+            var seriesObject = paint["series"] as JsonObject;
+            var seriesBrandObject = seriesObject?["brand"] as JsonObject;
+
+            return FirstNonEmpty(
+                GetString(paint, "brandSlug", "brandUrlSlug"),
+                GetSlug(brandObject),
+                GetSlug(seriesBrandObject));
+        }
+
+        private static string? FindSeriesSlug(JsonObject paint)
+        {
+            var seriesObject = paint["series"] as JsonObject;
+
+            return FirstNonEmpty(
+                GetString(paint, "seriesSlug", "seriesUrlSlug"),
+                GetSlug(seriesObject));
+        }
+
+        private static string? FindPaintSlug(JsonObject paint)
+        {
+            return FirstNonEmpty(
+                GetString(paint, "paintSlug", "paintUrlSlug", "urlSlug", "urlslug", "slug"),
+                GetSlug(paint));
+        }
+
+        private static string? GetSlug(JsonObject? obj)
+        {
+            if (obj == null)
+            {
+                return null;
+            }
+
+            return GetString(obj, "urlSlug", "urlslug", "slug");
+        }
+
+        private static string? FirstNonEmpty(params string?[] values)
+        {
+            foreach (var value in values)
+            {
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    return value;
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsPaintItem(JsonObject bookmark)
+        {
+            var type = NormalizeType(bookmark);
+            return string.Equals(type, "paint", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string? NormalizeType(JsonObject bookmark)
+        {
+            var raw = GetString(bookmark, "itemType", "type");
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return null;
+            }
+
+            raw = raw.Trim().ToLowerInvariant();
+
+            if (raw == "1" || raw == "paint" || raw == "paints")
+            {
+                return "paint";
+            }
+
+            if (raw == "2" || raw == "tutorial" || raw == "tutorials")
+            {
+                return "tutorial";
+            }
+
+            return raw;
+        }
+
+        private static int? GetBookmarkItemId(JsonObject bookmark)
+        {
+            return GetInt(bookmark, "itemId", "id");
+        }
+
+        private static int? GetInt(JsonObject obj, params string[] propertyNames)
+        {
+            foreach (var property in propertyNames)
+            {
+                if (obj.TryGetPropertyValue(property, out var node) && node is JsonValue value)
+                {
+                    if (value.TryGetValue<int>(out var intValue))
+                    {
+                        return intValue;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static bool TryGetString(JsonObject obj, out string? result, params string[] propertyNames)
+        {
+            result = GetString(obj, propertyNames);
+            return result != null;
+        }
+
+        private static string? GetString(JsonObject obj, params string[] propertyNames)
+        {
+            foreach (var property in propertyNames)
+            {
+                if (obj.TryGetPropertyValue(property, out var node) && node is JsonValue value)
+                {
+                    if (value.TryGetValue<string>(out var stringValue) && !string.IsNullOrWhiteSpace(stringValue))
+                    {
+                        return stringValue;
+                    }
+
+                    if (value.TryGetValue<int>(out var intValue))
+                    {
+                        return intValue.ToString();
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static void ApplyValue(JsonObject target, string propertyName, string? value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return;
+            }
+
+            if (target.TryGetPropertyValue(propertyName, out var existing) && existing is JsonValue existingValue)
+            {
+                if (existingValue.TryGetValue<string>(out var existingString) && !string.IsNullOrWhiteSpace(existingString))
+                {
+                    return;
+                }
+            }
+
+            target[propertyName] = value;
+        }
+
+        private readonly record struct PaintSlugInfo(string? BrandSlug, string? SeriesSlug, string? PaintSlug)
+        {
+            public bool IsComplete => !string.IsNullOrWhiteSpace(BrandSlug)
+                                       && !string.IsNullOrWhiteSpace(SeriesSlug)
+                                       && !string.IsNullOrWhiteSpace(PaintSlug);
         }
     }
 }
