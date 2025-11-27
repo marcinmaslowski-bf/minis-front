@@ -99,6 +99,32 @@
         return null;
     }
 
+    function extractPaintSlugsFromUrl(url) {
+        if (!url || typeof url !== 'string') return {};
+
+        try {
+            const parsed = new URL(url, window.location.origin);
+            const segments = parsed.pathname.split('/').filter(Boolean);
+
+            const paintsIndex = segments.findIndex((segment) => segment.toLowerCase() === 'paints');
+            if (paintsIndex === -1 || segments.length < paintsIndex + 4) {
+                return {};
+            }
+
+            const brandSlug = segments[paintsIndex + 1];
+            const seriesSlug = segments[paintsIndex + 2];
+            const paintSlug = segments[paintsIndex + 3];
+
+            if (!brandSlug || !seriesSlug || !paintSlug) {
+                return {};
+            }
+
+            return { brandSlug, seriesSlug, paintSlug };
+        } catch (_) {
+            return {};
+        }
+    }
+
     function normalizeBookmark(item) {
         if (!item || typeof item !== 'object') return null;
 
@@ -112,16 +138,28 @@
             item.brandSlug,
             rawItem.brandSlug,
             rawItem.brandUrlSlug,
+            rawItem.brand?.slug,
+            rawItem.brand?.urlSlug,
+            rawItem.brand?.urlslug,
+            rawItem.brand?.url,
             rawBrand.slug,
             rawBrand.urlSlug,
             rawBrand.urlslug,
             rawBrand.url,
+            rawSeries.brand?.slug,
+            rawSeries.brand?.urlSlug,
+            rawSeries.brand?.urlslug,
+            rawSeries.brand?.url,
         );
 
         const seriesSlug = firstString(
             item.seriesSlug,
             rawItem.seriesSlug,
             rawItem.seriesUrlSlug,
+            rawItem.series?.slug,
+            rawItem.series?.urlSlug,
+            rawItem.series?.urlslug,
+            rawItem.series?.url,
             rawSeries.slug,
             rawSeries.urlSlug,
             rawSeries.urlslug,
@@ -132,6 +170,8 @@
             item.paintSlug,
             rawItem.paintSlug,
             rawItem.paintUrlSlug,
+            rawItem.urlSlug,
+            rawItem.urlslug,
             rawItem.slug,
         );
 
@@ -158,6 +198,13 @@
             tutorialId: item.tutorialId ?? rawItem.tutorialId ?? rawItem.id ?? null,
         };
 
+        if (normalized.url && normalized.type === 'paint') {
+            const parsedSlugs = extractPaintSlugsFromUrl(normalized.url);
+            normalized.brandSlug ||= parsedSlugs.brandSlug;
+            normalized.seriesSlug ||= parsedSlugs.seriesSlug;
+            normalized.paintSlug ||= parsedSlugs.paintSlug;
+        }
+
         return normalized;
     }
 
@@ -165,12 +212,26 @@
         if (!bookmark) return null;
 
         const provided = sanitizeUrl(bookmark.url);
-        if (provided) return provided;
 
         const type = normalizeType(bookmark.type);
 
-        if (type === 'paint' && bookmark.brandSlug && bookmark.seriesSlug && bookmark.paintSlug) {
-            return `${langPrefix}/paints/${bookmark.brandSlug}/${bookmark.seriesSlug}/${bookmark.paintSlug}`;
+        if (type === 'paint') {
+            const brandSlug = bookmark.brandSlug;
+            const seriesSlug = bookmark.seriesSlug;
+            const paintSlug = bookmark.paintSlug;
+
+            if (brandSlug && seriesSlug && paintSlug) {
+                return `${langPrefix}/paints/${brandSlug}/${seriesSlug}/${paintSlug}`;
+            }
+
+            if (provided) {
+                const parsedSlugs = extractPaintSlugsFromUrl(provided);
+                if (parsedSlugs.brandSlug && parsedSlugs.seriesSlug && parsedSlugs.paintSlug) {
+                    return `${langPrefix}/paints/${parsedSlugs.brandSlug}/${parsedSlugs.seriesSlug}/${parsedSlugs.paintSlug}`;
+                }
+            }
+
+            if (provided) return provided;
         }
 
         if (type === 'tutorial') {
