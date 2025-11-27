@@ -57,6 +57,12 @@
   <data name="Action_Save" xml:space="preserve">
     <value>Zapisz zmiany</value>
   </data>
+  <data name="Action_SaveAndPublish" xml:space="preserve">
+    <value>Zapisz i opublikuj</value>
+  </data>
+  <data name="Action_Publish" xml:space="preserve">
+    <value>Opublikuj</value>
+  </data>
   <data name="Action_Cancel" xml:space="preserve">
     <value>Anuluj</value>
   </data>

@@ -36,6 +36,9 @@
   <data name="Table_Created" xml:space="preserve">
     <value>Utworzono</value>
   </data>
+  <data name="Table_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
   <data name="Table_Updated" xml:space="preserve">
     <value>Zaktualizowano</value>
   </data>
@@ -45,7 +48,16 @@
   <data name="Table_Empty" xml:space="preserve">
     <value>Brak tutoriali.</value>
   </data>
+  <data name="Status_Draft" xml:space="preserve">
+    <value>Szkic (nieopublikowany)</value>
+  </data>
+  <data name="Status_Published" xml:space="preserve">
+    <value>Opublikowany</value>
+  </data>
   <data name="Action_View" xml:space="preserve">
+    <value>Podgląd</value>
+  </data>
+  <data name="Action_Preview" xml:space="preserve">
     <value>Podgląd</value>
   </data>
   <data name="Action_Edit" xml:space="preserve">
