@@ -65,7 +65,12 @@
             return raw;
         }
 
-        return `https://${raw}`;
+        const looksLikeDomain = /\.[a-z]{2,}(?:\/?|$)/i.test(raw);
+        if (looksLikeDomain) {
+            return `https://${raw}`;
+        }
+
+        return `/${raw}`;
     }
 
     function normalizeType(value) {
