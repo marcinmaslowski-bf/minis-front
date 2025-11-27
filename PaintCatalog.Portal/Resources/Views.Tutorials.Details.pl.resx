@@ -13,10 +13,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Page_Title" xml:space="preserve">
-    <value>Tutorial: {0}</value>
+    <value>Poradnik: {0}</value>
   </data>
   <data name="Page_Description" xml:space="preserve">
-    <value>Podgląd tutoriala</value>
+    <value>Podgląd poradnika</value>
   </data>
   <data name="Header_Badge" xml:space="preserve">
     <value>Podgląd</value>
@@ -28,18 +28,72 @@
     <value>Powrót do listy</value>
   </data>
   <data name="Content_Title" xml:space="preserve">
-    <value>Treść (JSON)</value>
+    <value>Treść poradnika</value>
+  </data>
+  <data name="Content_Badge" xml:space="preserve">
+    <value>Treść</value>
+  </data>
+  <data name="Content_Sections" xml:space="preserve">
+    <value>Sekcje: {0}</value>
+  </data>
+  <data name="Content_Items" xml:space="preserve">
+    <value>Elementy: {0}</value>
+  </data>
+  <data name="Content_Empty" xml:space="preserve">
+    <value>Ten poradnik nie ma jeszcze treści.</value>
+  </data>
+  <data name="Content_Section_Label" xml:space="preserve">
+    <value>Sekcja {0}</value>
+  </data>
+  <data name="Content_Section_Fallback" xml:space="preserve">
+    <value>Sekcja bez nazwy #{0}</value>
+  </data>
+  <data name="Content_Section_Empty" xml:space="preserve">
+    <value>Ta sekcja nie ma jeszcze elementów.</value>
+  </data>
+  <data name="Content_Item_Header" xml:space="preserve">
+    <value>Nagłówek</value>
+  </data>
+  <data name="Content_Item_Image" xml:space="preserve">
+    <value>Obraz</value>
+  </data>
+  <data name="Content_Item_Steps" xml:space="preserve">
+    <value>Kroki</value>
+  </data>
+  <data name="Content_Item_StepLabel" xml:space="preserve">
+    <value>Krok {0}</value>
+  </data>
+  <data name="Content_Item_Text" xml:space="preserve">
+    <value>Tekst</value>
+  </data>
+  <data name="Content_Missing" xml:space="preserve">
+    <value>Brak danych</value>
+  </data>
+  <data name="Content_RawJson" xml:space="preserve">
+    <value>Surowy JSON</value>
   </data>
   <data name="Meta_Id" xml:space="preserve">
     <value>ID</value>
   </data>
+  <data name="Meta_Title" xml:space="preserve">
+    <value>Szczegóły</value>
+  </data>
   <data name="Meta_TitleImage" xml:space="preserve">
-    <value>Okładka</value>
+    <value>Obraz tytułowy</value>
   </data>
   <data name="Meta_Created" xml:space="preserve">
     <value>Utworzono</value>
   </data>
   <data name="Meta_Updated" xml:space="preserve">
     <value>Zaktualizowano</value>
+  </data>
+  <data name="Meta_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Status_Draft" xml:space="preserve">
+    <value>Szkic (nieopublikowany)</value>
+  </data>
+  <data name="Status_Published" xml:space="preserve">
+    <value>Opublikowany</value>
   </data>
 </root>

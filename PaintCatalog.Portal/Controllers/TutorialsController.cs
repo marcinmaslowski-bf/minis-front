@@ -200,7 +200,9 @@ namespace PaintCatalog.Portal.Controllers
                 Id = tutorial.Id,
                 Title = tutorial.Title ?? string.Empty,
                 TitleImageAttachmentId = tutorial.TitleImageAttachmentId,
+                Content = tutorial.Content ?? new EditorJsDocumentDto(),
                 ContentJson = JsonSerializer.Serialize(tutorial.Content ?? new EditorJsDocumentDto(), JsonOptions),
+                Published = tutorial.Published,
                 CreatedAtUtc = tutorial.CreatedAtUtc,
                 UpdatedAtUtc = tutorial.UpdatedAtUtc
             };

@@ -28,10 +28,55 @@
     <value>Back to list</value>
   </data>
   <data name="Content_Title" xml:space="preserve">
-    <value>Content JSON</value>
+    <value>Tutorial content</value>
+  </data>
+  <data name="Content_Badge" xml:space="preserve">
+    <value>Content</value>
+  </data>
+  <data name="Content_Sections" xml:space="preserve">
+    <value>Sections: {0}</value>
+  </data>
+  <data name="Content_Items" xml:space="preserve">
+    <value>Items: {0}</value>
+  </data>
+  <data name="Content_Empty" xml:space="preserve">
+    <value>This tutorial does not contain any content yet.</value>
+  </data>
+  <data name="Content_Section_Label" xml:space="preserve">
+    <value>Section {0}</value>
+  </data>
+  <data name="Content_Section_Fallback" xml:space="preserve">
+    <value>Untitled section #{0}</value>
+  </data>
+  <data name="Content_Section_Empty" xml:space="preserve">
+    <value>This section has no items yet.</value>
+  </data>
+  <data name="Content_Item_Header" xml:space="preserve">
+    <value>Header</value>
+  </data>
+  <data name="Content_Item_Image" xml:space="preserve">
+    <value>Image</value>
+  </data>
+  <data name="Content_Item_Steps" xml:space="preserve">
+    <value>Steps</value>
+  </data>
+  <data name="Content_Item_StepLabel" xml:space="preserve">
+    <value>Step {0}</value>
+  </data>
+  <data name="Content_Item_Text" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="Content_Missing" xml:space="preserve">
+    <value>Not provided</value>
+  </data>
+  <data name="Content_RawJson" xml:space="preserve">
+    <value>Raw JSON</value>
   </data>
   <data name="Meta_Id" xml:space="preserve">
     <value>ID</value>
+  </data>
+  <data name="Meta_Title" xml:space="preserve">
+    <value>Details</value>
   </data>
   <data name="Meta_TitleImage" xml:space="preserve">
     <value>Title image</value>
@@ -41,5 +86,14 @@
   </data>
   <data name="Meta_Updated" xml:space="preserve">
     <value>Updated</value>
+  </data>
+  <data name="Meta_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Status_Draft" xml:space="preserve">
+    <value>Draft</value>
+  </data>
+  <data name="Status_Published" xml:space="preserve">
+    <value>Published</value>
   </data>
 </root>
