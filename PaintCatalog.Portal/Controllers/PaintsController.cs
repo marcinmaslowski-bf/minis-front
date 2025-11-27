@@ -53,6 +53,8 @@ namespace PaintCatalog.Portal.Controllers
 
         [HttpGet]
         public async Task<IActionResult> Data(
+            int? id,
+            [FromQuery(Name = "ids")] List<int>? ids,
             int? brandId,
             int? seriesId,
             int? type,
@@ -66,15 +68,17 @@ namespace PaintCatalog.Portal.Controllers
             try
             {
                 var payload = await _apiClient.GetPaintsRawAsync(
-                    brandId,
-                    seriesId,
-                    type,
-                    finish,
-                    medium,
-                    tagIds,
-                    search,
-                    page,
-                    pageSize);
+                    id: id,
+                    ids: ids,
+                    brandId: brandId,
+                    seriesId: seriesId,
+                    type: type,
+                    finish: finish,
+                    medium: medium,
+                    tagIds: tagIds,
+                    search: search,
+                    page: page,
+                    pageSize: pageSize);
 
                 return Content(payload, "application/json");
             }

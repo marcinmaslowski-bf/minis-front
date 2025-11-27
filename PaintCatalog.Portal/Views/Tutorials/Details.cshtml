@@ -25,6 +25,10 @@
 
             const detailsTemplate = '@paintDetailsTemplate';
             const paintIds = [...new Set(badges.map(b => b.dataset.paintId).filter(Boolean))];
+            if (!paintIds.length) return;
+
+            const idsQuery = paintIds.map(id => `ids=${encodeURIComponent(id)}`).join('&');
+            if (!idsQuery) return;
 
             function buildDetailsUrl(brandSlug, seriesSlug, paintSlug) {
                 if (!brandSlug || !seriesSlug || !paintSlug || !detailsTemplate) return null;
@@ -62,22 +66,33 @@
                 }
             }
 
-            async function hydrateBadge(id) {
+            (async function hydrateBadges() {
                 try {
-                    const response = await fetch(`/paints/data?search=${encodeURIComponent(id)}&pageSize=1`, { credentials: 'include' });
+                    const response = await fetch(`/paints/data?${idsQuery}`, { credentials: 'include' });
                     if (!response.ok) return;
+
                     const payload = await response.json();
                     const items = Array.isArray(payload?.items) ? payload.items : (Array.isArray(payload) ? payload : []);
-                    const paint = items.find(p => String(p?.id ?? p?.paintId ?? p?.Id) === String(id)) || items[0];
-                    if (!paint) return;
+                    const paintsById = new Map();
 
-                    badges.filter(b => b.dataset.paintId === String(id)).forEach(badge => renderBadge(badge, paint));
+                    items.forEach(paint => {
+                        const paintId = paint?.id ?? paint?.paintId ?? paint?.Id;
+                        if (paintId !== undefined && paintId !== null) {
+                            paintsById.set(String(paintId), paint);
+                        }
+                    });
+
+                    paintIds.forEach(id => {
+                        const paint = paintsById.get(String(id));
+                        if (!paint) return;
+                        badges
+                            .filter(badge => badge.dataset.paintId === String(id))
+                            .forEach(badge => renderBadge(badge, paint));
+                    });
                 } catch (error) {
-                    console.error('Failed to load paint', id, error);
+                    console.error('Failed to load paints', paintIds, error);
                 }
-            }
-
-            paintIds.forEach(hydrateBadge);
+            })();
         })();
     </script>
 }
