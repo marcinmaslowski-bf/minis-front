@@ -1,4 +1,5 @@
 using System;
+using PaintCatalog.Portal.Models.Api;
 
 namespace PaintCatalog.Portal.Models.Tutorials
 {
@@ -10,7 +11,11 @@ namespace PaintCatalog.Portal.Models.Tutorials
 
         public int? TitleImageAttachmentId { get; set; }
 
+        public EditorJsDocumentDto Content { get; set; } = new EditorJsDocumentDto();
+
         public string ContentJson { get; set; } = string.Empty;
+
+        public bool Published { get; set; }
 
         public DateTime? CreatedAtUtc { get; set; }
 
