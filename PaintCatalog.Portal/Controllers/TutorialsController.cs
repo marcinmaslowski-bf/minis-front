@@ -204,7 +204,8 @@ namespace PaintCatalog.Portal.Controllers
                 ContentJson = JsonSerializer.Serialize(tutorial.Content ?? new EditorJsDocumentDto(), JsonOptions),
                 Published = tutorial.Published,
                 CreatedAtUtc = tutorial.CreatedAtUtc,
-                UpdatedAtUtc = tutorial.UpdatedAtUtc
+                UpdatedAtUtc = tutorial.UpdatedAtUtc,
+                Bookmark = tutorial.Bookmark
             };
 
             return View(vm);

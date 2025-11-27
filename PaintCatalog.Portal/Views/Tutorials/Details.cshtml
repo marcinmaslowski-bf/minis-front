@@ -2,6 +2,8 @@
 @using System.Linq
 @using System.Net
 @using System.Text.RegularExpressions
+@using System.Text.Json
+@using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Html
 @using PaintCatalog.Portal.Helpers
 @using PaintCatalog.Portal.Models.Api
@@ -10,6 +12,11 @@
 @{
     ViewData["Title"] = Localizer["Page_Title", Model.Title].Value;
     ViewData["MetaDescription"] = Localizer["Page_Description"].Value;
+    var jsonOptions = new JsonSerializerOptions
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+    var bookmarkJson = JsonSerializer.Serialize(Model.Bookmark, jsonOptions);
     var paintDetailsTemplate = CultureHelpers.GetRouteCultureSegment() is string cultureSegment
         ? Url.RouteUrl("PaintDetailsLocalized", new { culture = cultureSegment, brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/pl/paints/__brand__/__series__/__paint__"
         : Url.RouteUrl("PaintDetails", new { brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/paints/__brand__/__series__/__paint__";
@@ -17,6 +24,7 @@
 }
 
 @section Scripts {
+    <script src="~/js/bookmarks.js"></script>
     <script src="~/js/paint-swatch.js"></script>
     <script>
         (function () {
@@ -95,6 +103,48 @@
             })();
         })();
     </script>
+    <script>
+        (function () {
+            const bookmarkConfig = {
+                triggerSelector: '#bookmark-trigger',
+                modalSelector: '#bookmark-modal',
+                categorySelector: '#bookmark-category',
+                newCategorySelector: '#bookmark-new-category',
+                addCategorySelector: '#bookmark-add-category',
+                noteSelector: '#bookmark-note',
+                saveSelector: '#bookmark-save',
+                removeSelector: '#bookmark-remove',
+                cancelSelector: '#bookmark-cancel',
+                statusSelector: '#bookmark-status',
+                errorSelector: '#bookmark-error',
+                itemId: @Model.Id,
+                itemType: 2,
+                initialBookmark: @Html.Raw(string.IsNullOrWhiteSpace(bookmarkJson) ? "null" : bookmarkJson),
+                endpoints: {
+                    categories: '@(Url.Action("Categories", "Bookmarks") ?? "/bookmarks/categories")',
+                    createCategory: '@(Url.Action("CreateCategory", "Bookmarks") ?? "/bookmarks/categories")',
+                    upsert: '@(Url.Action("Upsert", "Bookmarks") ?? "/bookmarks")',
+                    delete: '@(Url.Action("Delete", "Bookmarks", new { itemType = 2, itemId = Model.Id }) ?? $"/bookmarks/2/{Model.Id}")'
+                },
+                auth: {
+                    isAuthenticated: @(User?.Identity?.IsAuthenticated ?? false ? "true" : "false"),
+                    loginUrl: '@(Url.Action("Login", "Account", new { returnUrl = Context.Request.Path + Context.Request.QueryString }) ?? "/login")'
+                },
+                labels: {
+                    buttonSave: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Button_Save"].Value, jsonOptions)),
+                    buttonSaved: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Button_Saved"].Value, jsonOptions)),
+                    statusSaved: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Status_Saved"].Value, jsonOptions)),
+                    statusRemoved: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Status_Removed"].Value, jsonOptions)),
+                    errorLoad: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Error_Load"].Value, jsonOptions)),
+                    errorSave: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Error_Save"].Value, jsonOptions)),
+                    errorDelete: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Error_Delete"].Value, jsonOptions)),
+                    login: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Login"].Value, jsonOptions))
+                }
+            };
+
+            window.bookmarksUi?.init(bookmarkConfig);
+        })();
+    </script>
 }
 
 <article class="space-y-10">
@@ -111,6 +161,12 @@
         {
             <p class="text-sm font-semibold text-amber-600 dark:text-amber-300">@Localizer["Status_Draft"]</p>
         }
+        <div class="flex flex-wrap gap-2">
+            <button id="bookmark-trigger" type="button" class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700 transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">
+                <span aria-hidden="true">★</span>
+                <span>@Localizer["Bookmark_Button_Save"]</span>
+            </button>
+        </div>
     </header>
 
     @if (Model.TitleImageAttachmentId.HasValue)
@@ -203,6 +259,44 @@
             </section>
         }
     }
+
+    <div id="bookmark-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 p-4">
+        <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <div class="space-y-1">
+                <p class="text-lg font-semibold text-slate-900 dark:text-white">@Localizer["Bookmark_Title"]</p>
+                <p class="text-sm text-slate-500 dark:text-slate-300">@Localizer["Bookmark_Subtitle"]</p>
+            </div>
+
+            <div class="mt-5 space-y-4">
+                <div class="space-y-1">
+                    <label for="bookmark-category" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Bookmark_Category_Label"]</label>
+                    <select id="bookmark-category" class="w-full rounded-xl border border-slate-300 bg-white/90 p-3 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100"></select>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="bookmark-new-category" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Bookmark_NewCategory_Label"]</label>
+                    <div class="flex flex-col gap-2 sm:flex-row">
+                        <input id="bookmark-new-category" type="text" maxlength="80" placeholder="@Localizer["Bookmark_NewCategory_Placeholder"]" class="w-full rounded-xl border border-slate-300 bg-white/90 p-3 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100" />
+                        <button id="bookmark-add-category" type="button" class="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">@Localizer["Bookmark_AddCategory_Button"]</button>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label for="bookmark-note" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Bookmark_Note_Label"]</label>
+                    <textarea id="bookmark-note" rows="3" placeholder="@Localizer["Bookmark_Note_Placeholder"]" class="w-full rounded-xl border border-slate-300 bg-white/80 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100"></textarea>
+                </div>
+
+                <div id="bookmark-status" class="hidden text-sm font-semibold text-emerald-600 dark:text-emerald-300"></div>
+                <div id="bookmark-error" class="hidden text-sm font-semibold text-rose-600 dark:text-rose-300"></div>
+
+                <div class="flex flex-wrap justify-end gap-2">
+                    <button id="bookmark-remove" type="button" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-400 hover:text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:border-slate-700 dark:text-slate-200 dark:hover:border-rose-400 dark:hover:text-rose-300">@Localizer["Bookmark_Remove"]</button>
+                    <button id="bookmark-cancel" type="button" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-500">@Localizer["Bookmark_Cancel"]</button>
+                    <button id="bookmark-save" type="button" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400">@Localizer["Bookmark_Save"]</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div class="flex gap-4">
         <a href="@Url.Action("Edit", "Tutorials", new { id = Model.Id })" class="text-sm font-semibold text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200">

@@ -28,5 +28,8 @@ namespace PaintCatalog.Portal.Models.Api
 
         [JsonPropertyName("updatedAtUtc")]
         public DateTime? UpdatedAtUtc { get; set; }
+
+        [JsonPropertyName("bookmark")]
+        public BookmarkDto? Bookmark { get; set; }
     }
 }
