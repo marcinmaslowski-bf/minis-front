@@ -45,7 +45,7 @@
             case ITEM_TYPES.HEADER:
                 return { type, text: defaultText };
             case ITEM_TYPES.STEP:
-                return { type, text: defaultText, stepNumber: null, paintIds: [] };
+                return { type, text: defaultText, paintIds: [] };
             case ITEM_TYPES.IMAGE:
                 return { type, image: null };
             case ITEM_TYPES.TEXT:
@@ -86,24 +86,39 @@
         };
     }
 
+    function normalizeStep(raw, index = 0, fallbackText = '') {
+        const text = raw?.text || fallbackText || '';
+        const paintIds = Array.isArray(raw?.paintIds) ? raw.paintIds : extractPaintIds(text);
+
+        return {
+            title: raw?.title || raw?.header || (raw?.stepNumber ? `Step ${raw.stepNumber}` : (text ? `Step ${index + 1}` : '')),
+            text,
+            paintIds
+        };
+    }
+
     function normalizeItem(raw) {
         if (!raw) return createItem(ITEM_TYPES.TEXT);
 
-        const type = raw.type || (raw.image ? ITEM_TYPES.IMAGE : ITEM_TYPES.TEXT);
+        const type = raw.type || (raw.attachmentId || raw.image ? ITEM_TYPES.IMAGE : ITEM_TYPES.TEXT);
         const fallbackText = raw.text || raw.header || raw.body || '';
-        const image = normalizeImage(raw.image);
+        const image = normalizeImage(raw.image ?? { attachmentId: raw.attachmentId, alt: raw.alt, caption: raw.caption });
 
         if (type === ITEM_TYPES.HEADER) {
             return { type, text: fallbackText };
         }
 
         if (type === ITEM_TYPES.STEP) {
-            const paintIds = Array.isArray(raw.paintIds) ? raw.paintIds : extractPaintIds(fallbackText);
+            const steps = Array.isArray(raw.steps) ? raw.steps : [];
+            const normalizedSteps = steps.length > 0
+                ? steps.map((step, index) => normalizeStep(step, index, fallbackText))
+                : [normalizeStep({ text: fallbackText, paintIds: raw.paintIds }, 0, fallbackText)];
+
             return {
                 type,
                 text: fallbackText,
-                paintIds,
-                stepNumber: Number.isFinite(raw.stepNumber) ? raw.stepNumber : null
+                paintIds: Array.isArray(raw.paintIds) ? raw.paintIds : extractPaintIds(fallbackText),
+                steps: normalizedSteps
             };
         }
 
@@ -115,41 +130,10 @@
         return { type: ITEM_TYPES.TEXT, text: fallbackText, paintIds };
     }
 
-    function blockToItems(block) {
-        const items = [];
-        if (!block) return items;
-
-        if (block.header) {
-            items.push({ type: ITEM_TYPES.HEADER, text: block.header });
-        }
-
-        if (block.body) {
-            items.push({ type: ITEM_TYPES.TEXT, text: block.body, paintIds: extractPaintIds(block.body) });
-        }
-
-        const images = Array.isArray(block.images) ? block.images : (block.image ? [block.image] : []);
-        images.forEach(image => {
-            const normalized = normalizeImage(image);
-            if (normalized) {
-                items.push({ type: ITEM_TYPES.IMAGE, image: normalized });
-            }
-        });
-
-        return items;
-    }
-
     function normalizeSection(section, index = 0) {
-        let normalizedItems = Array.isArray(section?.items)
+        const normalizedItems = Array.isArray(section?.items)
             ? section.items.map(normalizeItem).filter(Boolean)
             : [];
-
-        if (!normalizedItems || normalizedItems.length === 0) {
-            const fromBlocks = Array.isArray(section?.blocks)
-                ? section.blocks.flatMap(blockToItems)
-                : [];
-
-            normalizedItems = fromBlocks.length > 0 ? fromBlocks : [];
-        }
 
         return {
             title: section?.title || section?.header || `Section ${index + 1}`,
@@ -164,13 +148,9 @@
 
         try {
             const parsed = JSON.parse(json);
-            const sectionsFromBlocks = Array.isArray(parsed?.blocks)
-                ? parsed.blocks.map((block, index) => normalizeSection({ ...block, blocks: [block] }, index))
-                : null;
-
             const sections = Array.isArray(parsed?.sections)
                 ? parsed.sections.map(normalizeSection)
-                : sectionsFromBlocks;
+                : null;
 
             return {
                 sections: sections && sections.length > 0 ? sections : createDefaultDocument().sections,
@@ -255,9 +235,6 @@
             })();
 
             const stepNumber = item.type === ITEM_TYPES.STEP ? (stepCounter += 1) : null;
-            if (item.type === ITEM_TYPES.STEP) {
-                documentState.sections[sectionIndex].items[itemIndex].stepNumber = stepNumber;
-            }
 
             titleWrapper.innerHTML = `
                 <p class="text-xs font-semibold uppercase tracking-wide text-emerald-500">${typeLabel}${stepNumber ? ` #${stepNumber}` : ''}</p>
@@ -574,7 +551,12 @@
                 if (item.type === ITEM_TYPES.IMAGE) {
                     const image = normalizeImage(item.image);
                     if (image) {
-                        items.push({ type: ITEM_TYPES.IMAGE, image });
+                        items.push({
+                            type: ITEM_TYPES.IMAGE,
+                            attachmentId: image.attachmentId,
+                            caption: image.caption || undefined,
+                            alt: image.alt || undefined
+                        });
                     }
                     return;
                 }
@@ -592,11 +574,25 @@
                     const paintIds = extractPaintIds(text);
                     if (text || paintIds.length > 0) {
                         stepNumber += 1;
+                        const steps = Array.isArray(item.steps) && item.steps.length > 0
+                            ? item.steps.map((step, index) => ({
+                                title: (step.title || '').trim() || `Step ${index + 1}`,
+                                text: (step.text || text).trim(),
+                                paintIds: Array.isArray(step.paintIds) && step.paintIds.length > 0
+                                    ? step.paintIds
+                                    : (paintIds.length > 0 ? paintIds : undefined)
+                            }))
+                            : [{
+                                title: `Step ${stepNumber}`,
+                                text,
+                                paintIds: paintIds.length > 0 ? paintIds : undefined
+                            }];
+
                         items.push({
                             type: ITEM_TYPES.STEP,
                             text,
-                            stepNumber,
-                            paintIds: paintIds.length > 0 ? paintIds : undefined
+                            paintIds: paintIds.length > 0 ? paintIds : undefined,
+                            steps
                         });
                     }
                     return;
