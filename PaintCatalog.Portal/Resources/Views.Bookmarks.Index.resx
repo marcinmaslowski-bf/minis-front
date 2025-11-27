@@ -33,6 +33,12 @@
   <data name="Filter_All" xml:space="preserve">
     <value>All categories</value>
   </data>
+  <data name="Filter_All_Paints" xml:space="preserve">
+    <value>All paints</value>
+  </data>
+  <data name="Filter_All_Tutorials" xml:space="preserve">
+    <value>All tutorials</value>
+  </data>
   <data name="Empty_Title" xml:space="preserve">
     <value>No bookmarks yet</value>
   </data>

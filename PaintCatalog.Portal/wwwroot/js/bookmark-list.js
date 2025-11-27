@@ -84,11 +84,57 @@
         return normalized || null;
     }
 
+    function firstString(...values) {
+        for (const value of values) {
+            if (typeof value === 'string' && value.trim()) {
+                return value.trim();
+            }
+        }
+
+        return null;
+    }
+
     function normalizeBookmark(item) {
         if (!item || typeof item !== 'object') return null;
 
         const category = item.category || {};
         const normalizedType = normalizeType(item.itemType ?? item.type ?? category.itemType);
+        const rawItem = item.item || item;
+        const rawBrand = rawItem.brand || {};
+        const rawSeries = rawItem.series || {};
+
+        const brandSlug = firstString(
+            item.brandSlug,
+            rawItem.brandSlug,
+            rawItem.brandUrlSlug,
+            rawBrand.slug,
+            rawBrand.urlSlug,
+            rawBrand.urlslug,
+            rawBrand.url,
+        );
+
+        const seriesSlug = firstString(
+            item.seriesSlug,
+            rawItem.seriesSlug,
+            rawItem.seriesUrlSlug,
+            rawSeries.slug,
+            rawSeries.urlSlug,
+            rawSeries.urlslug,
+            rawSeries.url,
+        );
+
+        const paintSlug = firstString(
+            item.paintSlug,
+            rawItem.paintSlug,
+            rawItem.paintUrlSlug,
+            rawItem.slug,
+        );
+
+        const tutorialSlug = firstString(
+            item.tutorialSlug,
+            rawItem.tutorialSlug,
+            rawItem.slug,
+        );
 
         const normalized = {
             id: item.id ?? item.bookmarkId ?? `${item.itemType || 'item'}-${item.itemId || '0'}`,
@@ -98,13 +144,13 @@
             categoryName: item.categoryName ?? category.name ?? null,
             note: item.note || '',
             item: item.item || null,
-            url: sanitizeUrl(item.url || item.link || item.href || (item.item && item.item.url)),
-            title: item.title || item.name || item.itemTitle || item.itemName || (item.item && (item.item.title || item.item.name)) || null,
-            brandSlug: item.brandSlug ?? item.item?.brandSlug ?? null,
-            seriesSlug: item.seriesSlug ?? item.item?.seriesSlug ?? null,
-            paintSlug: item.paintSlug ?? item.item?.paintSlug ?? item.item?.slug ?? null,
-            tutorialSlug: item.tutorialSlug ?? item.item?.slug ?? null,
-            tutorialId: item.tutorialId ?? item.item?.tutorialId ?? item.item?.id ?? null,
+            url: sanitizeUrl(item.url || item.link || item.href || rawItem.url),
+            title: item.title || item.name || item.itemTitle || item.itemName || rawItem.title || rawItem.name || null,
+            brandSlug: brandSlug,
+            seriesSlug: seriesSlug,
+            paintSlug: paintSlug,
+            tutorialSlug: tutorialSlug,
+            tutorialId: item.tutorialId ?? rawItem.tutorialId ?? rawItem.id ?? null,
         };
 
         return normalized;
@@ -138,14 +184,24 @@
     function renderFilterOptions() {
         if (!filterSelect) return;
 
-        const categories = state.categories || [];
+        const paintCategories = (state.categories || []).filter((c) => c.type === 'paint').map((c) => c.name);
+        const tutorialCategories = (state.categories || []).filter((c) => c.type === 'tutorial').map((c) => c.name);
 
         const options = [`<option value="all">${labels.filterAll || 'All categories'}</option>`];
 
-        categories.forEach((c) => {
-            if (!c) return;
-            options.push(`<option value="${c}">${c}</option>`);
-        });
+        if (paintCategories.length) {
+            options.push(`<option value="paint">${labels.filterAllPaints || 'All paints'}</option>`);
+            paintCategories.forEach((name) => {
+                options.push(`<option value="paint:${encodeURIComponent(name)}">- ${name}</option>`);
+            });
+        }
+
+        if (tutorialCategories.length) {
+            options.push(`<option value="tutorial">${labels.filterAllTutorials || 'All tutorials'}</option>`);
+            tutorialCategories.forEach((name) => {
+                options.push(`<option value="tutorial:${encodeURIComponent(name)}">- ${name}</option>`);
+            });
+        }
 
         filterSelect.innerHTML = options.join('');
     }
@@ -156,7 +212,18 @@
         const filtered = state.bookmarks.filter((b) => {
             if (!b) return false;
             if (!selected || selected === 'all') return true;
-            return (b.categoryName || '').toLowerCase() === selected.toLowerCase();
+
+            const normalizedType = normalizeType(b.type);
+            if (selected === 'paint' || selected === 'tutorial') {
+                return normalizedType === selected;
+            }
+
+            const [filterType, rawName] = selected.split(':');
+            if (!filterType || !rawName) return true;
+
+            if (normalizeType(filterType) !== normalizedType) return false;
+            const decodedName = decodeURIComponent(rawName || '').toLowerCase();
+            return (b.categoryName || '').toLowerCase() === decodedName;
         });
 
         state.filtered = filtered;
@@ -196,7 +263,7 @@
             const title = bookmark.title || bookmark.paintSlug || bookmark.tutorialSlug || typeLabel;
 
             return `
-                <article class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70">
+                <article class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70 ${url ? 'cursor-pointer' : ''}" ${url ? `data-bookmark-url="${url}"` : ''}>
                     <div class="flex items-center justify-between gap-3">
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">${typeLabel}</p>
@@ -216,6 +283,18 @@
         });
 
         listContainer.innerHTML = cards.join('');
+
+        const clickableCards = listContainer.querySelectorAll('[data-bookmark-url]');
+        clickableCards.forEach((card) => {
+            const url = card.getAttribute('data-bookmark-url');
+            if (!url) return;
+
+            card.addEventListener('click', (event) => {
+                const anchor = event.target.closest('a');
+                if (anchor && anchor.href) return;
+                window.location.href = url;
+            });
+        });
     }
 
     async function loadBookmarks(showStatus = true) {
@@ -238,7 +317,16 @@
 
             const normalized = items.map(normalizeBookmark).filter(Boolean);
             state.bookmarks = normalized;
-            state.categories = Array.from(new Set(normalized.map((b) => b.categoryName).filter(Boolean)));
+            state.categories = Array.from(
+                new Map(
+                    normalized
+                        .filter((b) => b && b.categoryName && normalizeType(b.type))
+                        .map((b) => {
+                            const type = normalizeType(b.type);
+                            return [`${type}:${b.categoryName}`, { type, name: b.categoryName }];
+                        }),
+                ).values(),
+            );
 
             renderFilterOptions();
             applyFilters();
