@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Page_Title" xml:space="preserve">
+    <value>Bookmarks</value>
+  </data>
+  <data name="Page_Description" xml:space="preserve">
+    <value>Browse your saved items and jump back to them quickly.</value>
+  </data>
+  <data name="Heading" xml:space="preserve">
+    <value>Your bookmarks</value>
+  </data>
+  <data name="Subheading" xml:space="preserve">
+    <value>Review everything you saved, filter by category and open the matching paint or tutorial.</value>
+  </data>
+  <data name="Refresh_Button" xml:space="preserve">
+    <value>Refresh list</value>
+  </data>
+  <data name="Filter_Label" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="Filter_All" xml:space="preserve">
+    <value>All categories</value>
+  </data>
+  <data name="Empty_Title" xml:space="preserve">
+    <value>No bookmarks yet</value>
+  </data>
+  <data name="Empty_Description" xml:space="preserve">
+    <value>Save paints or tutorials to see them here.</value>
+  </data>
+  <data name="Error_Load" xml:space="preserve">
+    <value>Unable to load bookmarks</value>
+  </data>
+  <data name="Note_Label" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="Type_Paint" xml:space="preserve">
+    <value>Paint</value>
+  </data>
+  <data name="Type_Tutorial" xml:space="preserve">
+    <value>Tutorial</value>
+  </data>
+  <data name="Type_Unknown" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="Open_Link" xml:space="preserve">
+    <value>Open link</value>
+  </data>
+</root>

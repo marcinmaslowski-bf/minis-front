@@ -456,6 +456,16 @@ namespace PaintCatalog.Portal.ApiClients
             return await response.Content.ReadAsStringAsync();
         }
 
+        public async Task<string> GetBookmarksAsync()
+        {
+            const string url = "/api/v1/bookmarks";
+
+            using var response = await SendGetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
         public async Task<string> GetBookmarkCategoriesAsync(BookmarkItemType? itemType = null)
         {
             var url = "/api/v1/bookmarks/categories";

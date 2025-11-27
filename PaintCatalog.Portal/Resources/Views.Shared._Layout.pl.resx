@@ -27,6 +27,9 @@
   <data name="Nav_Tutorials" xml:space="preserve">
     <value>Tutoriale</value>
   </data>
+  <data name="Nav_Bookmarks" xml:space="preserve">
+    <value>Zakładki</value>
+  </data>
   <data name="ThemeToggle_Label" xml:space="preserve">
     <value>Zmień motyw</value>
   </data>

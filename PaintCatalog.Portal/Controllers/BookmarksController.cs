@@ -20,6 +20,17 @@ namespace PaintCatalog.Portal.Controllers
             _apiClient = apiClient;
         }
 
+        [HttpGet("")]
+        public IActionResult Index()
+        {
+            var vm = new Models.Bookmarks.BookmarkListViewModel
+            {
+                BookmarksEndpoint = Url.Action("List", "Bookmarks") ?? "/bookmarks/list"
+            };
+
+            return View(vm);
+        }
+
         [HttpGet("categories")]
         public async Task<IActionResult> Categories(BookmarkItemType? itemType)
         {
@@ -35,6 +46,24 @@ namespace PaintCatalog.Portal.Controllers
             catch (Exception ex)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, new { error = "Failed to load bookmark categories", detail = ex.Message });
+            }
+        }
+
+        [HttpGet("list")]
+        public async Task<IActionResult> List()
+        {
+            try
+            {
+                var payload = await _apiClient.GetBookmarksAsync();
+                return Content(payload, "application/json");
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                return StatusCode((int)HttpStatusCode.Unauthorized);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode((int)HttpStatusCode.InternalServerError, new { error = "Failed to load bookmarks", detail = ex.Message });
             }
         }
 

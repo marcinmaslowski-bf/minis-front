@@ -1,0 +1,77 @@
+@model PaintCatalog.Portal.Models.Bookmarks.BookmarkListViewModel
+@inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["Page_Title"].Value;
+    ViewData["MetaDescription"] = Localizer["Page_Description"].Value;
+
+    var jsonOptions = new System.Text.Json.JsonSerializerOptions
+    {
+        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
+        WriteIndented = false
+    };
+
+    var bootstrap = new
+    {
+        endpoints = new
+        {
+            list = Model.BookmarksEndpoint ?? "/bookmarks/list"
+        },
+        labels = new
+        {
+            heading = Localizer["Heading"].Value,
+            subheading = Localizer["Subheading"].Value,
+            refresh = Localizer["Refresh_Button"].Value,
+            filterAll = Localizer["Filter_All"].Value,
+            filterLabel = Localizer["Filter_Label"].Value,
+            emptyTitle = Localizer["Empty_Title"].Value,
+            emptyDescription = Localizer["Empty_Description"].Value,
+            errorLoad = Localizer["Error_Load"].Value,
+            noteLabel = Localizer["Note_Label"].Value,
+            typePaint = Localizer["Type_Paint"].Value,
+            typeTutorial = Localizer["Type_Tutorial"].Value,
+            typeUnknown = Localizer["Type_Unknown"].Value,
+            open = Localizer["Open_Link"].Value
+        }
+    };
+
+    var bootstrapJson = System.Text.Json.JsonSerializer.Serialize(bootstrap, jsonOptions);
+}
+
+<section class="space-y-6">
+    <div class="space-y-2">
+        <h1 class="text-3xl font-semibold leading-tight tracking-tight md:text-4xl">@Localizer["Heading"]</h1>
+        <p class="max-w-2xl text-sm text-slate-600 dark:text-slate-300">@Localizer["Subheading"]</p>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex flex-col gap-1">
+                <label for="bookmark-filter" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">@Localizer["Filter_Label"]</label>
+                <select id="bookmark-filter" class="w-full rounded-xl border border-slate-300 bg-white/90 p-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100 sm:w-64"></select>
+            </div>
+
+            <button id="bookmark-refresh" type="button" class="inline-flex items-center gap-2 rounded-xl border border-emerald-500 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-400 dark:hover:text-slate-900">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992V4.356" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.985 19.644v-4.992h4.992" /><path stroke-linecap="round" stroke-linejoin="round" d="M20.268 13.65a8.25 8.25 0 0 1-13.803 4.8L2.985 14.65" /><path stroke-linecap="round" stroke-linejoin="round" d="M3.732 10.35a8.25 8.25 0 0 1 13.803-4.8l3.48 3.8" /></svg>
+                <span>@Localizer["Refresh_Button"]</span>
+            </button>
+        </div>
+
+        <div id="bookmark-status" class="mt-3 hidden text-sm font-semibold text-emerald-600 dark:text-emerald-300"></div>
+        <div id="bookmark-error" class="mt-3 hidden text-sm font-semibold text-rose-600 dark:text-rose-300"></div>
+    </div>
+
+    <div id="bookmark-empty" class="hidden rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-center text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300">
+        <h2 class="text-lg font-semibold">@Localizer["Empty_Title"]</h2>
+        <p class="mt-1 text-sm">@Localizer["Empty_Description"]</p>
+    </div>
+
+    <div id="bookmark-list" class="grid grid-cols-1 gap-4 sm:grid-cols-2"></div>
+</section>
+
+@section Scripts {
+    <script>
+        window.bookmarkListBootstrap = @Html.Raw(bootstrapJson);
+    </script>
+    <script src="~/js/bookmark-list.js"></script>
+}
