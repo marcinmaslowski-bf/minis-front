@@ -458,7 +458,7 @@ namespace PaintCatalog.Portal.ApiClients
 
         public async Task<string> GetBookmarksAsync()
         {
-            const string url = "/api/v1/bookmarks";
+            const string url = "/api/v1/bookmarks/list";
 
             using var response = await SendGetAsync(url);
             response.EnsureSuccessStatusCode();
