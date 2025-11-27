@@ -57,7 +57,7 @@
     function createEmptySection() {
         return {
             title: 'New section',
-            items: [createItem(ITEM_TYPES.TEXT, 'Add your tutorial steps here.')]
+            items: []
         };
     }
 
@@ -68,7 +68,7 @@
             sections: [
                 {
                     title: 'Intro',
-                    items: [createItem(ITEM_TYPES.TEXT, 'Add your tutorial steps here.')]
+                    items: []
                 }
             ]
         };
@@ -135,10 +135,6 @@
             }
         });
 
-        if (items.length === 0) {
-            items.push(createItem(ITEM_TYPES.TEXT));
-        }
-
         return items;
     }
 
@@ -152,7 +148,7 @@
                 ? section.blocks.flatMap(blockToItems)
                 : [];
 
-            normalizedItems = fromBlocks.length > 0 ? fromBlocks : [createItem(ITEM_TYPES.TEXT)];
+            normalizedItems = fromBlocks.length > 0 ? fromBlocks : [];
         }
 
         return {
@@ -232,7 +228,11 @@
         const items = documentState.sections[sectionIndex].items;
 
         if (!Array.isArray(items) || items.length === 0) {
-            documentState.sections[sectionIndex].items = [createItem(ITEM_TYPES.TEXT)];
+            const emptyState = document.createElement('p');
+            emptyState.className = 'rounded-lg border border-dashed border-slate-200 bg-slate-50/70 p-3 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-300';
+            emptyState.textContent = 'No content in this section yet. Use the buttons below to add headers, text, steps, or images.';
+            itemsContainer.appendChild(emptyState);
+            return;
         }
 
         let stepCounter = 0;
@@ -269,14 +269,32 @@
             removeButton.innerHTML = icons.trash;
             removeButton.addEventListener('click', () => {
                 documentState.sections[sectionIndex].items.splice(itemIndex, 1);
-                if (documentState.sections[sectionIndex].items.length === 0) {
-                    documentState.sections[sectionIndex].items.push(createItem(ITEM_TYPES.TEXT));
-                }
                 renderEditor();
             });
 
+            const moveButtons = document.createElement('div');
+            moveButtons.className = 'flex items-center gap-1';
+
+            function createMoveButton(icon, direction, disabled) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'rounded-lg p-2 text-slate-500 transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-40 dark:hover:bg-emerald-900/20';
+                button.innerHTML = icon;
+                button.disabled = disabled;
+                button.addEventListener('click', () => moveItem(sectionIndex, itemIndex, direction));
+                return button;
+            }
+
+            moveButtons.appendChild(createMoveButton(icons.up, -1, itemIndex === 0));
+            moveButtons.appendChild(createMoveButton(icons.down, 1, itemIndex === items.length - 1));
+
+            const actionGroup = document.createElement('div');
+            actionGroup.className = 'flex items-center gap-1';
+            actionGroup.appendChild(moveButtons);
+            actionGroup.appendChild(removeButton);
+
             headerRow.appendChild(titleWrapper);
-            headerRow.appendChild(removeButton);
+            headerRow.appendChild(actionGroup);
             itemCard.appendChild(headerRow);
 
             if (item.type === ITEM_TYPES.HEADER) {
@@ -418,6 +436,17 @@
 
         const sections = documentState.sections;
         [sections[sectionIndex], sections[targetIndex]] = [sections[targetIndex], sections[sectionIndex]];
+        renderEditor();
+    }
+
+    function moveItem(sectionIndex, itemIndex, direction) {
+        const items = documentState.sections[sectionIndex]?.items;
+        if (!Array.isArray(items)) return;
+
+        const targetIndex = itemIndex + direction;
+        if (targetIndex < 0 || targetIndex >= items.length) return;
+
+        [items[itemIndex], items[targetIndex]] = [items[targetIndex], items[itemIndex]];
         renderEditor();
     }
 
@@ -583,10 +612,6 @@
                     });
                 }
             });
-
-            if (items.length === 0) {
-                items.push(createItem(ITEM_TYPES.TEXT));
-            }
 
             return {
                 title: (section.title || '').trim(),
