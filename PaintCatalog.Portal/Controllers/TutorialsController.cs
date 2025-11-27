@@ -65,19 +65,18 @@ namespace PaintCatalog.Portal.Controllers
                 ContentJson = JsonSerializer.Serialize(new EditorJsDocumentDto
                 {
                     Time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
-                    Version = "2.29.0",
+                    Version = "3.0.0",
                     Sections = new List<TutorialSectionDto>
                     {
                         new TutorialSectionDto
                         {
                             Title = "Intro",
-                            Blocks = new List<TutorialBlockDto>
+                            Items = new List<TutorialSectionItemDto>
                             {
-                                new TutorialBlockDto
+                                new TutorialSectionItemDto
                                 {
-                                    Header = string.Empty,
-                                    Body = "Add your tutorial steps here.",
-                                    Images = new List<TutorialImageDto>(),
+                                    Type = "text",
+                                    Text = "Add your tutorial steps here.",
                                     PaintIds = new List<int>()
                                 }
                             }

@@ -8,6 +8,9 @@ namespace PaintCatalog.Portal.Models.Api
         [JsonPropertyName("title")]
         public string? Title { get; set; }
 
+        [JsonPropertyName("items")]
+        public List<TutorialSectionItemDto>? Items { get; set; }
+
         [JsonPropertyName("blocks")]
         public List<TutorialBlockDto>? Blocks { get; set; }
     }

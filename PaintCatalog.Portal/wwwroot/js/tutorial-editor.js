@@ -16,7 +16,16 @@
     const icons = {
         trash: '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-1 4v6m-4-6v6"/></svg>',
         image: '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5l5-5 4 4 5-6 4 5v3.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M8 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" /></svg>',
-        paint: '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 3.75A2.25 2.25 0 0 1 6.75 1.5h4.5a.75.75 0 0 1 .75.75V6a.75.75 0 0 0 .75.75h3.75a.75.75 0 0 1 .53 1.28l-11.25 11.5a2.25 2.25 0 0 1-3.86-1.59z" /><path d="M15.75 4.5V3A1.5 1.5 0 0 1 17.25 1.5h.75A1.5 1.5 0 0 1 19.5 3v1.5z" /></svg>'
+        paint: '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M4.5 3.75A2.25 2.25 0 0 1 6.75 1.5h4.5a.75.75 0 0 1 .75.75V6a.75.75 0 0 0 .75.75h3.75a.75.75 0 0 1 .53 1.28l-11.25 11.5a2.25 2.25 0 0 1-3.86-1.59z" /><path d="M15.75 4.5V3A1.5 1.5 0 0 1 17.25 1.5h.75A1.5 1.5 0 0 1 19.5 3v1.5z" /></svg>',
+        up: '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75 12 8.25l7.5 7.5" /></svg>',
+        down: '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25 12 15.75 4.5 8.25" /></svg>'
+    };
+
+    const ITEM_TYPES = {
+        HEADER: 'header',
+        TEXT: 'text',
+        STEP: 'step',
+        IMAGE: 'image'
     };
 
     const paintCache = new Map();
@@ -31,30 +40,35 @@
             .replace(/'/g, '&#39;');
     }
 
-    function createEmptyBlock(defaultBody = '') {
-        return {
-            header: '',
-            body: defaultBody,
-            image: null,
-            paintIds: []
-        };
+    function createItem(type, defaultText = '') {
+        switch (type) {
+            case ITEM_TYPES.HEADER:
+                return { type, text: defaultText };
+            case ITEM_TYPES.STEP:
+                return { type, text: defaultText, stepNumber: null, paintIds: [] };
+            case ITEM_TYPES.IMAGE:
+                return { type, image: null };
+            case ITEM_TYPES.TEXT:
+            default:
+                return { type: ITEM_TYPES.TEXT, text: defaultText, paintIds: [] };
+        }
     }
 
     function createEmptySection() {
         return {
             title: 'New section',
-            blocks: [createEmptyBlock()]
+            items: [createItem(ITEM_TYPES.TEXT, 'Add your tutorial steps here.')]
         };
     }
 
     function createDefaultDocument() {
         return {
             time: Date.now(),
-            version: '2.29.0',
+            version: '3.0.0',
             sections: [
                 {
                     title: 'Intro',
-                    blocks: [createEmptyBlock('Add your tutorial steps here.')]
+                    items: [createItem(ITEM_TYPES.TEXT, 'Add your tutorial steps here.')]
                 }
             ]
         };
@@ -72,27 +86,78 @@
         };
     }
 
-    function normalizeBlock(block) {
-        if (!block) return createEmptyBlock();
+    function normalizeItem(raw) {
+        if (!raw) return createItem(ITEM_TYPES.TEXT);
 
-        const image = normalizeImage(block.image) || normalizeImage(block.images?.[0]);
+        const type = raw.type || (raw.image ? ITEM_TYPES.IMAGE : ITEM_TYPES.TEXT);
+        const fallbackText = raw.text || raw.header || raw.body || '';
+        const image = normalizeImage(raw.image);
 
-        return {
-            header: block.header || block.subtitle || '',
-            body: block.body || '',
-            image,
-            paintIds: Array.isArray(block.paintIds) ? block.paintIds : extractPaintIds(block.body)
-        };
+        if (type === ITEM_TYPES.HEADER) {
+            return { type, text: fallbackText };
+        }
+
+        if (type === ITEM_TYPES.STEP) {
+            const paintIds = Array.isArray(raw.paintIds) ? raw.paintIds : extractPaintIds(fallbackText);
+            return {
+                type,
+                text: fallbackText,
+                paintIds,
+                stepNumber: Number.isFinite(raw.stepNumber) ? raw.stepNumber : null
+            };
+        }
+
+        if (type === ITEM_TYPES.IMAGE) {
+            return { type, image };
+        }
+
+        const paintIds = Array.isArray(raw.paintIds) ? raw.paintIds : extractPaintIds(fallbackText);
+        return { type: ITEM_TYPES.TEXT, text: fallbackText, paintIds };
+    }
+
+    function blockToItems(block) {
+        const items = [];
+        if (!block) return items;
+
+        if (block.header) {
+            items.push({ type: ITEM_TYPES.HEADER, text: block.header });
+        }
+
+        if (block.body) {
+            items.push({ type: ITEM_TYPES.TEXT, text: block.body, paintIds: extractPaintIds(block.body) });
+        }
+
+        const images = Array.isArray(block.images) ? block.images : (block.image ? [block.image] : []);
+        images.forEach(image => {
+            const normalized = normalizeImage(image);
+            if (normalized) {
+                items.push({ type: ITEM_TYPES.IMAGE, image: normalized });
+            }
+        });
+
+        if (items.length === 0) {
+            items.push(createItem(ITEM_TYPES.TEXT));
+        }
+
+        return items;
     }
 
     function normalizeSection(section, index = 0) {
-        const normalizedBlocks = Array.isArray(section?.blocks)
-            ? section.blocks.map(normalizeBlock)
-            : [normalizeBlock(section)];
+        let normalizedItems = Array.isArray(section?.items)
+            ? section.items.map(normalizeItem).filter(Boolean)
+            : [];
+
+        if (!normalizedItems || normalizedItems.length === 0) {
+            const fromBlocks = Array.isArray(section?.blocks)
+                ? section.blocks.flatMap(blockToItems)
+                : [];
+
+            normalizedItems = fromBlocks.length > 0 ? fromBlocks : [createItem(ITEM_TYPES.TEXT)];
+        }
 
         return {
             title: section?.title || section?.header || `Section ${index + 1}`,
-            blocks: normalizedBlocks
+            items: normalizedItems
         };
     }
 
@@ -114,7 +179,7 @@
             return {
                 sections: sections && sections.length > 0 ? sections : createDefaultDocument().sections,
                 time: parsed?.time || Date.now(),
-                version: parsed?.version || '2.29.0'
+                version: parsed?.version || '3.0.0'
             };
         } catch (_) {
             return createDefaultDocument();
@@ -123,7 +188,7 @@
 
     function extractPaintIds(body) {
         if (!body) return [];
-        const regex = /{{paint:(\d+)}}/g;
+        const regex = /\{\{paint:(\d+)\}\}/g;
         const ids = new Set();
         let match;
         while ((match = regex.exec(body)) !== null) {
@@ -162,23 +227,40 @@
         target.innerHTML = withBadges.replace(/\n/g, '<br />');
     }
 
-    function renderBlocks(sectionIndex, blocksContainer) {
-        blocksContainer.innerHTML = '';
-        const blocks = documentState.sections[sectionIndex].blocks;
+    function renderItems(sectionIndex, itemsContainer) {
+        itemsContainer.innerHTML = '';
+        const items = documentState.sections[sectionIndex].items;
 
-        blocks.forEach((block, blockIndex) => {
-            const blockContainer = document.createElement('div');
-            blockContainer.className = 'space-y-2 rounded-xl border border-slate-200 bg-white/80 p-3 dark:border-slate-700 dark:bg-slate-900/40';
+        if (!Array.isArray(items) || items.length === 0) {
+            documentState.sections[sectionIndex].items = [createItem(ITEM_TYPES.TEXT)];
+        }
+
+        let stepCounter = 0;
+
+        documentState.sections[sectionIndex].items.forEach((item, itemIndex) => {
+            const itemCard = document.createElement('div');
+            itemCard.className = 'space-y-2 rounded-xl border border-slate-200 bg-white/80 p-3 dark:border-slate-700 dark:bg-slate-900/40';
 
             const headerRow = document.createElement('div');
             headerRow.className = 'flex items-start justify-between gap-3';
 
-            const headerWrapper = document.createElement('div');
-            headerWrapper.className = 'space-y-1 w-full';
-            headerWrapper.innerHTML = `
-                <p class="text-xs font-semibold uppercase tracking-wide text-emerald-500">Block ${blockIndex + 1}</p>
-                <input type="text" value="${escapeHtml(block.header)}" placeholder="Header (optional)"
-                    class="w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" />
+            const titleWrapper = document.createElement('div');
+            titleWrapper.className = 'space-y-1 w-full';
+
+            const typeLabel = (() => {
+                if (item.type === ITEM_TYPES.HEADER) return 'Header';
+                if (item.type === ITEM_TYPES.STEP) return 'Step';
+                if (item.type === ITEM_TYPES.IMAGE) return 'Image';
+                return 'Text';
+            })();
+
+            const stepNumber = item.type === ITEM_TYPES.STEP ? (stepCounter += 1) : null;
+            if (item.type === ITEM_TYPES.STEP) {
+                documentState.sections[sectionIndex].items[itemIndex].stepNumber = stepNumber;
+            }
+
+            titleWrapper.innerHTML = `
+                <p class="text-xs font-semibold uppercase tracking-wide text-emerald-500">${typeLabel}${stepNumber ? ` #${stepNumber}` : ''}</p>
             `;
 
             const removeButton = document.createElement('button');
@@ -186,138 +268,157 @@
             removeButton.className = 'rounded-lg p-2 text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/30';
             removeButton.innerHTML = icons.trash;
             removeButton.addEventListener('click', () => {
-                documentState.sections[sectionIndex].blocks.splice(blockIndex, 1);
-                if (documentState.sections[sectionIndex].blocks.length === 0) {
-                    documentState.sections[sectionIndex].blocks.push(createEmptyBlock());
+                documentState.sections[sectionIndex].items.splice(itemIndex, 1);
+                if (documentState.sections[sectionIndex].items.length === 0) {
+                    documentState.sections[sectionIndex].items.push(createItem(ITEM_TYPES.TEXT));
                 }
                 renderEditor();
             });
 
-            headerWrapper.querySelector('input')?.addEventListener('input', (event) => {
-                documentState.sections[sectionIndex].blocks[blockIndex].header = event.target.value;
-            });
-
-            headerRow.appendChild(headerWrapper);
+            headerRow.appendChild(titleWrapper);
             headerRow.appendChild(removeButton);
-            blockContainer.appendChild(headerRow);
+            itemCard.appendChild(headerRow);
 
-            const bodyArea = document.createElement('div');
-            bodyArea.className = 'space-y-2';
-            const textarea = document.createElement('textarea');
-            textarea.value = block.body;
-            textarea.rows = 4;
-            textarea.placeholder = 'Write your content. Use the paint picker to insert paints.';
-            textarea.className = 'w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100';
-
-            const actionsRow = document.createElement('div');
-            actionsRow.className = 'flex flex-wrap items-center gap-2';
-
-            const paintButton = document.createElement('button');
-            paintButton.type = 'button';
-            paintButton.className = 'inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300';
-            paintButton.innerHTML = `${icons.paint}<span>Insert paint</span>`;
-
-            const preview = document.createElement('div');
-            preview.className = 'min-h-[42px] rounded-lg border border-dashed border-slate-200 bg-slate-50/60 p-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300';
-            renderPaintPreview(block.body, preview);
-
-            paintButton.addEventListener('click', () => {
-                paintPicker.open((paint) => {
-                    const token = `{{paint:${paint.id}}}`;
-                    insertAtCursor(textarea, token);
-                    paintCache.set(paint.id, paint);
-                    documentState.sections[sectionIndex].blocks[blockIndex].body = textarea.value;
-                    renderPaintPreview(textarea.value, preview);
+            if (item.type === ITEM_TYPES.HEADER) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = item.text || '';
+                input.placeholder = 'Header';
+                input.className = 'w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100';
+                input.addEventListener('input', (event) => {
+                    documentState.sections[sectionIndex].items[itemIndex].text = event.target.value;
                 });
-            });
+                itemCard.appendChild(input);
+            } else if (item.type === ITEM_TYPES.IMAGE) {
+                const imageWrapper = document.createElement('div');
+                imageWrapper.className = 'space-y-1';
+                const label = document.createElement('p');
+                label.className = 'text-xs font-semibold text-slate-700 dark:text-slate-300';
+                label.textContent = 'Image';
 
-            textarea.addEventListener('input', (event) => {
-                documentState.sections[sectionIndex].blocks[blockIndex].body = event.target.value;
-                renderPaintPreview(event.target.value, preview);
-            });
+                const uploadRow = document.createElement('div');
+                uploadRow.className = 'flex flex-wrap items-center gap-2';
 
-            actionsRow.appendChild(paintButton);
-            bodyArea.appendChild(textarea);
-            bodyArea.appendChild(actionsRow);
-            bodyArea.appendChild(preview);
-            blockContainer.appendChild(bodyArea);
+                const uploadBtn = document.createElement('button');
+                uploadBtn.type = 'button';
+                uploadBtn.className = 'inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300';
+                uploadBtn.innerHTML = `${icons.image}<span>Upload image</span>`;
 
-            const imageWrapper = document.createElement('div');
-            imageWrapper.className = 'space-y-1';
-            const label = document.createElement('p');
-            label.className = 'text-xs font-semibold text-slate-700 dark:text-slate-300';
-            label.textContent = 'Image (optional)';
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.className = 'hidden';
 
-            const uploadRow = document.createElement('div');
-            uploadRow.className = 'flex flex-wrap items-center gap-2';
+                const statusText = document.createElement('p');
+                statusText.className = 'text-[11px] text-slate-500 dark:text-slate-400';
 
-            const uploadBtn = document.createElement('button');
-            uploadBtn.type = 'button';
-            uploadBtn.className = 'inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300';
-            uploadBtn.innerHTML = `${icons.image}<span>Upload image</span>`;
+                const previewBox = document.createElement('div');
+                previewBox.className = 'flex min-h-[120px] items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-white/70 p-2 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400';
 
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = 'image/*';
-            fileInput.className = 'hidden';
+                function updateImagePreview() {
+                    const attachmentId = documentState.sections[sectionIndex].items[itemIndex]?.image?.attachmentId;
+                    if (!attachmentId) {
+                        previewBox.innerHTML = '<span class="text-xs text-slate-500 dark:text-slate-400">No image selected.</span>';
+                        return;
+                    }
 
-            const statusText = document.createElement('p');
-            statusText.className = 'text-[11px] text-slate-500 dark:text-slate-400';
+                    const safeId = encodeURIComponent(attachmentId);
+                    previewBox.innerHTML = `
+                        <div class="relative w-full">
+                            <img src="/attachments/${safeId}" alt="Section image" class="max-h-48 w-full rounded-md object-cover" />
+                            <button type="button" class="absolute right-2 top-2 rounded-full bg-white/90 p-1 text-slate-500 shadow hover:text-rose-600" aria-label="Remove image">
+                                ${icons.trash}
+                            </button>
+                        </div>
+                    `;
 
-            const previewBox = document.createElement('div');
-            previewBox.className = 'flex min-h-[120px] items-center justify-center overflow-hidden rounded-lg border border-dashed border-slate-300 bg-white/70 p-2 text-xs text-slate-500 dark:border-slate-700 dark:bg-slate-900/40 dark:text-slate-400';
-
-            function updateBlockImagePreview() {
-                const attachmentId = documentState.sections[sectionIndex].blocks[blockIndex]?.image?.attachmentId;
-                if (!attachmentId) {
-                    previewBox.innerHTML = '<span class="text-xs text-slate-500 dark:text-slate-400">No image selected.</span>';
-                    return;
+                    const removeBtn = previewBox.querySelector('button');
+                    removeBtn?.addEventListener('click', () => {
+                        documentState.sections[sectionIndex].items[itemIndex].image = null;
+                        updateImagePreview();
+                    });
                 }
 
-                const safeId = encodeURIComponent(attachmentId);
-                previewBox.innerHTML = `
-                    <div class="relative w-full">
-                        <img src="/attachments/${safeId}" alt="Block image" class="max-h-48 w-full rounded-md object-cover" />
-                        <button type="button" class="absolute right-2 top-2 rounded-full bg-white/90 p-1 text-slate-500 shadow hover:text-rose-600" aria-label="Remove image">
-                            ${icons.trash}
-                        </button>
-                    </div>
-                `;
-
-                const removeBtn = previewBox.querySelector('button');
-                removeBtn?.addEventListener('click', () => {
-                    documentState.sections[sectionIndex].blocks[blockIndex].image = null;
-                    updateBlockImagePreview();
+                uploadBtn.addEventListener('click', () => fileInput.click());
+                fileInput.addEventListener('change', (event) => {
+                    const file = event.target?.files?.[0];
+                    if (!file) return;
+                    uploadAttachment(file, statusText).then(id => {
+                        documentState.sections[sectionIndex].items[itemIndex].image = { attachmentId: id, alt: '', caption: '' };
+                        updateImagePreview();
+                    }).catch(error => {
+                        statusText.textContent = error.message || 'Upload failed';
+                        statusText.classList.add('text-rose-600');
+                    }).finally(() => {
+                        fileInput.value = '';
+                    });
                 });
+
+                updateImagePreview();
+
+                uploadRow.appendChild(uploadBtn);
+                uploadRow.appendChild(statusText);
+                imageWrapper.appendChild(label);
+                imageWrapper.appendChild(uploadRow);
+                imageWrapper.appendChild(fileInput);
+                imageWrapper.appendChild(previewBox);
+                itemCard.appendChild(imageWrapper);
+            } else {
+                const bodyArea = document.createElement('div');
+                bodyArea.className = 'space-y-2';
+                const textarea = document.createElement('textarea');
+                textarea.value = item.text || '';
+                textarea.rows = item.type === ITEM_TYPES.TEXT ? 4 : 3;
+                textarea.placeholder = item.type === ITEM_TYPES.STEP ? 'Describe this step.' : 'Write your content. Use the paint picker to insert paints.';
+                textarea.className = 'w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100';
+
+                const actionsRow = document.createElement('div');
+                actionsRow.className = 'flex flex-wrap items-center gap-2';
+
+                const paintButton = document.createElement('button');
+                paintButton.type = 'button';
+                paintButton.className = 'inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300';
+                paintButton.innerHTML = `${icons.paint}<span>Insert paint</span>`;
+
+                const preview = document.createElement('div');
+                preview.className = 'min-h-[42px] rounded-lg border border-dashed border-slate-200 bg-slate-50/60 p-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300';
+                renderPaintPreview(item.text, preview);
+
+                paintButton.addEventListener('click', () => {
+                    paintPicker.open((paint) => {
+                        const token = `{{paint:${paint.id}}}`;
+                        insertAtCursor(textarea, token);
+                        paintCache.set(paint.id, paint);
+                        documentState.sections[sectionIndex].items[itemIndex].text = textarea.value;
+                        renderPaintPreview(textarea.value, preview);
+                    });
+                });
+
+                textarea.addEventListener('input', (event) => {
+                    documentState.sections[sectionIndex].items[itemIndex].text = event.target.value;
+                    renderPaintPreview(event.target.value, preview);
+                });
+
+                actionsRow.appendChild(paintButton);
+                bodyArea.appendChild(textarea);
+                bodyArea.appendChild(actionsRow);
+                bodyArea.appendChild(preview);
+                itemCard.appendChild(bodyArea);
             }
 
-            uploadBtn.addEventListener('click', () => fileInput.click());
-            fileInput.addEventListener('change', (event) => {
-                const file = event.target?.files?.[0];
-                if (!file) return;
-                uploadAttachment(file, statusText).then(id => {
-                    documentState.sections[sectionIndex].blocks[blockIndex].image = { attachmentId: id, alt: '', caption: '' };
-                    updateBlockImagePreview();
-                }).catch(error => {
-                    statusText.textContent = error.message || 'Upload failed';
-                    statusText.classList.add('text-rose-600');
-                }).finally(() => {
-                    fileInput.value = '';
-                });
-            });
-
-            updateBlockImagePreview();
-
-            uploadRow.appendChild(uploadBtn);
-            uploadRow.appendChild(statusText);
-            imageWrapper.appendChild(label);
-            imageWrapper.appendChild(uploadRow);
-            imageWrapper.appendChild(fileInput);
-            imageWrapper.appendChild(previewBox);
-            blockContainer.appendChild(imageWrapper);
-
-            blocksContainer.appendChild(blockContainer);
+            itemsContainer.appendChild(itemCard);
         });
+    }
+
+    function moveSection(sectionIndex, direction) {
+        const targetIndex = sectionIndex + direction;
+        if (targetIndex < 0 || targetIndex >= documentState.sections.length) {
+            return;
+        }
+
+        const sections = documentState.sections;
+        [sections[sectionIndex], sections[targetIndex]] = [sections[targetIndex], sections[sectionIndex]];
+        renderEditor();
     }
 
     function renderEditor() {
@@ -332,7 +433,7 @@
             sectionContainer.className = 'space-y-3 rounded-xl border border-slate-200 bg-white/80 p-3 shadow-sm dark:border-slate-700 dark:bg-slate-950/40';
 
             const headerRow = document.createElement('div');
-            headerRow.className = 'flex items-start justify-between gap-3';
+            headerRow.className = 'flex flex-wrap items-start justify-between gap-3';
 
             const titleWrapper = document.createElement('div');
             titleWrapper.className = 'space-y-1 w-full';
@@ -346,6 +447,23 @@
                 documentState.sections[sectionIndex].title = event.target.value;
             });
 
+            const actions = document.createElement('div');
+            actions.className = 'flex items-center gap-2';
+
+            const moveUpButton = document.createElement('button');
+            moveUpButton.type = 'button';
+            moveUpButton.className = 'rounded-lg p-2 text-slate-500 transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-40 dark:hover:bg-emerald-900/20';
+            moveUpButton.innerHTML = icons.up;
+            moveUpButton.disabled = sectionIndex === 0;
+            moveUpButton.addEventListener('click', () => moveSection(sectionIndex, -1));
+
+            const moveDownButton = document.createElement('button');
+            moveDownButton.type = 'button';
+            moveDownButton.className = 'rounded-lg p-2 text-slate-500 transition hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-40 dark:hover:bg-emerald-900/20';
+            moveDownButton.innerHTML = icons.down;
+            moveDownButton.disabled = sectionIndex === documentState.sections.length - 1;
+            moveDownButton.addEventListener('click', () => moveSection(sectionIndex, 1));
+
             const removeSectionButton = document.createElement('button');
             removeSectionButton.type = 'button';
             removeSectionButton.className = 'rounded-lg p-2 text-slate-500 transition hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-900/30';
@@ -358,25 +476,52 @@
                 renderEditor();
             });
 
+            actions.appendChild(moveUpButton);
+            actions.appendChild(moveDownButton);
+            actions.appendChild(removeSectionButton);
+
             headerRow.appendChild(titleWrapper);
-            headerRow.appendChild(removeSectionButton);
+            headerRow.appendChild(actions);
             sectionContainer.appendChild(headerRow);
 
-            const blocksContainer = document.createElement('div');
-            blocksContainer.className = 'space-y-3';
-            renderBlocks(sectionIndex, blocksContainer);
-            sectionContainer.appendChild(blocksContainer);
+            const itemsContainer = document.createElement('div');
+            itemsContainer.className = 'space-y-3';
+            renderItems(sectionIndex, itemsContainer);
+            sectionContainer.appendChild(itemsContainer);
 
-            const addBlockButton = document.createElement('button');
-            addBlockButton.type = 'button';
-            addBlockButton.className = 'inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300';
-            addBlockButton.innerHTML = `<span class="rounded-lg bg-emerald-500/10 p-1 text-emerald-600 dark:text-emerald-300" data-icon="plus"></span><span>Add block</span>`;
-            addBlockButton.addEventListener('click', () => {
-                documentState.sections[sectionIndex].blocks.push(createEmptyBlock());
+            const addRow = document.createElement('div');
+            addRow.className = 'flex flex-wrap gap-2';
+
+            function createAddButton(label, onClick) {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300';
+                button.innerHTML = `<span class="rounded-lg bg-emerald-500/10 p-1 text-emerald-600 dark:text-emerald-300" data-icon="plus"></span><span>${label}</span>`;
+                button.addEventListener('click', onClick);
+                return button;
+            }
+
+            addRow.appendChild(createAddButton('Add header', () => {
+                documentState.sections[sectionIndex].items.push(createItem(ITEM_TYPES.HEADER));
                 renderEditor();
-            });
+            }));
 
-            sectionContainer.appendChild(addBlockButton);
+            addRow.appendChild(createAddButton('Add text', () => {
+                documentState.sections[sectionIndex].items.push(createItem(ITEM_TYPES.TEXT));
+                renderEditor();
+            }));
+
+            addRow.appendChild(createAddButton('Add image', () => {
+                documentState.sections[sectionIndex].items.push(createItem(ITEM_TYPES.IMAGE));
+                renderEditor();
+            }));
+
+            addRow.appendChild(createAddButton('Add step', () => {
+                documentState.sections[sectionIndex].items.push(createItem(ITEM_TYPES.STEP));
+                renderEditor();
+            }));
+
+            sectionContainer.appendChild(addRow);
             editor.appendChild(sectionContainer);
         });
     }
@@ -393,23 +538,59 @@
 
     function collectSections() {
         return documentState.sections.map(section => {
-            const blocks = section.blocks
-                .map(block => {
-                    const paintIds = extractPaintIds(block.body);
-                    const normalizedImage = normalizeImage(block.image);
-                    return {
-                        header: (block.header || '').trim(),
-                        subHeaders: [],
-                        body: (block.body || '').trim(),
-                        paintIds,
-                        images: normalizedImage ? [normalizedImage] : null
-                    };
-                })
-                .filter(block => block.header || block.body || block.images);
+            const items = [];
+            let stepNumber = 0;
+
+            (section.items || []).forEach(item => {
+                if (item.type === ITEM_TYPES.IMAGE) {
+                    const image = normalizeImage(item.image);
+                    if (image) {
+                        items.push({ type: ITEM_TYPES.IMAGE, image });
+                    }
+                    return;
+                }
+
+                if (item.type === ITEM_TYPES.HEADER) {
+                    const text = (item.text || '').trim();
+                    if (text) {
+                        items.push({ type: ITEM_TYPES.HEADER, text });
+                    }
+                    return;
+                }
+
+                if (item.type === ITEM_TYPES.STEP) {
+                    const text = (item.text || '').trim();
+                    const paintIds = extractPaintIds(text);
+                    if (text || paintIds.length > 0) {
+                        stepNumber += 1;
+                        items.push({
+                            type: ITEM_TYPES.STEP,
+                            text,
+                            stepNumber,
+                            paintIds: paintIds.length > 0 ? paintIds : undefined
+                        });
+                    }
+                    return;
+                }
+
+                const text = (item.text || '').trim();
+                const paintIds = extractPaintIds(text);
+                if (text || paintIds.length > 0) {
+                    items.push({
+                        type: ITEM_TYPES.TEXT,
+                        text,
+                        paintIds: paintIds.length > 0 ? paintIds : undefined
+                    });
+                }
+            });
+
+            if (items.length === 0) {
+                items.push(createItem(ITEM_TYPES.TEXT));
+            }
 
             return {
                 title: (section.title || '').trim(),
-                blocks: blocks.length > 0 ? blocks : [createEmptyBlock()]
+                items
             };
         });
     }
@@ -417,7 +598,7 @@
     function syncContentInput() {
         const payload = {
             time: documentState.time || Date.now(),
-            version: documentState.version || '2.29.0',
+            version: documentState.version || '3.0.0',
             sections: collectSections()
         };
 
@@ -520,18 +701,17 @@
             </div>
         `;
 
-        document.body.appendChild(overlay);
-        const searchInput = overlay.querySelector('[data-search]');
         const results = overlay.querySelector('[data-results]');
+        const searchInput = overlay.querySelector('[data-search]');
         const closeButton = overlay.querySelector('[data-close]');
-        let onSelect = null;
-        let debounceTimer = null;
+        let onSelect;
+        let debounceTimer;
+
+        document.body.appendChild(overlay);
 
         function close() {
             overlay.classList.add('hidden');
-            onSelect = null;
             results.innerHTML = '';
-            if (searchInput) searchInput.value = '';
         }
 
         async function searchPaints(term) {
