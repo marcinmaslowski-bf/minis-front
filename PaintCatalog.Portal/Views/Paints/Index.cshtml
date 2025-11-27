@@ -1538,9 +1538,9 @@
 
             function createPaintCard(paint) {
                 const brandName = (paint?.brand?.name) || paint?.brandName || '';
-                const brandSlug = (paint?.brand?.slug) || paint?.brandSlug || paint?.brand?.urlSlug || '';
+                const brandSlug = resolveBrandSlug(paint);
                 const seriesName = (paint?.series?.name) || paint?.seriesName || '';
-                const seriesSlug = (paint?.series?.slug) || paint?.seriesSlug || paint?.series?.urlSlug || '';
+                const seriesSlug = resolveSeriesSlug(paint, brandSlug);
                 const paintSlug = paint?.slug || paint?.paintSlug || '';
                 const finishRaw = paint?.finishId ?? paint?.finish?.id ?? paint?.finish;
                 const typeRaw = paint?.typeId ?? paint?.type?.id ?? paint?.type;
@@ -1653,6 +1653,39 @@
                         ${cardContent}
                         ${actionSection}
                     </article>`;
+            }
+
+            function resolveBrandSlug(paint) {
+                const direct = (paint?.brand?.slug) || paint?.brandSlug || paint?.brand?.urlSlug;
+                if (direct) return direct;
+
+                const brandId = paint?.brand?.id ?? paint?.brandId;
+                if (!brandId) return '';
+
+                const match = state.brands.find(b => Number(b?.id) === Number(brandId));
+                return (match?.slug) || match?.urlSlug || '';
+            }
+
+            function resolveSeriesSlug(paint, brandSlug) {
+                const direct = (paint?.series?.slug) || paint?.seriesSlug || paint?.series?.urlSlug;
+                if (direct) return direct;
+
+                const seriesId = paint?.series?.id ?? paint?.seriesId;
+                if (!seriesId) return '';
+
+                const resolvedBrandSlug = brandSlug || resolveBrandSlug(paint);
+                const brandBySlug = resolvedBrandSlug
+                    ? state.brands.find(b => (b?.slug === resolvedBrandSlug) || (b?.urlSlug === resolvedBrandSlug))
+                    : null;
+
+                const seriesCandidates = resolvedBrandSlug && Array.isArray(state.brandSeries[resolvedBrandSlug])
+                    ? state.brandSeries[resolvedBrandSlug]
+                    : Array.isArray(brandBySlug?.series)
+                        ? brandBySlug.series
+                        : [];
+
+                const match = seriesCandidates.find(s => Number(s?.id) === Number(seriesId));
+                return (match?.slug) || match?.urlSlug || '';
             }
 
             function generateDetailsUrl(brandSlug, seriesSlug, paintSlug) {
