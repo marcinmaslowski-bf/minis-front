@@ -50,6 +50,14 @@
             summary = Url.Action("SummaryById", "Votes", new { threadId = "__thread__" }) ?? "/votes/__thread__/summary",
             set = Url.Action("Set", "Votes", new { threadId = "__thread__" }) ?? "/votes/__thread__"
         },
+        bookmarkEndpoints = new
+        {
+            categories = Url.Action("Categories", "Bookmarks") ?? "/bookmarks/categories",
+            createCategory = Url.Action("CreateCategory", "Bookmarks") ?? "/bookmarks/categories",
+            upsert = Url.Action("Upsert", "Bookmarks") ?? "/bookmarks",
+            get = Url.Action("Get", "Bookmarks", new { itemType = "__type__", itemId = "__id__" }) ?? "/bookmarks/__type__/__id__",
+            delete = Url.Action("Delete", "Bookmarks", new { itemType = "__type__", itemId = "__id__" }) ?? "/bookmarks/__type__/__id__"
+        },
         auth = new
         {
             isAuthenticated = User?.Identity?.IsAuthenticated ?? false,
@@ -87,10 +95,16 @@
             <h1 class="text-3xl font-extrabold text-slate-900 dark:text-white" id="paint-name"></h1>
             <p class="mt-1 text-sm text-slate-500 dark:text-slate-300"><span id="paint-brand"></span>: <span id="paint-series"></span></p>
         </div>
-        <a href="@backToSearchUrl" class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">
-            <span aria-hidden="true">←</span>
-            <span>@Localizer["Details_Back"]</span>
-        </a>
+        <div class="flex items-center gap-2">
+            <button id="bookmark-trigger" type="button" class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700 transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">
+                <span aria-hidden="true">★</span>
+                <span>@Localizer["Bookmark_Button_Save"]</span>
+            </button>
+            <a href="@backToSearchUrl" class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600 transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">
+                <span aria-hidden="true">←</span>
+                <span>@Localizer["Details_Back"]</span>
+            </a>
+        </div>
     </div>
 
     <div id="paint-details" class="rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
@@ -147,6 +161,44 @@
     <div id="paint-error" class="hidden rounded-xl border border-red-200 bg-red-50 p-4 text-red-800 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
         <p class="font-semibold">@Localizer["Details_Error_Title"]</p>
         <p class="text-sm">@errorMessage</p>
+    </div>
+
+    <div id="bookmark-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/40 p-4">
+        <div class="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+            <div class="space-y-1">
+                <p class="text-lg font-semibold text-slate-900 dark:text-white">@Localizer["Bookmark_Title"]</p>
+                <p class="text-sm text-slate-500 dark:text-slate-300">@Localizer["Bookmark_Subtitle"]</p>
+            </div>
+
+            <div class="mt-5 space-y-4">
+                <div class="space-y-1">
+                    <label for="bookmark-category" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Bookmark_Category_Label"]</label>
+                    <select id="bookmark-category" class="w-full rounded-xl border border-slate-300 bg-white/90 p-3 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100"></select>
+                </div>
+
+                <div class="space-y-2">
+                    <label for="bookmark-new-category" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Bookmark_NewCategory_Label"]</label>
+                    <div class="flex flex-col gap-2 sm:flex-row">
+                        <input id="bookmark-new-category" type="text" maxlength="80" placeholder="@Localizer["Bookmark_NewCategory_Placeholder"]" class="w-full rounded-xl border border-slate-300 bg-white/90 p-3 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100" />
+                        <button id="bookmark-add-category" type="button" class="inline-flex items-center justify-center rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">@Localizer["Bookmark_AddCategory_Button"]</button>
+                    </div>
+                </div>
+
+                <div class="space-y-1">
+                    <label for="bookmark-note" class="text-sm font-semibold text-slate-700 dark:text-slate-200">@Localizer["Bookmark_Note_Label"]</label>
+                    <textarea id="bookmark-note" rows="3" placeholder="@Localizer["Bookmark_Note_Placeholder"]" class="w-full rounded-xl border border-slate-300 bg-white/80 p-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100"></textarea>
+                </div>
+
+                <div id="bookmark-status" class="hidden text-sm font-semibold text-emerald-600 dark:text-emerald-300"></div>
+                <div id="bookmark-error" class="hidden text-sm font-semibold text-rose-600 dark:text-rose-300"></div>
+
+                <div class="flex flex-wrap justify-end gap-2">
+                    <button id="bookmark-remove" type="button" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-rose-400 hover:text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:border-slate-700 dark:text-slate-200 dark:hover:border-rose-400 dark:hover:text-rose-300">@Localizer["Bookmark_Remove"]</button>
+                    <button id="bookmark-cancel" type="button" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-500">@Localizer["Bookmark_Cancel"]</button>
+                    <button id="bookmark-save" type="button" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400">@Localizer["Bookmark_Save"]</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <section id="comments-section" class="hidden rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
@@ -218,6 +270,7 @@
 </section>
 
 @section Scripts {
+    <script src="~/js/bookmarks.js"></script>
     <script src="~/js/paint-swatch.js"></script>
     <script>
         (function() {
@@ -240,14 +293,25 @@
                     editedLabel: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Edited_Label"].Value, jsonOptions)),
                     attachmentsEmpty: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_Empty"].Value, jsonOptions)),
                     attachmentsRemove: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_Remove"].Value, jsonOptions)),
-                    attachmentsTooLarge: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_TooLarge"].Value, jsonOptions)),
-                    attachmentsLimit: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_Limit"].Value, jsonOptions)),
-                    attachmentsReadError: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_ReadError"].Value, jsonOptions))
+                attachmentsTooLarge: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_TooLarge"].Value, jsonOptions)),
+                attachmentsLimit: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_Limit"].Value, jsonOptions)),
+                attachmentsReadError: @Html.Raw(JsonSerializer.Serialize(Localizer["Comments_Attachments_ReadError"].Value, jsonOptions))
+                },
+                bookmarks: {
+                    buttonSave: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Button_Save"].Value, jsonOptions)),
+                    buttonSaved: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Button_Saved"].Value, jsonOptions)),
+                    statusSaved: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Status_Saved"].Value, jsonOptions)),
+                    statusRemoved: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Status_Removed"].Value, jsonOptions)),
+                    errorLoad: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Error_Load"].Value, jsonOptions)),
+                    errorSave: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Error_Save"].Value, jsonOptions)),
+                    errorDelete: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Error_Delete"].Value, jsonOptions)),
+                    login: @Html.Raw(JsonSerializer.Serialize(Localizer["Bookmark_Login"].Value, jsonOptions))
                 }
             };
 
             const commentEndpoints = bootstrap.commentEndpoints || {};
             const voteEndpoints = bootstrap.voteEndpoints || {};
+            const bookmarkEndpoints = bootstrap.bookmarkEndpoints || {};
             const auth = bootstrap.auth || {};
 
             const getIconMarkup = (id, fallback = '') => {
@@ -314,6 +378,20 @@
                 up: document.getElementById('vote-up'),
                 down: document.getElementById('vote-down'),
                 score: document.getElementById('vote-score')
+            };
+
+            const bookmarkSelectors = {
+                triggerSelector: '#bookmark-trigger',
+                modalSelector: '#bookmark-modal',
+                categorySelector: '#bookmark-category',
+                newCategorySelector: '#bookmark-new-category',
+                addCategorySelector: '#bookmark-add-category',
+                noteSelector: '#bookmark-note',
+                saveSelector: '#bookmark-save',
+                removeSelector: '#bookmark-remove',
+                cancelSelector: '#bookmark-cancel',
+                statusSelector: '#bookmark-status',
+                errorSelector: '#bookmark-error'
             };
 
             function injectIcons() {
@@ -534,12 +612,84 @@
                 return rawJson;
             }
 
+            function formatBookmarkEndpoint(template, itemType, itemId) {
+                if (!template) return '';
+                return template
+                    .replace('__type__', encodeURIComponent(itemType))
+                    .replace('__id__', encodeURIComponent(itemId));
+            }
+
+            function resolvePaintId(paint) {
+                const candidates = [
+                    paint?.id,
+                    paint?.paintId,
+                    paint?.paintID,
+                    paint?.paint?.id,
+                    paint?.paint?.paintId
+                ];
+
+                for (const candidate of candidates) {
+                    const parsed = Number(candidate);
+                    if (Number.isFinite(parsed) && parsed > 0) {
+                        return parsed;
+                    }
+                }
+
+                return null;
+            }
+
+            function resolveBookmarkFromPaint(paint) {
+                const bookmark = paint?.bookmark || paint?.Bookmark || paint?.savedBookmark;
+                if (!bookmark) return null;
+
+                const category = bookmark.category || bookmark.Category || {};
+                const rawCategoryId = bookmark.categoryId ?? category.id ?? category.categoryId;
+                const categoryId = Number(rawCategoryId);
+
+                return {
+                    categoryId: Number.isFinite(categoryId) && categoryId > 0 ? categoryId : null,
+                    categoryName: bookmark.categoryName || category.name || null,
+                    note: bookmark.note || ''
+                };
+            }
+
+            function setupBookmarkWidget(paint) {
+                if (!window.bookmarksUi) return;
+                const trigger = document.querySelector(bookmarkSelectors.triggerSelector);
+                if (!trigger) return;
+
+                const itemId = resolvePaintId(paint);
+                if (!itemId) {
+                    trigger.classList.add('hidden');
+                    return;
+                }
+
+                const endpoints = {
+                    categories: bookmarkEndpoints.categories,
+                    createCategory: bookmarkEndpoints.createCategory,
+                    upsert: bookmarkEndpoints.upsert,
+                    delete: formatBookmarkEndpoint(bookmarkEndpoints.delete, 1, itemId)
+                };
+
+                window.bookmarksUi.init({
+                    ...bookmarkSelectors,
+                    itemId,
+                    itemType: 1,
+                    initialBookmark: resolveBookmarkFromPaint(paint),
+                    endpoints,
+                    auth: state.auth,
+                    labels: localized.bookmarks
+                });
+            }
+
             function hydrate() {
                 state.paint = parsePaint();
                 if (!state.paint) {
                     toggleError(true);
                     return;
                 }
+
+                setupBookmarkWidget(state.paint);
 
                 state.voteThreadId = resolveVoteThreadId(state.paint);
                 state.voteSummary = resolveVoteSummaryFromPaint(state.paint);

@@ -96,4 +96,61 @@
   <data name="Status_Published" xml:space="preserve">
     <value>Opublikowany</value>
   </data>
+  <data name="Bookmark_Button_Save" xml:space="preserve">
+    <value>Dodaj do zakładek</value>
+  </data>
+  <data name="Bookmark_Button_Saved" xml:space="preserve">
+    <value>W zakładkach</value>
+  </data>
+  <data name="Bookmark_Title" xml:space="preserve">
+    <value>Dodaj do zakładek</value>
+  </data>
+  <data name="Bookmark_Subtitle" xml:space="preserve">
+    <value>Wybierz kategorię lub utwórz własną.</value>
+  </data>
+  <data name="Bookmark_Category_Label" xml:space="preserve">
+    <value>Kategoria</value>
+  </data>
+  <data name="Bookmark_NewCategory_Label" xml:space="preserve">
+    <value>Nowa kategoria</value>
+  </data>
+  <data name="Bookmark_NewCategory_Placeholder" xml:space="preserve">
+    <value>Nazwa kategorii</value>
+  </data>
+  <data name="Bookmark_AddCategory_Button" xml:space="preserve">
+    <value>Dodaj</value>
+  </data>
+  <data name="Bookmark_Note_Label" xml:space="preserve">
+    <value>Notatka (opcjonalnie)</value>
+  </data>
+  <data name="Bookmark_Note_Placeholder" xml:space="preserve">
+    <value>Dodaj własną notatkę</value>
+  </data>
+  <data name="Bookmark_Save" xml:space="preserve">
+    <value>Zapisz</value>
+  </data>
+  <data name="Bookmark_Remove" xml:space="preserve">
+    <value>Usuń zakładkę</value>
+  </data>
+  <data name="Bookmark_Cancel" xml:space="preserve">
+    <value>Anuluj</value>
+  </data>
+  <data name="Bookmark_Status_Saved" xml:space="preserve">
+    <value>Zakładka zapisana</value>
+  </data>
+  <data name="Bookmark_Status_Removed" xml:space="preserve">
+    <value>Zakładka usunięta</value>
+  </data>
+  <data name="Bookmark_Error_Load" xml:space="preserve">
+    <value>Nie udało się wczytać zakładki</value>
+  </data>
+  <data name="Bookmark_Error_Save" xml:space="preserve">
+    <value>Nie udało się zapisać zakładki</value>
+  </data>
+  <data name="Bookmark_Error_Delete" xml:space="preserve">
+    <value>Nie udało się usunąć zakładki</value>
+  </data>
+  <data name="Bookmark_Login" xml:space="preserve">
+    <value>Zaloguj się, aby zapisywać zakładki</value>
+  </data>
 </root>

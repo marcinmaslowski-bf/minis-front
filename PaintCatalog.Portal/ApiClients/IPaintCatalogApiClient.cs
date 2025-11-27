@@ -59,4 +59,15 @@ public interface IPaintCatalogApiClient
     Task<string> UpdateTutorialAsync(int tutorialId, UpdateTutorialRequest request);
 
     Task<string> DeleteTutorialAsync(int tutorialId);
+
+    // Bookmarks
+    Task<string> GetBookmarkAsync(BookmarkItemType itemType, int itemId);
+
+    Task<string> UpsertBookmarkAsync(UpsertBookmarkRequest request);
+
+    Task<string> DeleteBookmarkAsync(BookmarkItemType itemType, int itemId);
+
+    Task<string> GetBookmarkCategoriesAsync(BookmarkItemType? itemType = null);
+
+    Task<string> CreateBookmarkCategoryAsync(CreateBookmarkCategoryRequest request);
 }

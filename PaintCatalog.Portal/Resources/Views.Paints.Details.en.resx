@@ -162,4 +162,61 @@
   <data name="Comments_Attachments_ReadError" xml:space="preserve">
     <value>Unable to read attachment.</value>
   </data>
+  <data name="Bookmark_Button_Save" xml:space="preserve">
+    <value>Save bookmark</value>
+  </data>
+  <data name="Bookmark_Button_Saved" xml:space="preserve">
+    <value>Bookmarked</value>
+  </data>
+  <data name="Bookmark_Title" xml:space="preserve">
+    <value>Save to favorites</value>
+  </data>
+  <data name="Bookmark_Subtitle" xml:space="preserve">
+    <value>Pick a category or create your own.</value>
+  </data>
+  <data name="Bookmark_Category_Label" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="Bookmark_NewCategory_Label" xml:space="preserve">
+    <value>New category</value>
+  </data>
+  <data name="Bookmark_NewCategory_Placeholder" xml:space="preserve">
+    <value>Custom category name</value>
+  </data>
+  <data name="Bookmark_AddCategory_Button" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="Bookmark_Note_Label" xml:space="preserve">
+    <value>Personal note (optional)</value>
+  </data>
+  <data name="Bookmark_Note_Placeholder" xml:space="preserve">
+    <value>Add a note to remember why you saved this item</value>
+  </data>
+  <data name="Bookmark_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Bookmark_Remove" xml:space="preserve">
+    <value>Remove bookmark</value>
+  </data>
+  <data name="Bookmark_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Bookmark_Status_Saved" xml:space="preserve">
+    <value>Bookmark saved</value>
+  </data>
+  <data name="Bookmark_Status_Removed" xml:space="preserve">
+    <value>Bookmark removed</value>
+  </data>
+  <data name="Bookmark_Error_Load" xml:space="preserve">
+    <value>Unable to load bookmark data</value>
+  </data>
+  <data name="Bookmark_Error_Save" xml:space="preserve">
+    <value>Unable to save bookmark</value>
+  </data>
+  <data name="Bookmark_Error_Delete" xml:space="preserve">
+    <value>Unable to remove bookmark</value>
+  </data>
+  <data name="Bookmark_Login" xml:space="preserve">
+    <value>Sign in to save bookmarks</value>
+  </data>
 </root>

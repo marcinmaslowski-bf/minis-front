@@ -420,6 +420,73 @@ namespace PaintCatalog.Portal.ApiClients
             return await response.Content.ReadAsStringAsync();
         }
 
+        public async Task<string> GetBookmarkAsync(BookmarkItemType itemType, int itemId)
+        {
+            var url = $"/api/v1/bookmarks/{(int)itemType}/{itemId}";
+
+            using var response = await SendGetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> UpsertBookmarkAsync(UpsertBookmarkRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            const string url = "/api/v1/bookmarks";
+            var payload = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            using var response = await SendAsync(HttpMethod.Post, url, payload);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> DeleteBookmarkAsync(BookmarkItemType itemType, int itemId)
+        {
+            var url = $"/api/v1/bookmarks/{(int)itemType}/{itemId}";
+
+            using var response = await SendAsync(HttpMethod.Delete, url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> GetBookmarkCategoriesAsync(BookmarkItemType? itemType = null)
+        {
+            var url = "/api/v1/bookmarks/categories";
+
+            if (itemType.HasValue)
+            {
+                url += $"?itemType={(int)itemType.Value}";
+            }
+
+            using var response = await SendGetAsync(url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> CreateBookmarkCategoryAsync(CreateBookmarkCategoryRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            const string url = "/api/v1/bookmarks/categories";
+            var payload = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            using var response = await SendAsync(HttpMethod.Post, url, payload);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
         private async Task<HttpResponseMessage> SendGetAsync(string url)
         {
             return await SendAsync(HttpMethod.Get, url);
