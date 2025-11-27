@@ -178,6 +178,74 @@
 
     let documentState = parseContent(contentInput.value);
 
+    function collectPaintIdsFromDocument() {
+        const collected = new Set();
+
+        function addFromText(text) {
+            extractPaintIds(text).forEach(id => collected.add(id));
+        }
+
+        function addFromItem(item) {
+            if (!item) return;
+            (Array.isArray(item.paintIds) ? item.paintIds : []).forEach(id => collected.add(id));
+            addFromText(item.text);
+
+            if (Array.isArray(item.steps)) {
+                item.steps.forEach(step => {
+                    (Array.isArray(step?.paintIds) ? step.paintIds : []).forEach(id => collected.add(id));
+                    addFromText(step?.text);
+                });
+            }
+        }
+
+        if (Array.isArray(documentState?.sections)) {
+            documentState.sections.forEach(section => {
+                if (!Array.isArray(section?.items)) return;
+                section.items.forEach(addFromItem);
+            });
+        }
+
+        return Array.from(collected).filter(id => Number.isFinite(id) && id > 0);
+    }
+
+    async function hydratePaintCache(paintIds) {
+        const ids = Array.from(new Set((paintIds || []).filter(id => Number.isFinite(id) && id > 0)));
+        if (!ids.length) return;
+
+        const idsQuery = ids.map(id => `ids=${encodeURIComponent(id)}`).join('&');
+        if (!idsQuery) return;
+
+        try {
+            const response = await fetch(`/paints/data?${idsQuery}`, { credentials: 'include' });
+            if (!response.ok) return;
+
+            const payload = await response.json();
+            const items = Array.isArray(payload?.items) ? payload.items : (Array.isArray(payload) ? payload : []);
+
+            items.forEach(raw => {
+                const paintId = raw?.id ?? raw?.paintId ?? raw?.Id;
+                if (!paintId) return;
+                const paint = {
+                    id: paintId,
+                    name: raw?.name ?? raw?.title ?? `Paint #${paintId}`,
+                    brandName: raw?.brandName ?? raw?.brand?.name ?? '',
+                    seriesName: raw?.seriesName ?? raw?.series?.name ?? '',
+                    sku: raw?.sku ?? raw?.code ?? '',
+                    hexColor: raw?.hexColor,
+                    hexFrom: raw?.hexFrom,
+                    hexTo: raw?.hexTo,
+                    gradientType: raw?.gradientType
+                };
+
+                paintCache.set(paintId, paint);
+            });
+
+            renderEditor();
+        } catch (error) {
+            console.error('Failed to hydrate paints', ids, error);
+        }
+    }
+
     function renderPaintBadge(id) {
         const paint = paintCache.get(id);
         const swatch = (window.paintSwatchUtils?.buildPaintSwatch?.(paint, '#0f172a')) || {
@@ -829,6 +897,7 @@
     })();
 
     renderEditor();
+    hydratePaintCache(collectPaintIdsFromDocument());
     updateTitleImagePreview(titleImageInput?.value);
 
     form.addEventListener('submit', () => {
