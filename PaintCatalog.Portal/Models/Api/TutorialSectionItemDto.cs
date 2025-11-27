@@ -11,13 +11,19 @@ namespace PaintCatalog.Portal.Models.Api
         [JsonPropertyName("text")]
         public string? Text { get; set; }
 
-        [JsonPropertyName("image")]
-        public TutorialImageDto? Image { get; set; }
+        [JsonPropertyName("caption")]
+        public string? Caption { get; set; }
 
-        [JsonPropertyName("stepNumber")]
-        public int? StepNumber { get; set; }
+        [JsonPropertyName("alt")]
+        public string? Alt { get; set; }
+
+        [JsonPropertyName("attachmentId")]
+        public int? AttachmentId { get; set; }
 
         [JsonPropertyName("paintIds")]
         public List<int>? PaintIds { get; set; }
+
+        [JsonPropertyName("steps")]
+        public List<TutorialStepDto>? Steps { get; set; }
     }
 }

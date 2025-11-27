@@ -8,9 +8,6 @@ namespace PaintCatalog.Portal.Models.Api
         [JsonPropertyName("sections")]
         public List<TutorialSectionDto>? Sections { get; set; }
 
-        [JsonPropertyName("blocks")]
-        public List<TutorialBlockDto>? Blocks { get; set; }
-
         [JsonPropertyName("time")]
         public long? Time { get; set; }
 
