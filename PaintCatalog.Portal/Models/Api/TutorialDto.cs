@@ -20,6 +20,9 @@ namespace PaintCatalog.Portal.Models.Api
         [JsonPropertyName("authorId")]
         public string? AuthorId { get; set; }
 
+        [JsonPropertyName("published")]
+        public bool Published { get; set; }
+
         [JsonPropertyName("createdAtUtc")]
         public DateTime? CreatedAtUtc { get; set; }
 

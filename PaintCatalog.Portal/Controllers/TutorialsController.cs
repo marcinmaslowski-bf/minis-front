@@ -90,7 +90,7 @@ namespace PaintCatalog.Portal.Controllers
 
         [HttpPost("create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(TutorialEditViewModel model)
+        public async Task<IActionResult> Create(TutorialEditViewModel model, string? submitAction)
         {
             ValidateContent(model);
 
@@ -99,11 +99,14 @@ namespace PaintCatalog.Portal.Controllers
                 return View("Edit", model);
             }
 
+            var publishRequested = string.Equals(submitAction, "publish", StringComparison.OrdinalIgnoreCase);
+
             var request = new CreateTutorialRequest
             {
                 Title = model.Title?.Trim(),
                 TitleImageAttachmentId = model.TitleImageAttachmentId!.Value,
-                Content = DeserializeContent(model.ContentJson!)
+                Content = DeserializeContent(model.ContentJson!),
+                Published = publishRequested && model.IsEdit
             };
 
             try
@@ -136,7 +139,8 @@ namespace PaintCatalog.Portal.Controllers
                 Id = tutorial.Id,
                 Title = tutorial.Title,
                 TitleImageAttachmentId = tutorial.TitleImageAttachmentId,
-                ContentJson = JsonSerializer.Serialize(tutorial.Content ?? new EditorJsDocumentDto(), JsonOptions)
+                ContentJson = JsonSerializer.Serialize(tutorial.Content ?? new EditorJsDocumentDto(), JsonOptions),
+                Published = tutorial.Published
             };
 
             return View(vm);
@@ -144,7 +148,7 @@ namespace PaintCatalog.Portal.Controllers
 
         [HttpPost("{id:int}/edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, TutorialEditViewModel model)
+        public async Task<IActionResult> Edit(int id, TutorialEditViewModel model, string? submitAction)
         {
             model.Id = id;
             ValidateContent(model);
@@ -158,7 +162,8 @@ namespace PaintCatalog.Portal.Controllers
             {
                 Title = model.Title?.Trim(),
                 TitleImageAttachmentId = model.TitleImageAttachmentId!.Value,
-                Content = DeserializeContent(model.ContentJson!)
+                Content = DeserializeContent(model.ContentJson!),
+                Published = ShouldPublish(submitAction, model)
             };
 
             try
@@ -277,6 +282,7 @@ namespace PaintCatalog.Portal.Controllers
                     {
                         Id = dto.Id,
                         Title = dto.Title ?? $"Tutorial #{dto.Id}",
+                        Published = dto.Published,
                         CreatedAtUtc = dto.CreatedAtUtc,
                         UpdatedAtUtc = dto.UpdatedAtUtc
                     });
@@ -288,6 +294,12 @@ namespace PaintCatalog.Portal.Controllers
             }
 
             return result;
+        }
+
+        private static bool ShouldPublish(string? submitAction, TutorialEditViewModel model)
+        {
+            var publishRequested = string.Equals(submitAction, "publish", StringComparison.OrdinalIgnoreCase);
+            return publishRequested || model.Published;
         }
 
         private void ValidateContent(TutorialEditViewModel model)

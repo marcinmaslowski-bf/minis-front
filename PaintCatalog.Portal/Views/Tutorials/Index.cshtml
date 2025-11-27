@@ -34,6 +34,7 @@
             <thead class="bg-slate-50 dark:bg-slate-900">
                 <tr class="text-left text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">
                     <th class="px-4 py-3">@Localizer["Table_Title"]</th>
+                    <th class="px-4 py-3">@Localizer["Table_Status"]</th>
                     <th class="px-4 py-3">@Localizer["Table_Created"]</th>
                     <th class="px-4 py-3">@Localizer["Table_Updated"]</th>
                     <th class="px-4 py-3 text-right">@Localizer["Table_Actions"]</th>
@@ -43,7 +44,7 @@
                 @if (Model.Tutorials.Count == 0)
                 {
                     <tr>
-                        <td colspan="4" class="px-4 py-6 text-center text-slate-500 dark:text-slate-300">
+                        <td colspan="5" class="px-4 py-6 text-center text-slate-500 dark:text-slate-300">
                             @Localizer["Table_Empty"]
                         </td>
                     </tr>
@@ -54,13 +55,29 @@
                     {
                         <tr class="hover:bg-emerald-50/50 dark:hover:bg-slate-800/40">
                             <td class="px-4 py-3 font-semibold text-slate-900 dark:text-white">@tutorial.Title</td>
+                            <td class="px-4 py-3">
+                                @if (tutorial.Published)
+                                {
+                                    <span class="inline-flex items-center gap-1 rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 dark:border-emerald-500/50 dark:bg-emerald-900/30 dark:text-emerald-100">
+                                        <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                                        @Localizer["Status_Published"]
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 dark:border-amber-500/50 dark:bg-amber-900/30 dark:text-amber-100">
+                                        <span class="h-2 w-2 rounded-full bg-amber-400"></span>
+                                        @Localizer["Status_Draft"]
+                                    </span>
+                                }
+                            </td>
                             <td class="px-4 py-3 text-slate-600 dark:text-slate-300">@FormatDate(tutorial.CreatedAtUtc)</td>
                             <td class="px-4 py-3 text-slate-600 dark:text-slate-300">@FormatDate(tutorial.UpdatedAtUtc)</td>
                             <td class="px-4 py-3 text-right">
                                 <div class="flex justify-end gap-2">
                                     <a href="@Url.Action("Details", "Tutorials", new { id = tutorial.Id })"
                                        class="rounded-lg border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-400 dark:hover:text-emerald-300">
-                                        @Localizer["Action_View"]
+                                        @(tutorial.Published ? Localizer["Action_View"] : Localizer["Action_Preview"])
                                     </a>
                                     <a href="@Url.Action("Edit", "Tutorials", new { id = tutorial.Id })"
                                        class="rounded-lg border border-amber-300 px-3 py-1 text-xs font-semibold text-amber-700 transition hover:border-amber-500 hover:text-amber-600 dark:border-amber-700 dark:text-amber-200 dark:hover:border-amber-500 dark:hover:text-amber-100">

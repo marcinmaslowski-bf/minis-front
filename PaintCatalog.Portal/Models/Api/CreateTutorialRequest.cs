@@ -12,5 +12,8 @@ namespace PaintCatalog.Portal.Models.Api
 
         [JsonPropertyName("content")]
         public EditorJsDocumentDto? Content { get; set; }
+
+        [JsonPropertyName("published")]
+        public bool Published { get; set; }
     }
 }

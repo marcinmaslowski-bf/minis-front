@@ -10,6 +10,8 @@ namespace PaintCatalog.Portal.Models.Tutorials
 
         public string? ContentJson { get; set; }
 
+        public bool Published { get; set; }
+
         public bool IsEdit => Id.HasValue;
     }
 }
