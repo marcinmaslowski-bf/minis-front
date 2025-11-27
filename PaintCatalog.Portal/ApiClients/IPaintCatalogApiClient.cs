@@ -10,6 +10,8 @@ public interface IPaintCatalogApiClient
 {
     // Paints
     Task<string> GetPaintsRawAsync(
+        int? id = null,
+        IEnumerable<int>? ids = null,
         int? brandId = null,
         int? seriesId = null,
         int? type = null,

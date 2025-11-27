@@ -23,6 +23,8 @@ namespace PaintCatalog.Portal.ApiClients
         }
 
         public async Task<string> GetPaintsRawAsync(
+            int? id = null,
+            IEnumerable<int>? ids = null,
             int? brandId = null,
             int? seriesId = null,
             int? type = null,
@@ -43,9 +45,22 @@ namespace PaintCatalog.Portal.ApiClients
 
             if (tagIds != null)
             {
-                foreach (var id in tagIds)
+                foreach (var tagId in tagIds)
                 {
-                    queryParts.Add($"tagIds={id}");
+                    queryParts.Add($"tagIds={tagId}");
+                }
+            }
+
+            if (id.HasValue)
+            {
+                queryParts.Add($"id={id.Value}");
+            }
+
+            if (ids != null)
+            {
+                foreach (var value in ids)
+                {
+                    queryParts.Add($"ids={value}");
                 }
             }
 
