@@ -247,19 +247,21 @@
     }
 
     function renderPaintBadge(id) {
-        const paint = paintCache.get(id);
+        const numericId = Number.parseInt(id, 10);
+        const cacheKey = Number.isFinite(numericId) ? numericId : id;
+        const paint = paintCache.get(cacheKey);
         const swatch = (window.paintSwatchUtils?.buildPaintSwatch?.(paint, '#0f172a')) || {
             background: '#0f172a',
             label: '#0f172a'
         };
-        const label = paint?.name || paint?.title || `Paint #${id}`;
+        const label = paint?.name || paint?.title || `Paint #${cacheKey}`;
         const meta = [paint?.brandName, paint?.seriesName, paint?.sku].filter(Boolean).join(' • ');
 
         return `
-            <span class="inline-flex items-center gap-2 rounded-full border border-emerald-300/70 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 shadow-sm dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200" data-paint-id="${id}">
+            <span class="inline-flex items-center gap-2 rounded-full border border-emerald-300/70 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 shadow-sm dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200" data-paint-id="${cacheKey}">
                 <span class="h-4 w-4 rounded-full border border-white/50 shadow-inner" style="background:${swatch.background}" title="${escapeHtml(swatch.label)}"></span>
                 <span>${escapeHtml(label)}</span>
-                <span class="text-[10px] font-normal uppercase tracking-wide text-emerald-500">#${id}${meta ? ' • ' + escapeHtml(meta) : ''}</span>
+                <span class="text-[10px] font-normal uppercase tracking-wide text-emerald-500">#${cacheKey}${meta ? ' • ' + escapeHtml(meta) : ''}</span>
             </span>
         `;
     }
