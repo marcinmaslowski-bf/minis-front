@@ -130,7 +130,7 @@
 
         const category = item.category || {};
         const normalizedType = normalizeType(item.itemType ?? item.type ?? category.itemType);
-        const rawItem = item.item || item;
+        const rawItem = item.item || item.paint || item.tutorial || item;
         const rawBrand = rawItem.brand || {};
         const rawSeries = rawItem.series || {};
 
