@@ -169,7 +169,7 @@
                                 {
                                     <div class="space-y-2">
                                         @RenderRichText(item.Text)
-                                        @RenderPaintList(item.PaintIds)
+                                        @RenderPaintList(item.PaintIds, item.Text)
                                     </div>
                                 }
                                 else
@@ -184,7 +184,7 @@
                                                     <p class="font-semibold">@step.Title</p>
                                                 }
                                                 @RenderRichText(step.Text)
-                                                @RenderPaintList(step.PaintIds)
+                                                @RenderPaintList(step.PaintIds, step.Text)
                                             </li>
                                         }
                                     </ol>
@@ -194,7 +194,7 @@
                             {
                                 <div class="space-y-2">
                                     @RenderRichText(item.Text)
-                                    @RenderPaintList(item.PaintIds)
+                                    @RenderPaintList(item.PaintIds, item.Text)
                                 </div>
                             }
                         }
@@ -238,9 +238,9 @@
         return new HtmlString($"<p class=\"leading-relaxed text-slate-800 dark:text-slate-100\">{withBreaks}</p>");
     }
 
-    private static IHtmlContent RenderPaintList(IEnumerable<int>? explicitIds)
+    private static IHtmlContent RenderPaintList(IEnumerable<int>? explicitIds, params string?[] textSources)
     {
-        var paints = CollectPaintIds(explicitIds).ToList();
+        var paints = CollectPaintIds(explicitIds, textSources).ToList();
         if (paints.Count == 0)
         {
             return HtmlString.Empty;
@@ -250,9 +250,46 @@
         return new HtmlString($"<div class=\"flex flex-wrap gap-2 text-xs\">{badges}</div>");
     }
 
-    private static IEnumerable<int> CollectPaintIds(IEnumerable<int>? explicitIds)
+    private static IEnumerable<int> CollectPaintIds(IEnumerable<int>? explicitIds, params string?[] textSources)
     {
-        return new SortedSet<int>(explicitIds ?? Enumerable.Empty<int>());
+        var inlineIds = ExtractPaintIdsFromText(textSources);
+        var result = new List<int>();
+        var added = new HashSet<int>(inlineIds);
+
+        foreach (var id in explicitIds?.Where(id => id > 0) ?? Enumerable.Empty<int>())
+        {
+            if (added.Add(id))
+            {
+                result.Add(id);
+            }
+        }
+
+        result.Sort();
+        return result;
+    }
+
+    private static IEnumerable<int> ExtractPaintIdsFromText(IEnumerable<string?> textSources)
+    {
+        var regex = new Regex("\\{\\{paint:(\\d+)\\}\\}");
+        var ids = new HashSet<int>();
+
+        foreach (var text in textSources ?? Enumerable.Empty<string?>())
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                continue;
+            }
+
+            foreach (Match match in regex.Matches(text))
+            {
+                if (int.TryParse(match.Groups[1].Value, out var id))
+                {
+                    ids.Add(id);
+                }
+            }
+        }
+
+        return ids;
     }
 
     private static string BuildPaintBadge(string id)
