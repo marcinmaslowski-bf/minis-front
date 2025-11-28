@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using PaintCatalog.Portal.ApiClients;
 using PaintCatalog.Portal.Models;
+using PaintCatalog.Portal.Models.Api;
 
 namespace PaintCatalog.Portal.Controllers
 {
@@ -31,6 +32,39 @@ namespace PaintCatalog.Portal.Controllers
             catch
             {
                 // The API may not be configured yet - fail gracefully.
+            }
+
+            try
+            {
+                brandsJson = await _apiClient.GetBrandsRawAsync();
+            }
+            catch
+            {
+                // Ignore missing brand data as well.
+            }
+
+            var vm = new PaintsViewModel
+            {
+                InitialPaintsJson = paintsJson,
+                BrandsJson = brandsJson
+            };
+
+            return View(vm);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Admin()
+        {
+            string? paintsJson = null;
+            string? brandsJson = null;
+
+            try
+            {
+                paintsJson = await _apiClient.GetPaintsRawAsync(pageSize: 100);
+            }
+            catch
+            {
+                // Ignore missing paints, this view will hydrate on demand.
             }
 
             try
@@ -121,6 +155,87 @@ namespace PaintCatalog.Portal.Controllers
             try
             {
                 var payload = await _apiClient.GetBrandSeriesRawAsync(brandSlug);
+                return Content(payload, "application/json");
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, new { error = "Paint catalog API unavailable", detail = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Unexpected server error", detail = ex.Message });
+            }
+        }
+
+        [HttpGet("paints/admin/data")]
+        public Task<IActionResult> AdminData(
+            int? id,
+            [FromQuery(Name = "ids")] List<int>? ids,
+            int? brandId,
+            int? seriesId,
+            int? type,
+            int? finish,
+            int? medium,
+            [FromQuery(Name = "tagIds")] List<int>? tagIds,
+            string? search,
+            int? page,
+            int? pageSize)
+        {
+            return Data(id, ids, brandId, seriesId, type, finish, medium, tagIds, search, page, pageSize);
+        }
+
+        [HttpPost("paints/admin")]
+        public async Task<IActionResult> Create([FromBody] CreatePaintRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { error = "Request body is required" });
+            }
+
+            try
+            {
+                var payload = await _apiClient.CreatePaintAsync(request);
+                return Content(payload, "application/json");
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, new { error = "Paint catalog API unavailable", detail = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Unexpected server error", detail = ex.Message });
+            }
+        }
+
+        [HttpPut("paints/admin/{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdatePaintRequest request)
+        {
+            if (request == null)
+            {
+                return BadRequest(new { error = "Request body is required" });
+            }
+
+            try
+            {
+                var payload = await _apiClient.UpdatePaintAsync(id, request);
+                return Content(payload, "application/json");
+            }
+            catch (HttpRequestException ex)
+            {
+                return StatusCode(503, new { error = "Paint catalog API unavailable", detail = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = "Unexpected server error", detail = ex.Message });
+            }
+        }
+
+        [HttpDelete("paints/admin/{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                var payload = await _apiClient.DeletePaintAsync(id);
                 return Content(payload, "application/json");
             }
             catch (HttpRequestException ex)

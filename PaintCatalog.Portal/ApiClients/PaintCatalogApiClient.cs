@@ -109,6 +109,48 @@ namespace PaintCatalog.Portal.ApiClients
             return await response.Content.ReadAsStringAsync();
         }
 
+        public async Task<string> CreatePaintAsync(CreatePaintRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            const string url = "/api/v1/admin/paints";
+            var payload = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            using var response = await SendAsync(HttpMethod.Post, url, payload);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> UpdatePaintAsync(int id, UpdatePaintRequest request)
+        {
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            var url = $"/api/v1/admin/paints/{id}";
+            var payload = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
+
+            using var response = await SendAsync(HttpMethod.Put, url, payload);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        public async Task<string> DeletePaintAsync(int id)
+        {
+            var url = $"/api/v1/admin/paints/{id}";
+
+            using var response = await SendAsync(HttpMethod.Delete, url);
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadAsStringAsync();
+        }
+
         public async Task<string> GetPaintBySlugsRawAsync(string brandSlug, string seriesSlug, string paintSlug)
         {
             if (string.IsNullOrWhiteSpace(brandSlug))

@@ -1,0 +1,233 @@
+@using System.Collections.Generic
+@using System.Text.Encodings.Web
+@using System.Text.Json
+@model PaintCatalog.Portal.Models.PaintsViewModel
+@{
+    ViewData["Title"] = "Paints Admin";
+
+    var paintsDataEndpoint = Url.Action("AdminData", "Paints") ?? "/paints/admin/data";
+    var brandsEndpoint = Url.Action("Brands", "Paints") ?? "/paints/brands";
+    var seriesEndpoint = Url.Action("Series", "Paints") ?? "/paints/series";
+    var createEndpoint = Url.Action("Create", "Paints") ?? "/paints/admin";
+    var updateEndpoint = Url.Action("Update", "Paints", new { id = "__id__" }) ?? "/paints/admin/__id__";
+    var deleteEndpoint = Url.Action("Delete", "Paints", new { id = "__id__" }) ?? "/paints/admin/__id__";
+
+    var initialPaintsJson = string.IsNullOrWhiteSpace(Model.InitialPaintsJson) ? "null" : Model.InitialPaintsJson;
+    var brandsJson = string.IsNullOrWhiteSpace(Model.BrandsJson) ? "null" : Model.BrandsJson;
+
+    var typeLabels = new Dictionary<string, string>();
+    for (var i = 1; i <= 10; i++)
+    {
+        typeLabels[i.ToString()] = $"Type {i}";
+    }
+
+    var finishLabels = new Dictionary<string, string>();
+    for (var i = 1; i <= 6; i++)
+    {
+        finishLabels[i.ToString()] = $"Finish {i}";
+    }
+
+    var mediumLabels = new Dictionary<string, string>
+    {
+        ["1"] = "Medium 1",
+        ["2"] = "Medium 2",
+        ["3"] = "Medium 3",
+        ["4"] = "Medium 4",
+        ["5"] = "Medium 5",
+        ["99"] = "Other"
+    };
+
+    var gradientLabels = new Dictionary<string, string>
+    {
+        ["1"] = "Solid",
+        ["2"] = "Gradient"
+    };
+
+    var jsonOptions = new JsonSerializerOptions
+    {
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+    };
+
+    var bootstrap = new
+    {
+        endpoints = new
+        {
+            data = paintsDataEndpoint,
+            brands = brandsEndpoint,
+            series = seriesEndpoint,
+            create = createEndpoint,
+            update = updateEndpoint,
+            delete = deleteEndpoint
+        },
+        enums = new
+        {
+            types = typeLabels,
+            finishes = finishLabels,
+            mediums = mediumLabels,
+            gradients = gradientLabels
+        }
+    };
+
+    var bootstrapJson = JsonSerializer.Serialize(bootstrap, jsonOptions);
+}
+
+<section class="space-y-6">
+    <div class="space-y-2">
+        <p class="text-xs uppercase tracking-wide text-emerald-500">Admin</p>
+        <h1 class="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">Paint catalog admin</h1>
+        <p class="max-w-3xl text-sm text-slate-600 dark:text-slate-300">
+            Przeglądaj, filtruj i edytuj farby w siatce z edycją w wierszu. Zmiany zapisują się bez przeładowania strony.
+        </p>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+        <div class="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+            <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminPaintSearch">Szukaj</label>
+                <input id="adminPaintSearch" type="search" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" placeholder="Nazwa, slug, hex" />
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminBrandFilter">Marka</label>
+                <select id="adminBrandFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    <option value="">Wszystkie</option>
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminSeriesFilter">Seria</label>
+                <select id="adminSeriesFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" disabled>
+                    <option value="">Wszystkie</option>
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminTypeFilter">Typ</label>
+                <select id="adminTypeFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    <option value="">Wszystkie</option>
+                    @foreach (var pair in typeLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminFinishFilter">Wykończenie</label>
+                <select id="adminFinishFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    <option value="">Wszystkie</option>
+                    @foreach (var pair in finishLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminMediumFilter">Medium</label>
+                <select id="adminMediumFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    <option value="">Wszystkie</option>
+                    @foreach (var pair in mediumLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+            </div>
+            <div class="flex items-end gap-2">
+                <button id="adminRefresh" type="button" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 dark:border-slate-700 dark:text-slate-200">Odśwież</button>
+                <button id="adminClear" type="button" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 dark:border-slate-700 dark:text-slate-200">Wyczyść</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="text-left">
+                <p class="text-sm font-semibold text-slate-900 dark:text-white">Dodaj nową farbę</p>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Uzupełnij pola i zapisz wiersz.</p>
+            </div>
+            <div class="ml-auto flex flex-wrap gap-2 text-xs">
+                <select id="adminNewBrand" class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    <option value="">Marka</option>
+                </select>
+                <select id="adminNewSeries" class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" disabled>
+                    <option value="">Seria</option>
+                </select>
+                <input id="adminNewName" type="text" class="w-40 rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" placeholder="Nazwa" />
+                <input id="adminNewSlug" type="text" class="w-40 rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" placeholder="Slug" />
+                <select id="adminNewType" class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    <option value="">Typ</option>
+                    @foreach (var pair in typeLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+                <select id="adminNewFinish" class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    <option value="">Wykończenie</option>
+                    @foreach (var pair in finishLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+                <select id="adminNewMedium" class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    <option value="">Medium</option>
+                    @foreach (var pair in mediumLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+                <select id="adminNewGradient" class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    <option value="">Gradient</option>
+                    @foreach (var pair in gradientLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+                <input id="adminNewHex" type="text" class="w-28 rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" placeholder="#hex" />
+                <input id="adminNewHexFrom" type="text" class="w-28 rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" placeholder="#od" />
+                <input id="adminNewHexTo" type="text" class="w-28 rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" placeholder="#do" />
+                <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                    <input id="adminNewDiscontinued" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700" />
+                    Wycofane
+                </label>
+                <button id="adminCreate" type="button" class="rounded-xl bg-emerald-500 px-3 py-2 text-sm font-semibold text-white shadow hover:bg-emerald-600">Dodaj</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminStatus" class="hidden rounded-2xl border border-slate-200 bg-white/80 p-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-200"></div>
+
+    <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white/80 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+        <table class="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-800">
+            <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                <tr>
+                    <th class="px-3 py-2 text-left" data-sort="id">ID</th>
+                    <th class="px-3 py-2 text-left" data-sort="brand">Marka</th>
+                    <th class="px-3 py-2 text-left" data-sort="series">Seria</th>
+                    <th class="px-3 py-2 text-left" data-sort="name">Nazwa</th>
+                    <th class="px-3 py-2 text-left" data-sort="slug">Slug</th>
+                    <th class="px-3 py-2 text-left" data-sort="type">Typ</th>
+                    <th class="px-3 py-2 text-left" data-sort="finish">Wykończenie</th>
+                    <th class="px-3 py-2 text-left" data-sort="medium">Medium</th>
+                    <th class="px-3 py-2 text-left" data-sort="gradientType">Gradient</th>
+                    <th class="px-3 py-2 text-left" data-sort="hexColor">Hex</th>
+                    <th class="px-3 py-2 text-left" data-sort="hexFrom">Od</th>
+                    <th class="px-3 py-2 text-left" data-sort="hexTo">Do</th>
+                    <th class="px-3 py-2 text-left">Wycofane</th>
+                    <th class="px-3 py-2 text-left">Akcje</th>
+                </tr>
+            </thead>
+            <tbody id="adminPaintGrid" class="divide-y divide-slate-200 text-slate-800 dark:divide-slate-800 dark:text-slate-100">
+                <tr id="adminGridEmpty">
+                    <td colspan="14" class="px-3 py-4 text-center text-sm text-slate-500 dark:text-slate-400">Brak danych</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        window.__PAINT_ADMIN = {
+            config: @Html.Raw(bootstrapJson),
+            initialPaints: @Html.Raw(initialPaintsJson),
+            brands: @Html.Raw(brandsJson)
+        };
+    </script>
+    <script src="~/js/paint-admin-grid.js"></script>
+}

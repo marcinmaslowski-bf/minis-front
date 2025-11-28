@@ -22,6 +22,12 @@ public interface IPaintCatalogApiClient
         int? page = null,
         int? pageSize = null);
 
+    Task<string> CreatePaintAsync(CreatePaintRequest request);
+
+    Task<string> UpdatePaintAsync(int id, UpdatePaintRequest request);
+
+    Task<string> DeletePaintAsync(int id);
+
     Task<string> GetBrandsRawAsync();
 
     Task<string> GetBrandSeriesRawAsync(string brandSlug);
