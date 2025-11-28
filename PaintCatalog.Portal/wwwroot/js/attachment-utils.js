@@ -47,12 +47,12 @@
     }
 
     function getAttachmentDownloadUrl(attachment) {
-        const id = attachment?.id ?? attachment?.attachmentId;
+        const id = attachment?.attachmentId;
         if (id === undefined || id === null) {
             return null;
         }
 
-        const numericId = Number(id);
+        const numericId = Number(attachmentId);
         if (!Number.isFinite(numericId)) {
             return null;
         }
