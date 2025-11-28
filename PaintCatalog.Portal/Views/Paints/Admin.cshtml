@@ -15,32 +15,26 @@
     var initialPaintsJson = string.IsNullOrWhiteSpace(Model.InitialPaintsJson) ? "null" : Model.InitialPaintsJson;
     var brandsJson = string.IsNullOrWhiteSpace(Model.BrandsJson) ? "null" : Model.BrandsJson;
 
-    var typeLabels = new Dictionary<string, string>();
-    for (var i = 1; i <= 10; i++)
+    var typeLabels = new Dictionary<string, string>
     {
-        typeLabels[i.ToString()] = $"Type {i}";
-    }
+        ["3"] = "Contrast"
+    };
 
-    var finishLabels = new Dictionary<string, string>();
-    for (var i = 1; i <= 6; i++)
+    var finishLabels = new Dictionary<string, string>
     {
-        finishLabels[i.ToString()] = $"Finish {i}";
-    }
+        ["0"] = "Unknown"
+    };
 
     var mediumLabels = new Dictionary<string, string>
     {
-        ["1"] = "Medium 1",
-        ["2"] = "Medium 2",
-        ["3"] = "Medium 3",
-        ["4"] = "Medium 4",
-        ["5"] = "Medium 5",
-        ["99"] = "Other"
+        ["1"] = "Acrylic"
     };
 
     var gradientLabels = new Dictionary<string, string>
     {
-        ["1"] = "Solid",
-        ["2"] = "Gradient"
+        ["0"] = "None",
+        ["1"] = "Linear",
+        ["2"] = "Radial"
     };
 
     var jsonOptions = new JsonSerializerOptions
