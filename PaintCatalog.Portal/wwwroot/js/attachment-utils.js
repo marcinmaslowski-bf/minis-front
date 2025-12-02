@@ -52,7 +52,7 @@
             return null;
         }
 
-        const numericId = Number(attachmentId);
+        const numericId = Number(attachment?.attachmentId);
         if (!Number.isFinite(numericId)) {
             return null;
         }
