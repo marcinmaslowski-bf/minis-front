@@ -15,6 +15,13 @@
         const hexTo = normalizeHex(paint?.hexTo);
         const defaultHex = normalizeHex(options.defaultHex) || normalizeHex(fallbackHex) || defaultFallback;
 
+        if (gradientType === 0 && hexColor) {
+            return {
+                background: hexColor,
+                label: hexColor
+            };
+        }
+
         if (gradientType === 1 && hexFrom && hexTo) {
             return {
                 background: `linear-gradient(90deg, ${hexFrom}, ${hexTo})`,
