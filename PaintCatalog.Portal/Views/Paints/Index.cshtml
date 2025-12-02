@@ -577,8 +577,8 @@
                                 ? raw.paints
                                 : [];
 
-                const total = Number.isFinite(raw.total)
-                    ? raw.total
+                const total = Number.isFinite(raw.totalCount)
+                    ? raw.totalCount
                     : Number.isFinite(raw.count)
                         ? raw.count
                         : items.length;
