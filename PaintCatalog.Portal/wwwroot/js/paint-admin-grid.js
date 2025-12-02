@@ -462,22 +462,11 @@
     }
 
     function clearCreateForm() {
-        ['newBrand', 'newSeries', 'newName', 'newSlug', 'newType', 'newFinish', 'newMedium', 'newGradient', 'newHex', 'newHexFrom', 'newHexTo'].forEach((id) => {
+        ['newName', 'newSlug', 'newHex', 'newHexFrom', 'newHexTo'].forEach((id) => {
             const el = elements[id];
             if (!el) return;
-            if (el.tagName === 'SELECT') {
-                el.value = '';
-            } else {
-                el.value = '';
-            }
+            el.value = '';
         });
-        if (elements.newSeries) {
-            elements.newSeries.innerHTML = '<option value="">Seria</option>';
-            elements.newSeries.disabled = true;
-        }
-        if (elements.newDiscontinued) {
-            elements.newDiscontinued.checked = false;
-        }
     }
 
     function bindEvents() {
