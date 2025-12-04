@@ -2,8 +2,10 @@
 @using System.Linq
 @using System.Text.Encodings.Web
 @using System.Text.Json
+@using PaintCatalog.Portal.Helpers
 @model PaintCatalog.Portal.Models.PaintsViewModel
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizerFactory LocalizerFactory
 
 @{
     ViewData["Title"] = Localizer["Page_Title"].Value;
@@ -27,35 +29,8 @@
         ? "null"
         : Model.BrandsJson;
 
-    var paintTypeValues = new[] { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
-    var typeLabels = paintTypeValues
-        .Select((value, index) => new { value, label = Localizer[$"Filters_Type_{index + 1}"].Value })
-        .ToDictionary(x => x.value.ToString(), x => x.label);
-
-    var sheenValues = new[] { 1, 2, 4 };
-    var sheenLabels = sheenValues
-        .Select((value, index) => new { value, label = Localizer[$"Filters_Finish_{index + 1}"].Value })
-        .ToDictionary(x => x.value.ToString(), x => x.label);
-
-    var mediumValues = new[] { 1, 2, 4, 8, 16 };
-    var mediumLabels = mediumValues
-        .Select((value, index) => new { value, label = Localizer[$"Filters_Medium_{index + 1}"].Value })
-        .ToDictionary(x => x.value.ToString(), x => x.label);
-
-    var effectValues = new[] { 1, 2, 4, 8, 16 };
-    var effectLabels = effectValues
-        .Select((value, index) => new { value, label = Localizer[$"Filters_Effect_{index + 1}"].Value })
-        .ToDictionary(x => x.value.ToString(), x => x.label);
-
-    var usageValues = new[] { 1, 2, 4 };
-    var usageLabels = usageValues
-        .Select((value, index) => new { value, label = Localizer[$"Filters_Usage_{index + 1}"].Value })
-        .ToDictionary(x => x.value.ToString(), x => x.label);
-
-    var formValues = new[] { 1, 2, 4, 8, 16 };
-    var formLabels = formValues
-        .Select((value, index) => new { value, label = Localizer[$"Filters_Form_{index + 1}"].Value })
-        .ToDictionary(x => x.value.ToString(), x => x.label);
+    var searchLocalizer = LocalizerFactory.Create("Views.Paints.Index", typeof(Program).Assembly.GetName().Name);
+    var enumLabels = EnumLabelHelper.CreatePaintEnumLabels(searchLocalizer);
 
     var jsonOptions = new JsonSerializerOptions
     {
@@ -99,12 +74,12 @@
             allBrands = Localizer["Filters_AllBrands"].Value,
             allSeries = Localizer["Filters_AllSeries"].Value,
             activeFiltersRemove = Localizer["ActiveFilters_Remove"].Value,
-            type = typeLabels,
-            sheen = sheenLabels,
-            medium = mediumLabels,
-            effect = effectLabels,
-            usage = usageLabels,
-            form = formLabels
+            type = enumLabels.Types,
+            sheen = enumLabels.Sheens,
+            medium = enumLabels.Mediums,
+            effect = enumLabels.Effects,
+            usage = enumLabels.Usages,
+            form = enumLabels.Forms
         },
         pagination = new
         {
@@ -206,7 +181,7 @@
                         @Localizer["Filters_Type_Label"]
                     </p>
                     <div id="typeFilter" class="grid grid-cols-1 gap-2">
-                        @foreach (var pair in typeLabels)
+                        @foreach (var pair in enumLabels.Types)
                         {
                             var checkboxId = $"typeFilter_{pair.Key}";
                             <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
@@ -222,7 +197,7 @@
                         @Localizer["Filters_Finish_Label"]
                     </p>
                     <div id="sheenFilter" class="grid grid-cols-1 gap-2">
-                        @foreach (var pair in sheenLabels)
+                        @foreach (var pair in enumLabels.Sheens)
                         {
                             var checkboxId = $"sheenFilter_{pair.Key}";
                             <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
@@ -238,7 +213,7 @@
                         @Localizer["Filters_Medium_Label"]
                     </p>
                     <div id="mediumFilter" class="grid grid-cols-1 gap-2">
-                        @foreach (var pair in mediumLabels)
+                        @foreach (var pair in enumLabels.Mediums)
                         {
                             var checkboxId = $"mediumFilter_{pair.Key}";
                             <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
@@ -254,7 +229,7 @@
                         @Localizer["Filters_Effect_Label"]
                     </p>
                     <div id="effectFilter" class="grid grid-cols-1 gap-2">
-                        @foreach (var pair in effectLabels)
+                        @foreach (var pair in enumLabels.Effects)
                         {
                             var checkboxId = $"effectFilter_{pair.Key}";
                             <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
@@ -270,7 +245,7 @@
                         @Localizer["Filters_Usage_Label"]
                     </p>
                     <div id="usageFilter" class="grid grid-cols-1 gap-2">
-                        @foreach (var pair in usageLabels)
+                        @foreach (var pair in enumLabels.Usages)
                         {
                             var checkboxId = $"usageFilter_{pair.Key}";
                             <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
@@ -286,7 +261,7 @@
                         @Localizer["Filters_Form_Label"]
                     </p>
                     <div id="formFilter" class="grid grid-cols-1 gap-2">
-                        @foreach (var pair in formLabels)
+                        @foreach (var pair in enumLabels.Forms)
                         {
                             var checkboxId = $"formFilter_{pair.Key}";
                             <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
@@ -427,7 +402,24 @@
                 if (value === null || value === undefined) return fallback;
 
                 const key = String(value);
-                return dictionary[key] || fallback;
+                const direct = dictionary[key];
+                if (direct) return direct;
+
+                const numeric = parseInt(key, 10);
+                if (!Number.isFinite(numeric) || numeric === 0) return fallback;
+
+                const parts = Object.entries(dictionary)
+                    .map(([k, label]) => ({ num: parseInt(k, 10), label }))
+                    .filter((entry) => Number.isFinite(entry.num) && entry.num > 0 && (numeric & entry.num) === entry.num)
+                    .sort((a, b) => a.num - b.num)
+                    .map((entry) => entry.label)
+                    .filter(Boolean);
+
+                if (parts.length > 0) {
+                    return parts.join(', ');
+                }
+
+                return fallback;
             };
 
                 const state = {
