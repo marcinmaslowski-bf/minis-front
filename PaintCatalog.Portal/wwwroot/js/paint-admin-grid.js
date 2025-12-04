@@ -11,6 +11,9 @@
         type: document.getElementById('adminTypeFilter'),
         sheen: document.getElementById('adminSheenFilter'),
         medium: document.getElementById('adminMediumFilter'),
+        effect: document.getElementById('adminEffectFilter'),
+        usage: document.getElementById('adminUsageFilter'),
+        form: document.getElementById('adminFormFilter'),
         refresh: document.getElementById('adminRefresh'),
         clear: document.getElementById('adminClear'),
         grid: document.getElementById('adminPaintGrid'),
@@ -23,6 +26,9 @@
         newType: document.getElementById('adminNewType'),
         newSheen: document.getElementById('adminNewSheen'),
         newMedium: document.getElementById('adminNewMedium'),
+        newEffect: document.getElementById('adminNewEffect'),
+        newUsage: document.getElementById('adminNewUsage'),
+        newForm: document.getElementById('adminNewForm'),
         newGradient: document.getElementById('adminNewGradient'),
         newHex: document.getElementById('adminNewHex'),
         newHexFrom: document.getElementById('adminNewHexFrom'),
@@ -40,9 +46,12 @@
             search: '',
             brandId: null,
             seriesId: null,
-            type: null,
-            sheen: null,
-            medium: null,
+            types: [],
+            sheens: [],
+            mediums: [],
+            effects: [],
+            usages: [],
+            forms: [],
         },
         sort: { column: 'id', direction: 'asc' },
         loading: false,
@@ -209,9 +218,12 @@
             `<td class="px-3 py-2 text-xs">${escapeHtml(seriesName) || ''}</td>`,
             `<td class="px-3 py-2"><input type="text" value="${escapeAttribute(paint.name || paint.title || '')}" class="w-36 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800" data-field="name" /></td>`,
             `<td class="px-3 py-2"><input type="text" value="${escapeAttribute(paint.slug || paint.paintSlug || '')}" class="w-36 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800" data-field="slug" /></td>`,
-            `<td class="px-3 py-2">${buildSelect(enums.types, paint.type ?? paint.paintType, 'type')}</td>`,
-            `<td class="px-3 py-2">${buildSelect(enums.sheens, paint.sheen ?? paint.paintSheen, 'sheen')}</td>`,
-            `<td class="px-3 py-2">${buildSelect(enums.mediums, paint.medium ?? paint.paintMedium, 'medium')}</td>`,
+            `<td class="px-3 py-2">${buildFlagSelect(enums.types, paint.type ?? paint.paintType, 'type')}</td>`,
+            `<td class="px-3 py-2">${buildFlagSelect(enums.sheens, paint.sheen ?? paint.paintSheen, 'sheen')}</td>`,
+            `<td class="px-3 py-2">${buildFlagSelect(enums.mediums, paint.medium ?? paint.paintMedium, 'medium')}</td>`,
+            `<td class="px-3 py-2">${buildFlagSelect(enums.effects, paint.effects, 'effects')}</td>`,
+            `<td class="px-3 py-2">${buildFlagSelect(enums.usages, paint.usage, 'usage')}</td>`,
+            `<td class="px-3 py-2">${buildFlagSelect(enums.forms, paint.form, 'form')}</td>`,
             `<td class="px-3 py-2">${buildSelect(enums.gradients, paint.gradientType, 'gradientType')}</td>`,
             `<td class="px-3 py-2"><input type="text" value="${escapeAttribute(paint.hexColor || '')}" class="w-24 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800" data-field="hexColor" /></td>`,
             `<td class="px-3 py-2"><input type="text" value="${escapeAttribute(paint.hexFrom || '')}" class="w-24 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800" data-field="hexFrom" /></td>`,
@@ -240,6 +252,20 @@
         return select.join('');
     }
 
+    function buildFlagSelect(dictionary, value, field) {
+        const options = dictionary || {};
+        const current = Number.isFinite(value) ? Number(value) : 0;
+        const entries = Object.entries(options);
+        const select = [`<select data-field="${field}" multiple class="w-36 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800">`];
+        entries.forEach(([key, label]) => {
+            const numericKey = parseInt(key, 10);
+            const selected = Number.isFinite(numericKey) && (current & numericKey) === numericKey ? 'selected' : '';
+            select.push(`<option value="${escapeAttribute(key)}" ${selected}>${escapeHtml(label)}</option>`);
+        });
+        select.push('</select>');
+        return select.join('');
+    }
+
     function escapeHtml(value) {
         if (value === null || value === undefined) return '';
         return String(value)
@@ -262,14 +288,32 @@
         state.filters.search = (elements.search?.value || '').trim();
         state.filters.brandId = parseNullableInt(elements.brand?.value);
         state.filters.seriesId = parseNullableInt(elements.series?.value);
-        state.filters.type = parseNullableInt(elements.type?.value);
-        state.filters.sheen = parseNullableInt(elements.sheen?.value);
-        state.filters.medium = parseNullableInt(elements.medium?.value);
+        state.filters.types = parseMultiSelectValues(elements.type);
+        state.filters.sheens = parseMultiSelectValues(elements.sheen);
+        state.filters.mediums = parseMultiSelectValues(elements.medium);
+        state.filters.effects = parseMultiSelectValues(elements.effect);
+        state.filters.usages = parseMultiSelectValues(elements.usage);
+        state.filters.forms = parseMultiSelectValues(elements.form);
     }
 
     function parseNullableInt(value) {
         const num = parseInt(value, 10);
         return Number.isFinite(num) ? num : null;
+    }
+
+    function parseMultiSelectValues(selectEl) {
+        if (!selectEl) return [];
+        return Array.from(selectEl.selectedOptions || [])
+            .map((opt) => parseNullableInt(opt.value))
+            .filter((num) => Number.isFinite(num));
+    }
+
+    function parseFlagsFromSelect(selectEl) {
+        if (!selectEl) return 0;
+        return Array.from(selectEl.selectedOptions || []).reduce((acc, opt) => {
+            const num = parseNullableInt(opt.value);
+            return Number.isFinite(num) ? acc | num : acc;
+        }, 0);
     }
 
     async function fetchPaints() {
@@ -281,9 +325,12 @@
             if (state.filters.search) params.set('search', state.filters.search);
             if (state.filters.brandId) params.set('brandId', state.filters.brandId);
             if (state.filters.seriesId) params.set('seriesId', state.filters.seriesId);
-            if (state.filters.type) params.append('types', state.filters.type);
-            if (state.filters.sheen) params.append('sheens', state.filters.sheen);
-            if (state.filters.medium) params.append('mediums', state.filters.medium);
+            state.filters.types.forEach((value) => params.append('types', value));
+            state.filters.sheens.forEach((value) => params.append('sheens', value));
+            state.filters.mediums.forEach((value) => params.append('mediums', value));
+            state.filters.effects.forEach((value) => params.append('effects', value));
+            state.filters.usages.forEach((value) => params.append('usages', value));
+            state.filters.forms.forEach((value) => params.append('forms', value));
             params.set('pageSize', '200');
 
             const url = `${endpoints.data}?${params.toString()}`;
@@ -344,6 +391,9 @@
             case 'type': return Number(paint.type || paint.paintType || 0);
             case 'sheen': return Number(paint.sheen || paint.paintSheen || 0);
             case 'medium': return Number(paint.medium || paint.paintMedium || 0);
+            case 'effects': return Number(paint.effects || 0);
+            case 'usage': return Number(paint.usage || 0);
+            case 'form': return Number(paint.form || 0);
             case 'gradientType': return Number(paint.gradientType || 0);
             case 'hexColor': return String(paint.hexColor || '').toLowerCase();
             case 'hexFrom': return String(paint.hexFrom || '').toLowerCase();
@@ -405,20 +455,20 @@
 
     function collectRowPayload(row) {
         const getInputValue = (field) => row.querySelector(`[data-field="${field}"]`)?.value ?? null;
-            const payload = {
-                name: getInputValue('name') || null,
-                slug: getInputValue('slug') || null,
-                type: parseNullableInt(getInputValue('type')),
-                sheen: parseNullableInt(getInputValue('sheen')),
-                medium: parseNullableInt(getInputValue('medium')),
-                effects: parseNullableInt(getInputValue('effects')) || 0,
-                usage: parseNullableInt(getInputValue('usage')) || 0,
-                form: parseNullableInt(getInputValue('form')) || 0,
-                gradientType: parseNullableInt(getInputValue('gradientType')),
-                hexColor: getInputValue('hexColor') || null,
-                hexFrom: getInputValue('hexFrom') || null,
-                hexTo: getInputValue('hexTo') || null,
-                isDiscontinued: row.querySelector('[data-field="isDiscontinued"]')?.checked || false,
+        const payload = {
+            name: getInputValue('name') || null,
+            slug: getInputValue('slug') || null,
+            type: parseFlagsFromSelect(row.querySelector('[data-field="type"]')),
+            sheen: parseFlagsFromSelect(row.querySelector('[data-field="sheen"]')),
+            medium: parseFlagsFromSelect(row.querySelector('[data-field="medium"]')),
+            effects: parseFlagsFromSelect(row.querySelector('[data-field="effects"]')),
+            usage: parseFlagsFromSelect(row.querySelector('[data-field="usage"]')),
+            form: parseFlagsFromSelect(row.querySelector('[data-field="form"]')),
+            gradientType: parseNullableInt(getInputValue('gradientType')),
+            hexColor: getInputValue('hexColor') || null,
+            hexFrom: getInputValue('hexFrom') || null,
+            hexTo: getInputValue('hexTo') || null,
+            isDiscontinued: row.querySelector('[data-field="isDiscontinued"]')?.checked || false,
             tagIds: null,
         };
         return payload;
@@ -431,20 +481,20 @@
             renderStatus('Wybierz markę i serię aby dodać farbę.', 'error');
             return;
         }
-            const payload = {
-                brandId,
-                seriesId,
-                name: (elements.newName?.value || '').trim() || null,
-                slug: (elements.newSlug?.value || '').trim() || null,
-                type: parseNullableInt(elements.newType?.value) ?? 0,
-                sheen: parseNullableInt(elements.newSheen?.value) ?? 0,
-                medium: parseNullableInt(elements.newMedium?.value) ?? 0,
-                effects: 0,
-                usage: 0,
-                form: 0,
-                gradientType: parseNullableInt(elements.newGradient?.value) ?? 0,
-                hexColor: (elements.newHex?.value || '').trim() || null,
-                hexFrom: (elements.newHexFrom?.value || '').trim() || null,
+        const payload = {
+            brandId,
+            seriesId,
+            name: (elements.newName?.value || '').trim() || null,
+            slug: (elements.newSlug?.value || '').trim() || null,
+            type: parseFlagsFromSelect(elements.newType),
+            sheen: parseFlagsFromSelect(elements.newSheen),
+            medium: parseFlagsFromSelect(elements.newMedium),
+            effects: parseFlagsFromSelect(elements.newEffect),
+            usage: parseFlagsFromSelect(elements.newUsage),
+            form: parseFlagsFromSelect(elements.newForm),
+            gradientType: parseNullableInt(elements.newGradient?.value) ?? 0,
+            hexColor: (elements.newHex?.value || '').trim() || null,
+            hexFrom: (elements.newHexFrom?.value || '').trim() || null,
             hexTo: (elements.newHexTo?.value || '').trim() || null,
             isDiscontinued: elements.newDiscontinued?.checked || false,
             tagIds: null,
@@ -473,14 +523,27 @@
             if (!el) return;
             el.value = '';
         });
+        if (elements.newGradient) elements.newGradient.value = '';
+        if (elements.newDiscontinued) elements.newDiscontinued.checked = false;
+        ['newType', 'newSheen', 'newMedium', 'newEffect', 'newUsage', 'newForm'].forEach((id) => {
+            const el = elements[id];
+            if (!el) return;
+            Array.from(el.options).forEach((opt) => { opt.selected = false; });
+        });
     }
 
     function bindEvents() {
         elements.refresh?.addEventListener('click', fetchPaints);
         elements.clear?.addEventListener('click', () => {
-            ['search', 'brand', 'series', 'type', 'sheen', 'medium'].forEach((key) => {
+            ['search'].forEach((key) => {
                 if (elements[key]) elements[key].value = '';
             });
+            ['type', 'sheen', 'medium', 'effect', 'usage', 'form'].forEach((key) => {
+                const el = elements[key];
+                if (!el) return;
+                Array.from(el.options).forEach((opt) => { opt.selected = false; });
+            });
+            if (elements.brand) elements.brand.value = '';
             if (elements.series) {
                 elements.series.disabled = true;
                 elements.series.innerHTML = '<option value="">Wszystkie</option>';
@@ -497,6 +560,9 @@
         elements.type?.addEventListener('change', fetchPaints);
         elements.sheen?.addEventListener('change', fetchPaints);
         elements.medium?.addEventListener('change', fetchPaints);
+        elements.effect?.addEventListener('change', fetchPaints);
+        elements.usage?.addEventListener('change', fetchPaints);
+        elements.form?.addEventListener('change', fetchPaints);
         elements.createButton?.addEventListener('click', handleCreate);
         elements.newBrand?.addEventListener('change', (evt) => {
             const brandId = parseNullableInt(evt.target.value);
