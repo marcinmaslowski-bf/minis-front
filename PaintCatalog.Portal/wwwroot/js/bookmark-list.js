@@ -3,21 +3,56 @@
     const endpoints = bootstrap.endpoints || {};
     const labels = bootstrap.labels || {};
 
-    const listContainer = document.getElementById('bookmark-list');
-    const filterSelect = document.getElementById('bookmark-filter');
-    const refreshButton = document.getElementById('bookmark-refresh');
+    const langPrefix = (document.documentElement?.lang || '').toLowerCase() === 'pl' ? '/pl' : '';
+
     const statusEl = document.getElementById('bookmark-status');
     const errorEl = document.getElementById('bookmark-error');
-    const emptyEl = document.getElementById('bookmark-empty');
+    const tabButtons = document.querySelectorAll('[data-bookmark-tab]');
+    const tabPanels = document.querySelectorAll('[data-bookmark-panel]');
+    const refreshButton = document.getElementById('bookmark-refresh');
+
+    const listContainers = {
+        paint: document.getElementById('bookmark-list-paint'),
+        tutorial: document.getElementById('bookmark-list-tutorial'),
+    };
+
+    const emptyStates = {
+        paint: document.getElementById('bookmark-empty-paint'),
+        tutorial: document.getElementById('bookmark-empty-tutorial'),
+    };
+
+    const filterSelects = {
+        paint: document.getElementById('bookmark-filter-paint'),
+        tutorial: document.getElementById('bookmark-filter-tutorial'),
+    };
+
+    const modal = document.getElementById('bookmark-edit-modal');
+    const modalTitle = document.getElementById('bookmark-modal-title');
+    const modalTypeLabel = document.getElementById('bookmark-modal-type');
+    const modalClose = document.getElementById('bookmark-edit-close');
+    const modalCancel = document.getElementById('bookmark-edit-cancel');
+    const modalSave = document.getElementById('bookmark-edit-save');
+    const modalDelete = document.getElementById('bookmark-edit-delete');
+    const modalStatus = document.getElementById('bookmark-edit-status');
+    const modalError = document.getElementById('bookmark-edit-error');
+    const categorySelect = document.getElementById('bookmark-edit-category');
+    const newCategoryInput = document.getElementById('bookmark-edit-new-category');
+    const addCategoryButton = document.getElementById('bookmark-edit-add-category');
+    const noteInput = document.getElementById('bookmark-edit-note');
+
+    const typeMap = {
+        paint: 1,
+        tutorial: 2,
+    };
 
     const state = {
         bookmarks: [],
-        filtered: [],
-        categories: [],
+        filtered: { paint: [], tutorial: [] },
+        categories: { paint: [], tutorial: [] },
+        activeTab: 'paint',
         loading: false,
+        editing: null,
     };
-
-    const langPrefix = (document.documentElement?.lang || '').toLowerCase() === 'pl' ? '/pl' : '';
 
     function setStatus(message) {
         if (!statusEl) return;
@@ -49,6 +84,18 @@
 
     function hideError() {
         setError('');
+    }
+
+    function setModalStatus(message) {
+        if (!modalStatus) return;
+        modalStatus.textContent = message || '';
+        modalStatus.classList.toggle('hidden', !message);
+    }
+
+    function setModalError(message) {
+        if (!modalError) return;
+        modalError.textContent = message || '';
+        modalError.classList.toggle('hidden', !message);
     }
 
     function sanitizeUrl(value) {
@@ -126,13 +173,14 @@
     }
 
     function normalizeBookmark(item) {
-        if (!item || typeof item !== 'object') return null;
+        if (!item) return null;
 
-        const category = item.category || {};
-        const normalizedType = normalizeType(item.itemType ?? item.type ?? category.itemType);
-        const rawItem = item.item || item.paint || item.tutorial || item;
-        const rawBrand = rawItem.brand || {};
-        const rawSeries = rawItem.series || {};
+        const rawItem = item.item || item.Item || {};
+        const category = item.category || item.Category || {};
+        const normalizedType = normalizeType(item.type || item.itemType || item.ItemType);
+
+        const rawSeries = rawItem.series || rawItem.Series || {};
+        const rawBrand = rawSeries.brand || rawSeries.Brand || {};
 
         const brandSlug = firstString(
             item.brandSlug,
@@ -188,7 +236,7 @@
             categoryId: item.categoryId ?? category.id ?? category.categoryId ?? null,
             categoryName: item.categoryName ?? category.name ?? null,
             note: item.note || '',
-            item: item.item || null,
+            item: rawItem || null,
             url: sanitizeUrl(item.url || item.link || item.href || rawItem.url),
             title: item.title || item.name || item.itemTitle || item.itemName || rawItem.title || rawItem.name || null,
             brandSlug: brandSlug,
@@ -212,7 +260,6 @@
         if (!bookmark) return null;
 
         const provided = sanitizeUrl(bookmark.url);
-
         const type = normalizeType(bookmark.type);
 
         if (type === 'paint') {
@@ -244,122 +291,191 @@
             }
         }
 
-        return null;
+        return provided;
     }
 
-    function renderFilterOptions() {
-        if (!filterSelect) return;
+    function renderFilterOptions(type) {
+        const select = filterSelects[type];
+        if (!select) return;
 
-        const paintCategories = (state.categories || []).filter((c) => c.type === 'paint').map((c) => c.name);
-        const tutorialCategories = (state.categories || []).filter((c) => c.type === 'tutorial').map((c) => c.name);
+        const categories = (state.categories[type] || []).map((c) => c.name);
+        const options = [`<option value="all">${type === 'paint' ? (labels.filterAllPaints || 'All paints') : (labels.filterAllTutorials || 'All tutorials')}</option>`];
 
-        const options = [`<option value="all">${labels.filterAll || 'All categories'}</option>`];
+        categories.forEach((name) => {
+            options.push(`<option value="${encodeURIComponent(name)}">${name}</option>`);
+        });
 
-        if (paintCategories.length) {
-            options.push(`<option value="paint">${labels.filterAllPaints || 'All paints'}</option>`);
-            paintCategories.forEach((name) => {
-                options.push(`<option value="paint:${encodeURIComponent(name)}">- ${name}</option>`);
-            });
-        }
-
-        if (tutorialCategories.length) {
-            options.push(`<option value="tutorial">${labels.filterAllTutorials || 'All tutorials'}</option>`);
-            tutorialCategories.forEach((name) => {
-                options.push(`<option value="tutorial:${encodeURIComponent(name)}">- ${name}</option>`);
-            });
-        }
-
-        filterSelect.innerHTML = options.join('');
+        select.innerHTML = options.join('');
     }
 
-    function applyFilters() {
-        const selected = filterSelect ? filterSelect.value : 'all';
+    function applyFilters(type) {
+        const select = filterSelects[type];
+        const selected = select ? select.value : 'all';
 
         const filtered = state.bookmarks.filter((b) => {
             if (!b) return false;
+            if (normalizeType(b.type) !== type) return false;
             if (!selected || selected === 'all') return true;
 
-            const normalizedType = normalizeType(b.type);
-            if (selected === 'paint' || selected === 'tutorial') {
-                return normalizedType === selected;
-            }
-
-            const [filterType, rawName] = selected.split(':');
-            if (!filterType || !rawName) return true;
-
-            if (normalizeType(filterType) !== normalizedType) return false;
-            const decodedName = decodeURIComponent(rawName || '').toLowerCase();
-            return (b.categoryName || '').toLowerCase() === decodedName;
+            const categoryName = (b.categoryName || '').toLowerCase();
+            return categoryName === decodeURIComponent(selected || '').toLowerCase();
         });
 
-        state.filtered = filtered;
-        renderBookmarks();
+        state.filtered[type] = filtered;
+        renderBookmarks(type);
     }
 
-    function renderBookmarks() {
-        if (!listContainer) return;
+    function formatSlugChip(slug, label) {
+        if (!slug) return '';
+        return `<span class="rounded-lg bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-300">${label || slug}</span>`;
+    }
+
+    function renderPaintCard(bookmark) {
+        const url = buildItemUrl(bookmark);
+        const title = bookmark.title || bookmark.paintSlug || labels.typePaint || 'Paint';
+        const note = bookmark.note
+            ? `<p class="text-sm text-slate-600 dark:text-slate-300"><span class="font-semibold">${labels.noteLabel || 'Note'}:</span> ${bookmark.note}</p>`
+            : '';
+        const category = bookmark.categoryName
+            ? `<span class="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200">${bookmark.categoryName}</span>`
+            : '';
+
+        const brandChip = formatSlugChip(bookmark.brandSlug, bookmark.brandSlug);
+        const seriesChip = formatSlugChip(bookmark.seriesSlug, bookmark.seriesSlug);
+        const paintChip = formatSlugChip(bookmark.paintSlug, bookmark.paintSlug);
+
+        return `
+            <article class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70" ${url ? `data-bookmark-url="${url}"` : ''}>
+                <div class="flex items-start justify-between gap-3">
+                    <div class="space-y-1">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-emerald-500">${labels.typePaint || 'Paint'}</p>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${title}</h3>
+                        <div class="flex flex-wrap gap-2">${brandChip}${seriesChip}${paintChip}</div>
+                    </div>
+                    ${category}
+                </div>
+                <div class="mt-3 space-y-2">
+                    ${note || `<p class="text-sm text-slate-500 dark:text-slate-400">${labels.notePlaceholder || ''}</p>`}
+                </div>
+                <div class="mt-4 flex items-center justify-between gap-3 text-sm">
+                    <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                        ${bookmark.itemId ? `#${bookmark.itemId}` : ''}
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-300" data-bookmark-edit="${bookmark.itemId}" data-bookmark-type="paint">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 19.5 7.125m-2.638-2.638-9.193 9.193a4.5 4.5 0 0 0-1.169 2.118l-.5 2a.375.375 0 0 0 .456.456l2-.5a4.5 4.5 0 0 0 2.118-1.169l9.193-9.193m-2.638-2.638 2.122-2.122a1.875 1.875 0 1 1 2.652 2.652L19.5 7.125m-2.638-2.638 2.638 2.638" /></svg>
+                        </button>
+                        <button type="button" class="rounded-lg border border-slate-200 p-2 text-rose-500 transition hover:border-rose-300 hover:text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:border-slate-700 dark:text-rose-300" data-bookmark-delete="${bookmark.itemId}" data-bookmark-type="paint">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21.75H8.084a2.25 2.25 0 0 1-2.245-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                        </button>
+                        ${url
+                            ? `<a href="${url}" class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">${labels.open || 'Open link'}</a>`
+                            : `<span class="text-xs font-semibold text-slate-400">${labels.open || 'Open link'}</span>`}
+                    </div>
+                </div>
+            </article>
+        `;
+    }
+
+    function renderTutorialCard(bookmark) {
+        const typeLabel = labels.typeTutorial || 'Tutorial';
+        const url = buildItemUrl(bookmark);
+        const note = bookmark.note
+            ? `<p class="text-sm text-slate-600 dark:text-slate-300"><span class="font-semibold">${labels.noteLabel || 'Note'}:</span> ${bookmark.note}</p>`
+            : '';
+        const category = bookmark.categoryName
+            ? `<span class="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200">${bookmark.categoryName}</span>`
+            : '';
+        const title = bookmark.title || bookmark.tutorialSlug || typeLabel;
+
+        return `
+            <article class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70" ${url ? `data-bookmark-url="${url}"` : ''}>
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">${typeLabel}</p>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${title}</h3>
+                    </div>
+                    ${category}
+                </div>
+                <div class="mt-2 space-y-2">
+                    ${note}
+                </div>
+                <div class="mt-4 flex items-center justify-between">
+                    <span class="text-xs text-slate-500 dark:text-slate-400">${bookmark.itemId ? `#${bookmark.itemId}` : ''}</span>
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-300" data-bookmark-edit="${bookmark.itemId}" data-bookmark-type="tutorial">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 19.5 7.125m-2.638-2.638-9.193 9.193a4.5 4.5 0 0 0-1.169 2.118l-.5 2a.375.375 0 0 0 .456.456l2-.5a4.5 4.5 0 0 0 2.118-1.169l9.193-9.193m-2.638-2.638 2.122-2.122a1.875 1.875 0 1 1 2.652 2.652L19.5 7.125m-2.638-2.638 2.638 2.638" /></svg>
+                        </button>
+                        <button type="button" class="rounded-lg border border-slate-200 p-2 text-rose-500 transition hover:border-rose-300 hover:text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:border-slate-700 dark:text-rose-300" data-bookmark-delete="${bookmark.itemId}" data-bookmark-type="tutorial">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21.75H8.084a2.25 2.25 0 0 1-2.245-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                        </button>
+                        ${url
+                            ? `<a href="${url}" class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">${labels.open || 'Open link'}</a>`
+                            : `<span class="text-xs font-semibold text-slate-400">${labels.open || 'Open link'}</span>`}
+                    </div>
+                </div>
+            </article>
+        `;
+    }
+
+    function renderBookmarks(type) {
+        const container = listContainers[type];
+        const empty = emptyStates[type];
+        if (!container) return;
 
         hideError();
 
-        if (!state.filtered.length) {
-            listContainer.innerHTML = '';
-            if (emptyEl) {
-                emptyEl.classList.remove('hidden');
-            }
+        const items = state.filtered[type] || [];
+        if (!items.length) {
+            container.innerHTML = '';
+            if (empty) empty.classList.remove('hidden');
             return;
         }
 
-        if (emptyEl) {
-            emptyEl.classList.add('hidden');
-        }
+        if (empty) empty.classList.add('hidden');
 
-        const cards = state.filtered.map((bookmark) => {
-            const type = normalizeType(bookmark.type);
-            let typeLabel = labels.typeUnknown || 'Item';
-            if (type === 'paint') typeLabel = labels.typePaint || 'Paint';
-            if (type === 'tutorial') typeLabel = labels.typeTutorial || 'Tutorial';
-
-            const url = buildItemUrl(bookmark);
-            const note = bookmark.note ? `<p class="text-sm text-slate-600 dark:text-slate-300"><span class="font-semibold">${labels.noteLabel || 'Note'}:</span> ${bookmark.note}</p>` : '';
-            const category = bookmark.categoryName ? `<span class="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200">${bookmark.categoryName}</span>` : '';
-            const action = url
-                ? `<a href="${url}" class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">${labels.open || 'Open link'}</a>`
-                : `<span class="text-xs font-semibold text-slate-400">${labels.open || 'Open link'}</span>`;
-
-            const title = bookmark.title || bookmark.paintSlug || bookmark.tutorialSlug || typeLabel;
-
-            return `
-                <article class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70 ${url ? 'cursor-pointer' : ''}" ${url ? `data-bookmark-url="${url}"` : ''}>
-                    <div class="flex items-center justify-between gap-3">
-                        <div>
-                            <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">${typeLabel}</p>
-                            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${title}</h3>
-                        </div>
-                        ${category}
-                    </div>
-                    <div class="mt-2 space-y-2">
-                        ${note}
-                    </div>
-                    <div class="mt-4 flex items-center justify-between">
-                        <span class="text-xs text-slate-500 dark:text-slate-400">${bookmark.itemId ? `#${bookmark.itemId}` : ''}</span>
-                        ${action}
-                    </div>
-                </article>
-            `;
+        const cards = items.map((bookmark) => {
+            if (type === 'paint') return renderPaintCard(bookmark);
+            return renderTutorialCard(bookmark);
         });
 
-        listContainer.innerHTML = cards.join('');
+        container.innerHTML = cards.join('');
+    }
 
-        const clickableCards = listContainer.querySelectorAll('[data-bookmark-url]');
-        clickableCards.forEach((card) => {
-            const url = card.getAttribute('data-bookmark-url');
-            if (!url) return;
+    function bindListEvents(type) {
+        const container = listContainers[type];
+        if (!container) return;
 
-            card.addEventListener('click', (event) => {
+        container.addEventListener('click', (event) => {
+            const editBtn = event.target.closest('[data-bookmark-edit]');
+            const deleteBtn = event.target.closest('[data-bookmark-delete]');
+            const card = event.target.closest('[data-bookmark-url]');
+
+            if (editBtn) {
+                const itemId = Number(editBtn.getAttribute('data-bookmark-edit'));
+                const bookmark = state.bookmarks.find((b) => b.itemId === itemId && normalizeType(b.type) === type);
+                if (bookmark) {
+                    openEditModal(bookmark);
+                }
+                return;
+            }
+
+            if (deleteBtn) {
+                const itemId = Number(deleteBtn.getAttribute('data-bookmark-delete'));
+                const bookmark = state.bookmarks.find((b) => b.itemId === itemId && normalizeType(b.type) === type);
+                if (bookmark) {
+                    deleteBookmark(bookmark);
+                }
+                return;
+            }
+
+            if (card) {
+                const url = card.getAttribute('data-bookmark-url');
+                if (!url) return;
                 const anchor = event.target.closest('a');
                 if (anchor && anchor.href) return;
                 window.location.href = url;
-            });
+            }
         });
     }
 
@@ -368,7 +484,7 @@
 
         state.loading = true;
         if (showStatus) {
-            setStatus(labels.refreshing || 'Loading bookmarks...');
+            setStatus(labels.refreshLoading || labels.refresh || 'Loading...');
         }
         hideError();
 
@@ -383,19 +499,26 @@
 
             const normalized = items.map(normalizeBookmark).filter(Boolean);
             state.bookmarks = normalized;
-            state.categories = Array.from(
-                new Map(
-                    normalized
-                        .filter((b) => b && b.categoryName && normalizeType(b.type))
-                        .map((b) => {
-                            const type = normalizeType(b.type);
-                            return [`${type}:${b.categoryName}`, { type, name: b.categoryName }];
-                        }),
-                ).values(),
+
+            state.categories = normalized.reduce(
+                (acc, bookmark) => {
+                    const type = normalizeType(bookmark.type);
+                    if (!type || !bookmark.categoryName) return acc;
+                    if (!acc[type]) acc[type] = [];
+
+                    if (!acc[type].some((c) => (c.name || '').toLowerCase() === bookmark.categoryName.toLowerCase())) {
+                        acc[type].push({ name: bookmark.categoryName });
+                    }
+
+                    return acc;
+                },
+                { paint: [], tutorial: [] },
             );
 
-            renderFilterOptions();
-            applyFilters();
+            renderFilterOptions('paint');
+            renderFilterOptions('tutorial');
+            applyFilters('paint');
+            applyFilters('tutorial');
 
             if (showStatus) {
                 setStatus(labels.statusLoaded || 'Bookmarks updated');
@@ -409,19 +532,239 @@
         }
     }
 
-    function init() {
-        if (!listContainer) return;
+    function switchTab(target) {
+        if (!target) return;
+        const tab = target.getAttribute('data-bookmark-tab');
+        if (!tab) return;
+        state.activeTab = tab;
 
-        renderFilterOptions();
+        tabButtons.forEach((btn) => {
+            const isActive = btn.getAttribute('data-bookmark-tab') === tab;
+            btn.classList.toggle('bg-white', isActive);
+            btn.classList.toggle('text-emerald-600', isActive);
+            btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        });
 
-        if (filterSelect) {
-            filterSelect.addEventListener('change', applyFilters);
+        tabPanels.forEach((panel) => {
+            const isActive = panel.getAttribute('data-bookmark-panel') === tab;
+            panel.classList.toggle('hidden', !isActive);
+        });
+    }
+
+    async function loadCategories(type) {
+        if (!endpoints.categories || !typeMap[type]) return;
+
+        try {
+            const response = await fetch(`${endpoints.categories}?itemType=${encodeURIComponent(typeMap[type])}`, { credentials: 'include' });
+            if (!response.ok) throw new Error();
+            const data = await response.json();
+            const items = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
+            state.categories[type] = items
+                .map((item) => ({ id: Number(item.id ?? item.categoryId ?? item.Id ?? item.CategoryId), name: item.name || item.Name || `#${item.id || ''}` }))
+                .filter((c) => Number.isFinite(c.id) && c.id > 0);
+        } catch (error) {
+            console.error('Failed to load categories', error);
+            setModalError(labels.errorLoad || 'Unable to load categories');
         }
+    }
+
+    function renderModalCategories(type, selectedId) {
+        if (!categorySelect) return;
+        categorySelect.innerHTML = '';
+        const categories = state.categories[type] || [];
+
+        categories.forEach((category) => {
+            const option = document.createElement('option');
+            option.value = category.id;
+            option.textContent = category.name || `#${category.id}`;
+            categorySelect.appendChild(option);
+        });
+
+        if (selectedId) {
+            categorySelect.value = String(selectedId);
+        }
+    }
+
+    function openEditModal(bookmark) {
+        if (!modal) return;
+        state.editing = bookmark;
+        const type = normalizeType(bookmark.type);
+
+        setModalError('');
+        setModalStatus('');
+
+        if (modalTitle) {
+            modalTitle.textContent = type === 'paint' ? labels.modalTitlePaint || labels.typePaint || 'Edit paint bookmark' : labels.modalTitleTutorial || labels.typeTutorial || 'Edit tutorial bookmark';
+        }
+
+        if (modalTypeLabel) {
+            modalTypeLabel.textContent = type === 'paint' ? (labels.typePaint || 'Paint') : (labels.typeTutorial || 'Tutorial');
+        }
+
+        if (noteInput) {
+            noteInput.value = bookmark.note || '';
+        }
+
+        if (categorySelect) {
+            categorySelect.innerHTML = '';
+        }
+
+        if (!state.categories[type]?.length) {
+            loadCategories(type).then(() => {
+                renderModalCategories(type, bookmark.categoryId);
+            });
+        } else {
+            renderModalCategories(type, bookmark.categoryId);
+        }
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeEditModal() {
+        if (!modal) return;
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        setModalError('');
+        setModalStatus('');
+        state.editing = null;
+    }
+
+    async function addCategory(type) {
+        if (!endpoints.createCategory || !typeMap[type]) return;
+        const name = newCategoryInput?.value?.trim();
+        if (!name) return;
+
+        setModalError('');
+        setModalStatus('');
+
+        try {
+            const response = await fetch(endpoints.createCategory, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ itemType: typeMap[type], name }),
+            });
+
+            if (!response.ok) throw new Error();
+            newCategoryInput.value = '';
+            await loadCategories(type);
+            const created = state.categories[type].find((c) => c.name?.toLowerCase() === name.toLowerCase());
+            renderModalCategories(type, created?.id || state.categories[type][0]?.id);
+        } catch (error) {
+            console.error('Failed to add category', error);
+            setModalError(labels.errorSave || 'Unable to save bookmark');
+        }
+    }
+
+    async function saveBookmark() {
+        const bookmark = state.editing;
+        if (!bookmark || !endpoints.upsert) return;
+
+        const type = normalizeType(bookmark.type);
+        const categoryId = Number(categorySelect?.value || 0);
+        const note = noteInput?.value?.trim() || '';
+
+        setModalError('');
+        setModalStatus('');
+
+        try {
+            const response = await fetch(endpoints.upsert, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    itemId: bookmark.itemId,
+                    itemType: typeMap[type],
+                    categoryId,
+                    note,
+                }),
+            });
+
+            if (!response.ok) throw new Error();
+            setModalStatus(labels.statusSaved || 'Bookmark saved');
+            await loadBookmarks(false);
+            closeEditModal();
+            setStatus(labels.statusSaved || 'Bookmark saved');
+        } catch (error) {
+            console.error('Failed to save bookmark', error);
+            setModalError(labels.errorSave || 'Unable to save bookmark');
+        }
+    }
+
+    async function deleteBookmark(bookmark) {
+        if (!bookmark || !endpoints.delete) return;
+        const type = normalizeType(bookmark.type);
+        if (!typeMap[type]) return;
+
+        if (labels.confirmDelete && !window.confirm(labels.confirmDelete)) {
+            return;
+        }
+
+        const url = endpoints.delete
+            .replace('__type__', encodeURIComponent(typeMap[type]))
+            .replace('__id__', encodeURIComponent(bookmark.itemId));
+
+        try {
+            const response = await fetch(url, { method: 'DELETE', credentials: 'include' });
+            if (!response.ok) throw new Error();
+            setStatus(labels.statusDeleted || 'Bookmark removed');
+            await loadBookmarks(false);
+            closeEditModal();
+        } catch (error) {
+            console.error('Failed to delete bookmark', error);
+            setModalError(labels.errorDelete || 'Unable to remove bookmark');
+            setError(labels.errorDelete || 'Unable to remove bookmark');
+        }
+    }
+
+    function bindTabs() {
+        tabButtons.forEach((btn) => {
+            btn.addEventListener('click', () => switchTab(btn));
+        });
+    }
+
+    function bindFilters() {
+        Object.entries(filterSelects).forEach(([type, select]) => {
+            if (!select) return;
+            select.addEventListener('change', () => applyFilters(type));
+        });
+    }
+
+    function bindModal() {
+        if (!modal) return;
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeEditModal();
+            }
+        });
+
+        modalClose?.addEventListener('click', closeEditModal);
+        modalCancel?.addEventListener('click', closeEditModal);
+        modalSave?.addEventListener('click', saveBookmark);
+        modalDelete?.addEventListener('click', () => {
+            if (state.editing) deleteBookmark(state.editing);
+        });
+        addCategoryButton?.addEventListener('click', () => {
+            if (state.editing) addCategory(normalizeType(state.editing.type));
+        });
+    }
+
+    function init() {
+        if (!listContainers.paint && !listContainers.tutorial) return;
+
+        bindTabs();
+        bindFilters();
+        bindModal();
+        bindListEvents('paint');
+        bindListEvents('tutorial');
 
         if (refreshButton) {
             refreshButton.addEventListener('click', () => loadBookmarks(false));
         }
 
+        switchTab(tabButtons[0]);
         loadBookmarks(false);
     }
 
