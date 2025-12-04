@@ -72,7 +72,7 @@
         <p class="max-w-2xl text-sm text-slate-600 dark:text-slate-300">@Localizer["Subheading"]</p>
     </div>
 
-    <div class="space-y-4 rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
+    <div class="space-y-4 rounded-2xl bg-white/80 p-4 shadow-sm dark:bg-slate-900/70">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div class="inline-flex w-full max-w-xl rounded-xl border border-slate-200 bg-slate-50 p-1 text-sm font-semibold text-slate-600 shadow-inner dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-200" role="tablist">
                 <button data-bookmark-tab="paint" class="bookmark-tab-btn flex-1 rounded-lg px-3 py-2 transition" role="tab" aria-selected="true">@Localizer["Tab_Paints"]</button>
@@ -173,5 +173,6 @@
     <script>
         window.bookmarkListBootstrap = @Html.Raw(bootstrapJson);
     </script>
+    <script src="~/js/paint-swatch.js"></script>
     <script src="~/js/bookmark-list.js"></script>
 }
