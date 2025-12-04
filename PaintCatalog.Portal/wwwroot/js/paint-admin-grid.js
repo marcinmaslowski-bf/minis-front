@@ -288,12 +288,12 @@
         state.filters.search = (elements.search?.value || '').trim();
         state.filters.brandId = parseNullableInt(elements.brand?.value);
         state.filters.seriesId = parseNullableInt(elements.series?.value);
-        state.filters.types = parseMultiSelectValues(elements.type);
-        state.filters.sheens = parseMultiSelectValues(elements.sheen);
-        state.filters.mediums = parseMultiSelectValues(elements.medium);
-        state.filters.effects = parseMultiSelectValues(elements.effect);
-        state.filters.usages = parseMultiSelectValues(elements.usage);
-        state.filters.forms = parseMultiSelectValues(elements.form);
+        state.filters.types = getCheckedValues(elements.type);
+        state.filters.sheens = getCheckedValues(elements.sheen);
+        state.filters.mediums = getCheckedValues(elements.medium);
+        state.filters.effects = getCheckedValues(elements.effect);
+        state.filters.usages = getCheckedValues(elements.usage);
+        state.filters.forms = getCheckedValues(elements.form);
     }
 
     function parseNullableInt(value) {
@@ -301,11 +301,15 @@
         return Number.isFinite(num) ? num : null;
     }
 
-    function parseMultiSelectValues(selectEl) {
-        if (!selectEl) return [];
-        return Array.from(selectEl.selectedOptions || [])
-            .map((opt) => parseNullableInt(opt.value))
+    function getCheckedValues(container) {
+        if (!container) return [];
+        return Array.from(container.querySelectorAll('input[type="checkbox"]:checked') || [])
+            .map((input) => parseNullableInt(input.value))
             .filter((num) => Number.isFinite(num));
+    }
+
+    function parseFlagsFromCheckboxGroup(container) {
+        return getCheckedValues(container).reduce((acc, value) => acc | value, 0);
     }
 
     function parseFlagsFromSelect(selectEl) {
@@ -486,12 +490,12 @@
             seriesId,
             name: (elements.newName?.value || '').trim() || null,
             slug: (elements.newSlug?.value || '').trim() || null,
-            type: parseFlagsFromSelect(elements.newType),
-            sheen: parseFlagsFromSelect(elements.newSheen),
-            medium: parseFlagsFromSelect(elements.newMedium),
-            effects: parseFlagsFromSelect(elements.newEffect),
-            usage: parseFlagsFromSelect(elements.newUsage),
-            form: parseFlagsFromSelect(elements.newForm),
+            type: parseFlagsFromCheckboxGroup(elements.newType),
+            sheen: parseFlagsFromCheckboxGroup(elements.newSheen),
+            medium: parseFlagsFromCheckboxGroup(elements.newMedium),
+            effects: parseFlagsFromCheckboxGroup(elements.newEffect),
+            usage: parseFlagsFromCheckboxGroup(elements.newUsage),
+            form: parseFlagsFromCheckboxGroup(elements.newForm),
             gradientType: parseNullableInt(elements.newGradient?.value) ?? 0,
             hexColor: (elements.newHex?.value || '').trim() || null,
             hexFrom: (elements.newHexFrom?.value || '').trim() || null,
@@ -528,7 +532,7 @@
         ['newType', 'newSheen', 'newMedium', 'newEffect', 'newUsage', 'newForm'].forEach((id) => {
             const el = elements[id];
             if (!el) return;
-            Array.from(el.options).forEach((opt) => { opt.selected = false; });
+            Array.from(el.querySelectorAll('input[type="checkbox"]')).forEach((input) => { input.checked = false; });
         });
     }
 
@@ -541,7 +545,7 @@
             ['type', 'sheen', 'medium', 'effect', 'usage', 'form'].forEach((key) => {
                 const el = elements[key];
                 if (!el) return;
-                Array.from(el.options).forEach((opt) => { opt.selected = false; });
+                Array.from(el.querySelectorAll('input[type="checkbox"]')).forEach((input) => { input.checked = false; });
             });
             if (elements.brand) elements.brand.value = '';
             if (elements.series) {
@@ -557,12 +561,15 @@
             fetchPaints();
         });
         elements.series?.addEventListener('change', fetchPaints);
-        elements.type?.addEventListener('change', fetchPaints);
-        elements.sheen?.addEventListener('change', fetchPaints);
-        elements.medium?.addEventListener('change', fetchPaints);
-        elements.effect?.addEventListener('change', fetchPaints);
-        elements.usage?.addEventListener('change', fetchPaints);
-        elements.form?.addEventListener('change', fetchPaints);
+        ['type', 'sheen', 'medium', 'effect', 'usage', 'form'].forEach((key) => {
+            const el = elements[key];
+            if (!el) return;
+            el.addEventListener('change', (event) => {
+                if (event.target?.matches?.('input[type="checkbox"]')) {
+                    fetchPaints();
+                }
+            });
+        });
         elements.createButton?.addEventListener('click', handleCreate);
         elements.newBrand?.addEventListener('change', (evt) => {
             const brandId = parseNullableInt(evt.target.value);

@@ -79,64 +79,82 @@
                 </select>
             </div>
             <div class="space-y-2">
-                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminTypeFilter">Typ</label>
-                <select id="adminTypeFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Typ</p>
+                <div id="adminTypeFilter" class="flex max-h-40 flex-col gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-2 dark:border-slate-700 dark:bg-slate-950/40">
                     @foreach (var pair in enumLabels.Types)
                     {
-                        <option value="@pair.Key">@pair.Value</option>
+                        var checkboxId = $"adminType_{pair.Key}";
+                        <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 dark:text-slate-200 dark:hover:bg-slate-800/60">
+                            <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
                     }
-                </select>
-                <p class="text-[11px] text-slate-400">Wybierz wiele opcji (Ctrl/Cmd + klik).</p>
+                </div>
             </div>
             <div class="space-y-2">
-                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminSheenFilter">Połysk</label>
-                <select id="adminSheenFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Połysk</p>
+                <div id="adminSheenFilter" class="flex max-h-40 flex-col gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-2 dark:border-slate-700 dark:bg-slate-950/40">
                     @foreach (var pair in enumLabels.Sheens)
                     {
-                        <option value="@pair.Key">@pair.Value</option>
+                        var checkboxId = $"adminSheen_{pair.Key}";
+                        <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 dark:text-slate-200 dark:hover:bg-slate-800/60">
+                            <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
                     }
-                </select>
-                <p class="text-[11px] text-slate-400">Wybierz wiele opcji (Ctrl/Cmd + klik).</p>
+                </div>
             </div>
             <div class="space-y-2">
-                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminMediumFilter">Medium</label>
-                <select id="adminMediumFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Medium</p>
+                <div id="adminMediumFilter" class="flex max-h-40 flex-col gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-2 dark:border-slate-700 dark:bg-slate-950/40">
                     @foreach (var pair in enumLabels.Mediums)
                     {
-                        <option value="@pair.Key">@pair.Value</option>
+                        var checkboxId = $"adminMedium_{pair.Key}";
+                        <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 dark:text-slate-200 dark:hover:bg-slate-800/60">
+                            <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
                     }
-                </select>
-                <p class="text-[11px] text-slate-400">Wybierz wiele opcji (Ctrl/Cmd + klik).</p>
+                </div>
             </div>
             <div class="space-y-2">
-                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminEffectFilter">Efekty</label>
-                <select id="adminEffectFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Efekty</p>
+                <div id="adminEffectFilter" class="flex max-h-40 flex-col gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-2 dark:border-slate-700 dark:bg-slate-950/40">
                     @foreach (var pair in enumLabels.Effects)
                     {
-                        <option value="@pair.Key">@pair.Value</option>
+                        var checkboxId = $"adminEffect_{pair.Key}";
+                        <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 dark:text-slate-200 dark:hover:bg-slate-800/60">
+                            <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
                     }
-                </select>
-                <p class="text-[11px] text-slate-400">Wybierz wiele opcji (Ctrl/Cmd + klik).</p>
+                </div>
             </div>
             <div class="space-y-2">
-                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminUsageFilter">Zastosowanie</label>
-                <select id="adminUsageFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Zastosowanie</p>
+                <div id="adminUsageFilter" class="flex max-h-40 flex-col gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-2 dark:border-slate-700 dark:bg-slate-950/40">
                     @foreach (var pair in enumLabels.Usages)
                     {
-                        <option value="@pair.Key">@pair.Value</option>
+                        var checkboxId = $"adminUsage_{pair.Key}";
+                        <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 dark:text-slate-200 dark:hover:bg-slate-800/60">
+                            <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
                     }
-                </select>
-                <p class="text-[11px] text-slate-400">Wybierz wiele opcji (Ctrl/Cmd + klik).</p>
+                </div>
             </div>
             <div class="space-y-2">
-                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminFormFilter">Forma</label>
-                <select id="adminFormFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Forma</p>
+                <div id="adminFormFilter" class="flex max-h-40 flex-col gap-2 overflow-y-auto rounded-xl border border-slate-200 bg-white/80 p-2 dark:border-slate-700 dark:bg-slate-950/40">
                     @foreach (var pair in enumLabels.Forms)
                     {
-                        <option value="@pair.Key">@pair.Value</option>
+                        var checkboxId = $"adminForm_{pair.Key}";
+                        <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-1 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 dark:text-slate-200 dark:hover:bg-slate-800/60">
+                            <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
                     }
-                </select>
-                <p class="text-[11px] text-slate-400">Wybierz wiele opcji (Ctrl/Cmd + klik).</p>
+                </div>
             </div>
             <div class="flex items-end gap-2">
                 <button id="adminRefresh" type="button" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 dark:border-slate-700 dark:text-slate-200">Odśwież</button>
@@ -160,42 +178,66 @@
                 </select>
                 <input id="adminNewName" type="text" class="w-40 rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" placeholder="Nazwa" />
                 @* <input id="adminNewSlug" type="text" class="w-40 rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" placeholder="Slug" /> *@
-                <select id="adminNewType" multiple class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                <div class="flex max-h-32 flex-col gap-1 overflow-y-auto rounded-xl border border-slate-300 bg-white/80 px-2 py-1 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" id="adminNewType">
                     @foreach (var pair in enumLabels.Types)
                     {
-                        <option value="@pair.Key">@pair.Value</option>
+                        var checkboxId = $"adminNewType_{pair.Key}";
+                        <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded px-2 py-1 font-medium transition hover:bg-emerald-50 dark:hover:bg-slate-800/70">
+                            <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
                     }
-                </select>
-                <select id="adminNewSheen" multiple class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                </div>
+                <div class="flex max-h-32 flex-col gap-1 overflow-y-auto rounded-xl border border-slate-300 bg-white/80 px-2 py-1 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" id="adminNewSheen">
                     @foreach (var pair in enumLabels.Sheens)
                     {
-                        <option value="@pair.Key">@pair.Value</option>
+                        var checkboxId = $"adminNewSheen_{pair.Key}";
+                        <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded px-2 py-1 font-medium transition hover:bg-emerald-50 dark:hover:bg-slate-800/70">
+                            <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
                     }
-                </select>
-                <select id="adminNewMedium" multiple class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                </div>
+                <div class="flex max-h-32 flex-col gap-1 overflow-y-auto rounded-xl border border-slate-300 bg-white/80 px-2 py-1 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" id="adminNewMedium">
                     @foreach (var pair in enumLabels.Mediums)
                     {
-                        <option value="@pair.Key">@pair.Value</option>
+                        var checkboxId = $"adminNewMedium_{pair.Key}";
+                        <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded px-2 py-1 font-medium transition hover:bg-emerald-50 dark:hover:bg-slate-800/70">
+                            <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
                     }
-                </select>
-                <select id="adminNewEffect" multiple class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                </div>
+                <div class="flex max-h-32 flex-col gap-1 overflow-y-auto rounded-xl border border-slate-300 bg-white/80 px-2 py-1 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" id="adminNewEffect">
                     @foreach (var pair in enumLabels.Effects)
                     {
-                        <option value="@pair.Key">@pair.Value</option>
+                        var checkboxId = $"adminNewEffect_{pair.Key}";
+                        <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded px-2 py-1 font-medium transition hover:bg-emerald-50 dark:hover:bg-slate-800/70">
+                            <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
                     }
-                </select>
-                <select id="adminNewUsage" multiple class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                </div>
+                <div class="flex max-h-32 flex-col gap-1 overflow-y-auto rounded-xl border border-slate-300 bg-white/80 px-2 py-1 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" id="adminNewUsage">
                     @foreach (var pair in enumLabels.Usages)
                     {
-                        <option value="@pair.Key">@pair.Value</option>
+                        var checkboxId = $"adminNewUsage_{pair.Key}";
+                        <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded px-2 py-1 font-medium transition hover:bg-emerald-50 dark:hover:bg-slate-800/70">
+                            <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
                     }
-                </select>
-                <select id="adminNewForm" multiple class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                </div>
+                <div class="flex max-h-32 flex-col gap-1 overflow-y-auto rounded-xl border border-slate-300 bg-white/80 px-2 py-1 text-xs text-slate-900 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" id="adminNewForm">
                     @foreach (var pair in enumLabels.Forms)
                     {
-                        <option value="@pair.Key">@pair.Value</option>
+                        var checkboxId = $"adminNewForm_{pair.Key}";
+                        <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded px-2 py-1 font-medium transition hover:bg-emerald-50 dark:hover:bg-slate-800/70">
+                            <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
                     }
-                </select>
+                </div>
                 <select id="adminNewGradient" class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
                     <option value="">Gradient</option>
                     @foreach (var pair in enumLabels.Gradients)
