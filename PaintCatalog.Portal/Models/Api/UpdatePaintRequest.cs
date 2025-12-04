@@ -14,11 +14,20 @@ namespace PaintCatalog.Portal.Models.Api
         [JsonPropertyName("type")]
         public PaintType Type { get; set; }
 
-        [JsonPropertyName("finish")]
-        public PaintFinish Finish { get; set; }
+        [JsonPropertyName("sheen")]
+        public PaintSheen Sheen { get; set; }
 
         [JsonPropertyName("medium")]
         public PaintMedium Medium { get; set; }
+
+        [JsonPropertyName("effects")]
+        public PaintEffect Effects { get; set; }
+
+        [JsonPropertyName("usage")]
+        public PaintUsage Usage { get; set; }
+
+        [JsonPropertyName("form")]
+        public PaintForm Form { get; set; }
 
         [JsonPropertyName("gradientType")]
         public GradientType GradientType { get; set; }

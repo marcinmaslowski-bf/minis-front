@@ -28,8 +28,11 @@ namespace PaintCatalog.Portal.ApiClients
             int? brandId = null,
             int? seriesId = null,
             int? type = null,
-            int? finish = null,
+            int? sheen = null,
             int? medium = null,
+            int? effects = null,
+            int? usage = null,
+            int? form = null,
             IEnumerable<int>? tagIds = null,
             string? search = null,
             int? page = null,
@@ -40,8 +43,11 @@ namespace PaintCatalog.Portal.ApiClients
             if (brandId.HasValue) queryParts.Add($"brandId={brandId.Value}");
             if (seriesId.HasValue) queryParts.Add($"seriesId={seriesId.Value}");
             if (type.HasValue) queryParts.Add($"type={type.Value}");
-            if (finish.HasValue) queryParts.Add($"finish={finish.Value}");
+            if (sheen.HasValue) queryParts.Add($"sheen={sheen.Value}");
             if (medium.HasValue) queryParts.Add($"medium={medium.Value}");
+            if (effects.HasValue) queryParts.Add($"effects={effects.Value}");
+            if (usage.HasValue) queryParts.Add($"usage={usage.Value}");
+            if (form.HasValue) queryParts.Add($"form={form.Value}");
 
             if (tagIds != null)
             {

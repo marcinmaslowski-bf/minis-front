@@ -92,8 +92,11 @@ namespace PaintCatalog.Portal.Controllers
             int? brandId,
             int? seriesId,
             int? type,
-            int? finish,
+            int? sheen,
             int? medium,
+            int? effects,
+            int? usage,
+            int? form,
             [FromQuery(Name = "tagIds")] List<int>? tagIds,
             string? search,
             int? page,
@@ -107,8 +110,11 @@ namespace PaintCatalog.Portal.Controllers
                     brandId: brandId,
                     seriesId: seriesId,
                     type: type,
-                    finish: finish,
+                    sheen: sheen,
                     medium: medium,
+                    effects: effects,
+                    usage: usage,
+                    form: form,
                     tagIds: tagIds,
                     search: search,
                     page: page,
@@ -174,14 +180,17 @@ namespace PaintCatalog.Portal.Controllers
             int? brandId,
             int? seriesId,
             int? type,
-            int? finish,
+            int? sheen,
             int? medium,
+            int? effects,
+            int? usage,
+            int? form,
             [FromQuery(Name = "tagIds")] List<int>? tagIds,
             string? search,
             int? page,
             int? pageSize)
         {
-            return Data(id, ids, brandId, seriesId, type, finish, medium, tagIds, search, page, pageSize);
+            return Data(id, ids, brandId, seriesId, type, sheen, medium, effects, usage, form, tagIds, search, page, pageSize);
         }
 
         [HttpPost("paints/admin")]
