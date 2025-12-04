@@ -27,12 +27,12 @@ namespace PaintCatalog.Portal.ApiClients
             IEnumerable<int>? ids = null,
             int? brandId = null,
             int? seriesId = null,
-            int? type = null,
-            int? sheen = null,
-            int? medium = null,
-            int? effects = null,
-            int? usage = null,
-            int? form = null,
+            IEnumerable<int>? types = null,
+            IEnumerable<int>? sheens = null,
+            IEnumerable<int>? mediums = null,
+            IEnumerable<int>? effects = null,
+            IEnumerable<int>? usages = null,
+            IEnumerable<int>? forms = null,
             IEnumerable<int>? tagIds = null,
             string? search = null,
             int? page = null,
@@ -42,12 +42,12 @@ namespace PaintCatalog.Portal.ApiClients
 
             if (brandId.HasValue) queryParts.Add($"brandId={brandId.Value}");
             if (seriesId.HasValue) queryParts.Add($"seriesId={seriesId.Value}");
-            if (type.HasValue) queryParts.Add($"type={type.Value}");
-            if (sheen.HasValue) queryParts.Add($"sheen={sheen.Value}");
-            if (medium.HasValue) queryParts.Add($"medium={medium.Value}");
-            if (effects.HasValue) queryParts.Add($"effects={effects.Value}");
-            if (usage.HasValue) queryParts.Add($"usage={usage.Value}");
-            if (form.HasValue) queryParts.Add($"form={form.Value}");
+            AppendQueryCollection(queryParts, "types", types);
+            AppendQueryCollection(queryParts, "sheens", sheens);
+            AppendQueryCollection(queryParts, "mediums", mediums);
+            AppendQueryCollection(queryParts, "effects", effects);
+            AppendQueryCollection(queryParts, "usages", usages);
+            AppendQueryCollection(queryParts, "forms", forms);
 
             if (tagIds != null)
             {
@@ -88,6 +88,16 @@ namespace PaintCatalog.Portal.ApiClients
             response.EnsureSuccessStatusCode();
 
             return await response.Content.ReadAsStringAsync();
+        }
+
+        private static void AppendQueryCollection(ICollection<string> queryParts, string name, IEnumerable<int>? values)
+        {
+            if (values == null) return;
+
+            foreach (var value in values)
+            {
+                queryParts.Add($"{name}={value}");
+            }
         }
 
         public async Task<string> GetBrandsRawAsync()
