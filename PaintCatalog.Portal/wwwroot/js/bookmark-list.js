@@ -3,43 +3,46 @@
     const endpoints = bootstrap.endpoints || {};
     const labels = bootstrap.labels || {};
     const swatchUtils = window.paintSwatchUtils || {};
+    const prefix = window.bookmarkListPrefix || 'bookmark';
+    const getId = (suffix) => `${prefix}-${suffix}`;
+    const getById = (suffix) => document.getElementById(getId(suffix));
 
     const langPrefix = (document.documentElement?.lang || '').toLowerCase() === 'pl' ? '/pl' : '';
 
-    const statusEl = document.getElementById('bookmark-status');
-    const errorEl = document.getElementById('bookmark-error');
+    const statusEl = getById('status');
+    const errorEl = getById('error');
     const tabButtons = document.querySelectorAll('[data-bookmark-tab]');
     const tabPanels = document.querySelectorAll('[data-bookmark-panel]');
-    const refreshButton = document.getElementById('bookmark-refresh');
+    const refreshButton = getById('refresh');
 
     const listContainers = {
-        paint: document.getElementById('bookmark-list-paint'),
-        tutorial: document.getElementById('bookmark-list-tutorial'),
+        paint: getById('list-paint'),
+        tutorial: getById('list-tutorial'),
     };
 
     const emptyStates = {
-        paint: document.getElementById('bookmark-empty-paint'),
-        tutorial: document.getElementById('bookmark-empty-tutorial'),
+        paint: getById('empty-paint'),
+        tutorial: getById('empty-tutorial'),
     };
 
     const filterSelects = {
-        paint: document.getElementById('bookmark-filter-paint'),
-        tutorial: document.getElementById('bookmark-filter-tutorial'),
+        paint: getById('filter-paint'),
+        tutorial: getById('filter-tutorial'),
     };
 
-    const modal = document.getElementById('bookmark-edit-modal');
-    const modalTitle = document.getElementById('bookmark-modal-title');
-    const modalTypeLabel = document.getElementById('bookmark-modal-type');
-    const modalClose = document.getElementById('bookmark-edit-close');
-    const modalCancel = document.getElementById('bookmark-edit-cancel');
-    const modalSave = document.getElementById('bookmark-edit-save');
-    const modalDelete = document.getElementById('bookmark-edit-delete');
-    const modalStatus = document.getElementById('bookmark-edit-status');
-    const modalError = document.getElementById('bookmark-edit-error');
-    const categorySelect = document.getElementById('bookmark-edit-category');
-    const newCategoryInput = document.getElementById('bookmark-edit-new-category');
-    const addCategoryButton = document.getElementById('bookmark-edit-add-category');
-    const noteInput = document.getElementById('bookmark-edit-note');
+    const modal = getById('edit-modal');
+    const modalTitle = getById('modal-title');
+    const modalTypeLabel = getById('modal-type');
+    const modalClose = getById('edit-close');
+    const modalCancel = getById('edit-cancel');
+    const modalSave = getById('edit-save');
+    const modalDelete = getById('edit-delete');
+    const modalStatus = getById('edit-status');
+    const modalError = getById('edit-error');
+    const categorySelect = getById('edit-category');
+    const newCategoryInput = getById('edit-new-category');
+    const addCategoryButton = getById('edit-add-category');
+    const noteInput = getById('edit-note');
 
     const typeMap = {
         paint: 1,
