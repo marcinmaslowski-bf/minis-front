@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Heading" xml:space="preserve">
+    <value>Your bookmarks</value>
+  </data>
+  <data name="Subheading" xml:space="preserve">
+    <value>Review everything you saved, filter by category and open the matching paint or tutorial.</value>
+  </data>
+  <data name="Refresh_Button" xml:space="preserve">
+    <value>Refresh list</value>
+  </data>
+  <data name="Filter_Label" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="Filter_All_Paints" xml:space="preserve">
+    <value>All paints</value>
+  </data>
+  <data name="Filter_All_Tutorials" xml:space="preserve">
+    <value>All tutorials</value>
+  </data>
+  <data name="Tab_Paints" xml:space="preserve">
+    <value>Paints</value>
+  </data>
+  <data name="Tab_Tutorials" xml:space="preserve">
+    <value>Tutorials</value>
+  </data>
+  <data name="Empty_Paints_Title" xml:space="preserve">
+    <value>No paint bookmarks yet</value>
+  </data>
+  <data name="Empty_Paints_Description" xml:space="preserve">
+    <value>Save paints to see them here.</value>
+  </data>
+  <data name="Empty_Tutorials_Title" xml:space="preserve">
+    <value>No tutorial bookmarks yet</value>
+  </data>
+  <data name="Empty_Tutorials_Description" xml:space="preserve">
+    <value>Save tutorials to see them here.</value>
+  </data>
+  <data name="Error_Load" xml:space="preserve">
+    <value>Unable to load bookmarks</value>
+  </data>
+  <data name="Error_Save" xml:space="preserve">
+    <value>Unable to save bookmark</value>
+  </data>
+  <data name="Error_Delete" xml:space="preserve">
+    <value>Unable to remove bookmark</value>
+  </data>
+  <data name="Note_Label" xml:space="preserve">
+    <value>Note</value>
+  </data>
+  <data name="Type_Paint" xml:space="preserve">
+    <value>Paint</value>
+  </data>
+  <data name="Type_Tutorial" xml:space="preserve">
+    <value>Tutorial</value>
+  </data>
+  <data name="Type_Unknown" xml:space="preserve">
+    <value>Item</value>
+  </data>
+  <data name="Open_Link" xml:space="preserve">
+    <value>Open link</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Edit</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="Modal_Title_Paint" xml:space="preserve">
+    <value>Edit paint bookmark</value>
+  </data>
+  <data name="Modal_Title_Tutorial" xml:space="preserve">
+    <value>Edit tutorial bookmark</value>
+  </data>
+  <data name="Bookmark_Category_Label" xml:space="preserve">
+    <value>Category</value>
+  </data>
+  <data name="Bookmark_NewCategory_Label" xml:space="preserve">
+    <value>New category</value>
+  </data>
+  <data name="Bookmark_NewCategory_Placeholder" xml:space="preserve">
+    <value>Type a new category name</value>
+  </data>
+  <data name="Bookmark_AddCategory_Button" xml:space="preserve">
+    <value>Add category</value>
+  </data>
+  <data name="Bookmark_Note_Placeholder" xml:space="preserve">
+    <value>Optional note for this bookmark</value>
+  </data>
+  <data name="Bookmark_Save" xml:space="preserve">
+    <value>Save bookmark</value>
+  </data>
+  <data name="Bookmark_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Bookmark_Remove" xml:space="preserve">
+    <value>Remove bookmark</value>
+  </data>
+  <data name="Status_Loaded" xml:space="preserve">
+    <value>Bookmarks updated</value>
+  </data>
+  <data name="Status_Saved" xml:space="preserve">
+    <value>Bookmark saved</value>
+  </data>
+  <data name="Status_Deleted" xml:space="preserve">
+    <value>Bookmark removed</value>
+  </data>
+  <data name="Confirm_Delete" xml:space="preserve">
+    <value>Are you sure you want to remove this bookmark?</value>
+  </data>
+  <data name="Status_Loading" xml:space="preserve">
+    <value>Loading bookmarks...</value>
+  </data>
+</root>

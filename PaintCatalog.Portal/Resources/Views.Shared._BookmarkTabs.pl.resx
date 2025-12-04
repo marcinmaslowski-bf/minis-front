@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Heading" xml:space="preserve">
+    <value>Twoje zakładki</value>
+  </data>
+  <data name="Subheading" xml:space="preserve">
+    <value>Przejrzyj zapisane pozycje, przefiltruj je po kategorii i otwórz odpowiadającą farbę lub tutorial.</value>
+  </data>
+  <data name="Refresh_Button" xml:space="preserve">
+    <value>Odśwież listę</value>
+  </data>
+  <data name="Filter_Label" xml:space="preserve">
+    <value>Kategoria</value>
+  </data>
+  <data name="Filter_All_Paints" xml:space="preserve">
+    <value>Wszystkie farby</value>
+  </data>
+  <data name="Filter_All_Tutorials" xml:space="preserve">
+    <value>Wszystkie tutoriale</value>
+  </data>
+  <data name="Tab_Paints" xml:space="preserve">
+    <value>Farby</value>
+  </data>
+  <data name="Tab_Tutorials" xml:space="preserve">
+    <value>Tutoriale</value>
+  </data>
+  <data name="Empty_Paints_Title" xml:space="preserve">
+    <value>Brak zakładek farb</value>
+  </data>
+  <data name="Empty_Paints_Description" xml:space="preserve">
+    <value>Zapisz farby, aby pojawiły się w tym miejscu.</value>
+  </data>
+  <data name="Empty_Tutorials_Title" xml:space="preserve">
+    <value>Brak zakładek tutoriali</value>
+  </data>
+  <data name="Empty_Tutorials_Description" xml:space="preserve">
+    <value>Zapisz tutoriale, aby pojawiły się w tym miejscu.</value>
+  </data>
+  <data name="Error_Load" xml:space="preserve">
+    <value>Nie udało się pobrać zakładek</value>
+  </data>
+  <data name="Error_Save" xml:space="preserve">
+    <value>Nie udało się zapisać zakładki</value>
+  </data>
+  <data name="Error_Delete" xml:space="preserve">
+    <value>Nie udało się usunąć zakładki</value>
+  </data>
+  <data name="Note_Label" xml:space="preserve">
+    <value>Notatka</value>
+  </data>
+  <data name="Type_Paint" xml:space="preserve">
+    <value>Farba</value>
+  </data>
+  <data name="Type_Tutorial" xml:space="preserve">
+    <value>Tutorial</value>
+  </data>
+  <data name="Type_Unknown" xml:space="preserve">
+    <value>Element</value>
+  </data>
+  <data name="Open_Link" xml:space="preserve">
+    <value>Otwórz</value>
+  </data>
+  <data name="Edit" xml:space="preserve">
+    <value>Edytuj</value>
+  </data>
+  <data name="Delete" xml:space="preserve">
+    <value>Usuń</value>
+  </data>
+  <data name="Modal_Title_Paint" xml:space="preserve">
+    <value>Edytuj zakładkę farby</value>
+  </data>
+  <data name="Modal_Title_Tutorial" xml:space="preserve">
+    <value>Edytuj zakładkę tutoriala</value>
+  </data>
+  <data name="Bookmark_Category_Label" xml:space="preserve">
+    <value>Kategoria</value>
+  </data>
+  <data name="Bookmark_NewCategory_Label" xml:space="preserve">
+    <value>Nowa kategoria</value>
+  </data>
+  <data name="Bookmark_NewCategory_Placeholder" xml:space="preserve">
+    <value>Wpisz nazwę nowej kategorii</value>
+  </data>
+  <data name="Bookmark_AddCategory_Button" xml:space="preserve">
+    <value>Dodaj kategorię</value>
+  </data>
+  <data name="Bookmark_Note_Placeholder" xml:space="preserve">
+    <value>Opcjonalna notatka do zakładki</value>
+  </data>
+  <data name="Bookmark_Save" xml:space="preserve">
+    <value>Zapisz zakładkę</value>
+  </data>
+  <data name="Bookmark_Cancel" xml:space="preserve">
+    <value>Anuluj</value>
+  </data>
+  <data name="Bookmark_Remove" xml:space="preserve">
+    <value>Usuń zakładkę</value>
+  </data>
+  <data name="Status_Loaded" xml:space="preserve">
+    <value>Zakładki zaktualizowane</value>
+  </data>
+  <data name="Status_Saved" xml:space="preserve">
+    <value>Zakładka zapisana</value>
+  </data>
+  <data name="Status_Deleted" xml:space="preserve">
+    <value>Zakładka usunięta</value>
+  </data>
+  <data name="Confirm_Delete" xml:space="preserve">
+    <value>Na pewno chcesz usunąć tę zakładkę?</value>
+  </data>
+  <data name="Status_Loading" xml:space="preserve">
+    <value>Ładowanie zakładek...</value>
+  </data>
+</root>
