@@ -21,9 +21,12 @@
         ["3"] = "Contrast"
     };
 
-    var finishLabels = new Dictionary<string, string>
+    var sheenLabels = new Dictionary<string, string>
     {
-        ["0"] = "Unknown"
+        ["0"] = "Unknown",
+        ["1"] = "Matte",
+        ["2"] = "Satin",
+        ["3"] = "Gloss"
     };
 
     var mediumLabels = new Dictionary<string, string>
@@ -57,7 +60,7 @@
         enums = new
         {
             types = typeLabels,
-            finishes = finishLabels,
+            sheens = sheenLabels,
             mediums = mediumLabels,
             gradients = gradientLabels
         }
@@ -104,10 +107,10 @@
                 </select>
             </div>
             <div class="space-y-2">
-                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminFinishFilter">Wykończenie</label>
-                <select id="adminFinishFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminSheenFilter">Połysk</label>
+                <select id="adminSheenFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
                     <option value="">Wszystkie</option>
-                    @foreach (var pair in finishLabels)
+                    @foreach (var pair in sheenLabels)
                     {
                         <option value="@pair.Key">@pair.Value</option>
                     }
@@ -152,9 +155,9 @@
                         <option value="@pair.Key">@pair.Value</option>
                     }
                 </select>
-                <select id="adminNewFinish" class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
-                    <option value="">Wykończenie</option>
-                    @foreach (var pair in finishLabels)
+                <select id="adminNewSheen" class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    <option value="">Połysk</option>
+                    @foreach (var pair in sheenLabels)
                     {
                         <option value="@pair.Key">@pair.Value</option>
                     }
@@ -197,7 +200,7 @@
                     <th class="px-3 py-2 text-left" data-sort="name">Nazwa</th>
                     <th class="px-3 py-2 text-left" data-sort="slug">Slug</th>
                     <th class="px-3 py-2 text-left" data-sort="type">Typ</th>
-                    <th class="px-3 py-2 text-left" data-sort="finish">Wykończenie</th>
+                    <th class="px-3 py-2 text-left" data-sort="sheen">Połysk</th>
                     <th class="px-3 py-2 text-left" data-sort="medium">Medium</th>
                     <th class="px-3 py-2 text-left" data-sort="gradientType">Gradient</th>
                     <th class="px-3 py-2 text-left" data-sort="hexColor">Hex</th>

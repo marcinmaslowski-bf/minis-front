@@ -9,7 +9,7 @@
         brand: document.getElementById('adminBrandFilter'),
         series: document.getElementById('adminSeriesFilter'),
         type: document.getElementById('adminTypeFilter'),
-        finish: document.getElementById('adminFinishFilter'),
+        sheen: document.getElementById('adminSheenFilter'),
         medium: document.getElementById('adminMediumFilter'),
         refresh: document.getElementById('adminRefresh'),
         clear: document.getElementById('adminClear'),
@@ -21,7 +21,7 @@
         newName: document.getElementById('adminNewName'),
         newSlug: document.getElementById('adminNewSlug'),
         newType: document.getElementById('adminNewType'),
-        newFinish: document.getElementById('adminNewFinish'),
+        newSheen: document.getElementById('adminNewSheen'),
         newMedium: document.getElementById('adminNewMedium'),
         newGradient: document.getElementById('adminNewGradient'),
         newHex: document.getElementById('adminNewHex'),
@@ -41,7 +41,7 @@
             brandId: null,
             seriesId: null,
             type: null,
-            finish: null,
+            sheen: null,
             medium: null,
         },
         sort: { column: 'id', direction: 'asc' },
@@ -210,7 +210,7 @@
             `<td class="px-3 py-2"><input type="text" value="${escapeAttribute(paint.name || paint.title || '')}" class="w-36 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800" data-field="name" /></td>`,
             `<td class="px-3 py-2"><input type="text" value="${escapeAttribute(paint.slug || paint.paintSlug || '')}" class="w-36 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800" data-field="slug" /></td>`,
             `<td class="px-3 py-2">${buildSelect(enums.types, paint.type ?? paint.paintType, 'type')}</td>`,
-            `<td class="px-3 py-2">${buildSelect(enums.finishes, paint.finish ?? paint.paintFinish, 'finish')}</td>`,
+            `<td class="px-3 py-2">${buildSelect(enums.sheens, paint.sheen ?? paint.paintSheen, 'sheen')}</td>`,
             `<td class="px-3 py-2">${buildSelect(enums.mediums, paint.medium ?? paint.paintMedium, 'medium')}</td>`,
             `<td class="px-3 py-2">${buildSelect(enums.gradients, paint.gradientType, 'gradientType')}</td>`,
             `<td class="px-3 py-2"><input type="text" value="${escapeAttribute(paint.hexColor || '')}" class="w-24 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800" data-field="hexColor" /></td>`,
@@ -263,7 +263,7 @@
         state.filters.brandId = parseNullableInt(elements.brand?.value);
         state.filters.seriesId = parseNullableInt(elements.series?.value);
         state.filters.type = parseNullableInt(elements.type?.value);
-        state.filters.finish = parseNullableInt(elements.finish?.value);
+        state.filters.sheen = parseNullableInt(elements.sheen?.value);
         state.filters.medium = parseNullableInt(elements.medium?.value);
     }
 
@@ -282,7 +282,7 @@
             if (state.filters.brandId) params.set('brandId', state.filters.brandId);
             if (state.filters.seriesId) params.set('seriesId', state.filters.seriesId);
             if (state.filters.type) params.set('type', state.filters.type);
-            if (state.filters.finish) params.set('finish', state.filters.finish);
+            if (state.filters.sheen) params.set('sheen', state.filters.sheen);
             if (state.filters.medium) params.set('medium', state.filters.medium);
             params.set('pageSize', '200');
 
@@ -342,7 +342,7 @@
             case 'brand': return String(getValue(paint, ['brandName', 'brand.name', 'brand.slug']) || '').toLowerCase();
             case 'series': return String(getValue(paint, ['seriesName', 'series.name']) || '').toLowerCase();
             case 'type': return Number(paint.type || paint.paintType || 0);
-            case 'finish': return Number(paint.finish || paint.paintFinish || 0);
+            case 'sheen': return Number(paint.sheen || paint.paintSheen || 0);
             case 'medium': return Number(paint.medium || paint.paintMedium || 0);
             case 'gradientType': return Number(paint.gradientType || 0);
             case 'hexColor': return String(paint.hexColor || '').toLowerCase();
@@ -405,17 +405,20 @@
 
     function collectRowPayload(row) {
         const getInputValue = (field) => row.querySelector(`[data-field="${field}"]`)?.value ?? null;
-        const payload = {
-            name: getInputValue('name') || null,
-            slug: getInputValue('slug') || null,
-            type: parseNullableInt(getInputValue('type')),
-            finish: parseNullableInt(getInputValue('finish')),
-            medium: parseNullableInt(getInputValue('medium')),
-            gradientType: parseNullableInt(getInputValue('gradientType')),
-            hexColor: getInputValue('hexColor') || null,
-            hexFrom: getInputValue('hexFrom') || null,
-            hexTo: getInputValue('hexTo') || null,
-            isDiscontinued: row.querySelector('[data-field="isDiscontinued"]')?.checked || false,
+            const payload = {
+                name: getInputValue('name') || null,
+                slug: getInputValue('slug') || null,
+                type: parseNullableInt(getInputValue('type')),
+                sheen: parseNullableInt(getInputValue('sheen')),
+                medium: parseNullableInt(getInputValue('medium')),
+                effects: parseNullableInt(getInputValue('effects')) || 0,
+                usage: parseNullableInt(getInputValue('usage')) || 0,
+                form: parseNullableInt(getInputValue('form')) || 0,
+                gradientType: parseNullableInt(getInputValue('gradientType')),
+                hexColor: getInputValue('hexColor') || null,
+                hexFrom: getInputValue('hexFrom') || null,
+                hexTo: getInputValue('hexTo') || null,
+                isDiscontinued: row.querySelector('[data-field="isDiscontinued"]')?.checked || false,
             tagIds: null,
         };
         return payload;
@@ -428,17 +431,20 @@
             renderStatus('Wybierz markę i serię aby dodać farbę.', 'error');
             return;
         }
-        const payload = {
-            brandId,
-            seriesId,
-            name: (elements.newName?.value || '').trim() || null,
-            slug: (elements.newSlug?.value || '').trim() || null,
-            type: parseNullableInt(elements.newType?.value) ?? 0,
-            finish: parseNullableInt(elements.newFinish?.value) ?? 0,
-            medium: parseNullableInt(elements.newMedium?.value) ?? 0,
-            gradientType: parseNullableInt(elements.newGradient?.value) ?? 0,
-            hexColor: (elements.newHex?.value || '').trim() || null,
-            hexFrom: (elements.newHexFrom?.value || '').trim() || null,
+            const payload = {
+                brandId,
+                seriesId,
+                name: (elements.newName?.value || '').trim() || null,
+                slug: (elements.newSlug?.value || '').trim() || null,
+                type: parseNullableInt(elements.newType?.value) ?? 0,
+                sheen: parseNullableInt(elements.newSheen?.value) ?? 0,
+                medium: parseNullableInt(elements.newMedium?.value) ?? 0,
+                effects: 0,
+                usage: 0,
+                form: 0,
+                gradientType: parseNullableInt(elements.newGradient?.value) ?? 0,
+                hexColor: (elements.newHex?.value || '').trim() || null,
+                hexFrom: (elements.newHexFrom?.value || '').trim() || null,
             hexTo: (elements.newHexTo?.value || '').trim() || null,
             isDiscontinued: elements.newDiscontinued?.checked || false,
             tagIds: null,
@@ -472,7 +478,7 @@
     function bindEvents() {
         elements.refresh?.addEventListener('click', fetchPaints);
         elements.clear?.addEventListener('click', () => {
-            ['search', 'brand', 'series', 'type', 'finish', 'medium'].forEach((key) => {
+            ['search', 'brand', 'series', 'type', 'sheen', 'medium'].forEach((key) => {
                 if (elements[key]) elements[key].value = '';
             });
             if (elements.series) {
@@ -489,7 +495,7 @@
         });
         elements.series?.addEventListener('change', fetchPaints);
         elements.type?.addEventListener('change', fetchPaints);
-        elements.finish?.addEventListener('change', fetchPaints);
+        elements.sheen?.addEventListener('change', fetchPaints);
         elements.medium?.addEventListener('change', fetchPaints);
         elements.createButton?.addEventListener('click', handleCreate);
         elements.newBrand?.addEventListener('change', (evt) => {

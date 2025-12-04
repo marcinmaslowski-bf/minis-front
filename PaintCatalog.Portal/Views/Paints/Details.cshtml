@@ -15,7 +15,7 @@
     var typeLabels = Enumerable.Range(1, 10)
         .ToDictionary(i => i.ToString(), i => searchLocalizer[$"Filters_Type_{i}"].Value);
 
-    var finishLabels = Enumerable.Range(1, 6)
+    var sheenLabels = Enumerable.Range(1, 3)
         .ToDictionary(i => i.ToString(), i => searchLocalizer[$"Filters_Finish_{i}"].Value);
 
     var mediumLabels = new Dictionary<string, string>
@@ -68,7 +68,7 @@
         enumLabels = new
         {
             type = typeLabels,
-            finish = finishLabels,
+            sheen = sheenLabels,
             medium = mediumLabels
         }
     };
@@ -127,7 +127,7 @@
                     </div>
                     <div>
                         <dt class="font-semibold text-slate-400">@Localizer["Card_Label_Finish"]</dt>
-                        <dd class="mt-1 text-slate-900 dark:text-slate-100" id="paint-finish">—</dd>
+                        <dd class="mt-1 text-slate-900 dark:text-slate-100" id="paint-sheen">—</dd>
                     </div>
                     <div>
                         <dt class="font-semibold text-slate-400">@Localizer["Card_Label_Medium"]</dt>
@@ -434,7 +434,7 @@
 
                 let value = rawValue;
                 if (value && typeof value === 'object') {
-                    value = value.id ?? value.value ?? value.type ?? value.finish ?? value.medium;
+                    value = value.id ?? value.value ?? value.type ?? value.sheen ?? value.medium;
                 }
 
                 if (value === null || value === undefined) return fallback;
@@ -708,7 +708,7 @@
                     series: document.getElementById('paint-series'),
                     description: document.getElementById('paint-description'),
                     type: document.getElementById('paint-type'),
-                    finish: document.getElementById('paint-finish'),
+                    sheen: document.getElementById('paint-sheen'),
                     medium: document.getElementById('paint-medium'),
                     sku: document.getElementById('paint-sku'),
                     discontinued: document.getElementById('paint-discontinued'),
@@ -728,10 +728,10 @@
                 const seriesSlug = paint?.series?.slug || paint?.seriesSlug || state.seriesSlug;
                 const paintName = paint?.name || paint?.paintName || state.paintSlug || 'Untitled paint';
                 const description = paint?.description || '';
-                const finishRaw = paint?.finishId ?? paint?.finish?.id ?? paint?.finish;
+                const finishRaw = paint?.sheenId ?? paint?.sheen?.id ?? paint?.sheen;
                 const typeRaw = paint?.typeId ?? paint?.type?.id ?? paint?.type;
                 const mediumRaw = paint?.mediumId ?? paint?.medium?.id ?? paint?.medium;
-                const finishName = resolveEnumLabel(enumLabels.finish, finishRaw, paint?.finishName || paint?.finish?.name || paint?.finish || '—');
+                const finishName = resolveEnumLabel(enumLabels.sheen, finishRaw, paint?.sheenName || paint?.sheen?.name || paint?.sheen || '—');
                 const typeName = resolveEnumLabel(enumLabels.type, typeRaw, paint?.typeName || paint?.type?.name || paint?.type || '—');
                 const mediumName = resolveEnumLabel(enumLabels.medium, mediumRaw, paint?.mediumName || paint?.medium?.name || paint?.medium || '—');
                 const sku = paint?.sku || paint?.code || '—';
@@ -762,7 +762,7 @@
                 }
 
                 if (elements.type) elements.type.textContent = typeName || '—';
-                if (elements.finish) elements.finish.textContent = finishName || '—';
+                if (elements.sheen) elements.sheen.textContent = finishName || '—';
                 if (elements.medium) elements.medium.textContent = mediumName || '—';
                 if (elements.sku) elements.sku.textContent = sku || '—';
 
