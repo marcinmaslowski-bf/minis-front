@@ -561,17 +561,10 @@
     }
 
     function clearCreateForm() {
-        ['newName', 'newSlug', 'newHex', 'newHexFrom', 'newHexTo'].forEach((id) => {
+        ['newName', 'newHex', 'newHexFrom', 'newHexTo'].forEach((id) => {
             const el = elements[id];
             if (!el) return;
             el.value = '';
-        });
-        if (elements.newGradient) elements.newGradient.value = '';
-        if (elements.newDiscontinued) elements.newDiscontinued.checked = false;
-        ['newType', 'newSheen', 'newMedium', 'newEffect', 'newUsage', 'newForm'].forEach((id) => {
-            const el = elements[id];
-            if (!el) return;
-            Array.from(el.querySelectorAll('input[type="checkbox"]')).forEach((input) => { input.checked = false; });
         });
     }
 
