@@ -281,9 +281,9 @@
             if (state.filters.search) params.set('search', state.filters.search);
             if (state.filters.brandId) params.set('brandId', state.filters.brandId);
             if (state.filters.seriesId) params.set('seriesId', state.filters.seriesId);
-            if (state.filters.type) params.set('type', state.filters.type);
-            if (state.filters.sheen) params.set('sheen', state.filters.sheen);
-            if (state.filters.medium) params.set('medium', state.filters.medium);
+            if (state.filters.type) params.append('types', state.filters.type);
+            if (state.filters.sheen) params.append('sheens', state.filters.sheen);
+            if (state.filters.medium) params.append('mediums', state.filters.medium);
             params.set('pageSize', '200');
 
             const url = `${endpoints.data}?${params.toString()}`;

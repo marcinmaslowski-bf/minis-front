@@ -1,13 +1,16 @@
+using System;
+
 namespace PaintCatalog.Portal.Models.Api
 {
+    [Flags]
     public enum PaintForm
     {
         Unknown = 0,
-        Pot = 1,
-        DropperBottle = 2,
-        SprayCan = 3,
-        AirbrushReady = 4,
-        Marker = 5
+        Pot = 1 << 0,
+        DropperBottle = 1 << 1,
+        SprayCan = 1 << 2,
+        AirbrushReady = 1 << 3,
+        Marker = 1 << 4
     }
 }
 

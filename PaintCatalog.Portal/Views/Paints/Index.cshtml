@@ -27,21 +27,20 @@
         ? "null"
         : Model.BrandsJson;
 
-    var typeLabels = Enumerable.Range(1, 10)
-        .ToDictionary(i => i.ToString(), i => Localizer[$"Filters_Type_{i}"].Value);
+    var paintTypeValues = new[] { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+    var typeLabels = paintTypeValues
+        .Select((value, index) => new { value, label = Localizer[$"Filters_Type_{index + 1}"].Value })
+        .ToDictionary(x => x.value.ToString(), x => x.label);
 
-    var sheenLabels = Enumerable.Range(1, 3)
-        .ToDictionary(i => i.ToString(), i => Localizer[$"Filters_Finish_{i}"].Value);
+    var sheenValues = new[] { 1, 2, 4 };
+    var sheenLabels = sheenValues
+        .Select((value, index) => new { value, label = Localizer[$"Filters_Finish_{index + 1}"].Value })
+        .ToDictionary(x => x.value.ToString(), x => x.label);
 
-    var mediumLabels = new Dictionary<string, string>
-    {
-        ["1"] = Localizer["Filters_Medium_1"].Value,
-        ["2"] = Localizer["Filters_Medium_2"].Value,
-        ["3"] = Localizer["Filters_Medium_3"].Value,
-        ["4"] = Localizer["Filters_Medium_4"].Value,
-        ["5"] = Localizer["Filters_Medium_5"].Value,
-        ["99"] = Localizer["Filters_Medium_99"].Value
-    };
+    var mediumValues = new[] { 1, 2, 4, 8, 16 };
+    var mediumLabels = mediumValues
+        .Select((value, index) => new { value, label = Localizer[$"Filters_Medium_{index + 1}"].Value })
+        .ToDictionary(x => x.value.ToString(), x => x.label);
 
     var jsonOptions = new JsonSerializerOptions
     {
@@ -185,7 +184,7 @@
                     <label for="typeFilter" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         @Localizer["Filters_Type_Label"]
                     </label>
-                    <select id="typeFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100">
+                    <select id="typeFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100">
                         <option value="">@Localizer["Filters_Type_All"]</option>
                         @foreach (var pair in typeLabels)
                         {
@@ -198,7 +197,7 @@
                     <label for="sheenFilter" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         @Localizer["Filters_Finish_Label"]
                     </label>
-                    <select id="sheenFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100">
+                    <select id="sheenFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100">
                         <option value="">@Localizer["Filters_Finish_All"]</option>
                         @foreach (var pair in sheenLabels)
                         {
@@ -211,7 +210,7 @@
                     <label for="mediumFilter" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         @Localizer["Filters_Medium_Label"]
                     </label>
-                    <select id="mediumFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100">
+                    <select id="mediumFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100">
                         <option value="">@Localizer["Filters_Medium_All"]</option>
                         @foreach (var pair in mediumLabels)
                         {
@@ -357,9 +356,9 @@
                     filters: {
                     brandId: null,
                     seriesId: null,
-                    type: null,
-                    sheen: null,
-                    medium: null,
+                    types: [],
+                    sheens: [],
+                    mediums: [],
                     search: ''
                 },
                 pagination: {
@@ -730,6 +729,23 @@
                 select.value = state.filters.seriesId !== null ? String(state.filters.seriesId) : '';
             }
 
+            function getSelectedNumbers(select) {
+                if (!select) return [];
+
+                return Array.from(select.selectedOptions || [])
+                    .map(option => Number(option.value))
+                    .filter(value => Number.isFinite(value));
+            }
+
+            function setSelectedOptions(select, values) {
+                if (!select) return;
+                const lookup = new Set((values || []).map(value => String(value)));
+
+                Array.from(select.options || []).forEach(option => {
+                    option.selected = lookup.has(option.value);
+                });
+            }
+
             function wireEvents() {
                 if (elements.searchInput) {
                     const debounced = debounce(value => {
@@ -766,8 +782,7 @@
 
                 if (elements.typeSelect) {
                     elements.typeSelect.addEventListener('change', event => {
-                        const value = event.target.value;
-                        state.filters.type = value ? Number(value) : null;
+                        state.filters.types = getSelectedNumbers(event.target);
                         state.pagination.page = 1;
                         fetchPaints();
                     });
@@ -775,8 +790,7 @@
 
                 if (elements.sheenSelect) {
                     elements.sheenSelect.addEventListener('change', event => {
-                        const value = event.target.value;
-                        state.filters.sheen = value ? Number(value) : null;
+                        state.filters.sheens = getSelectedNumbers(event.target);
                         state.pagination.page = 1;
                         fetchPaints();
                     });
@@ -784,8 +798,7 @@
 
                 if (elements.mediumSelect) {
                     elements.mediumSelect.addEventListener('change', event => {
-                        const value = event.target.value;
-                        state.filters.medium = value ? Number(value) : null;
+                        state.filters.mediums = getSelectedNumbers(event.target);
                         state.pagination.page = 1;
                         fetchPaints();
                     });
@@ -795,9 +808,9 @@
                     elements.clearFiltersBtn.addEventListener('click', () => {
                         elements.brandSelect.value = '';
                         elements.seriesSelect.value = '';
-                        elements.typeSelect.value = '';
-                        elements.sheenSelect.value = '';
-                        elements.mediumSelect.value = '';
+                        setSelectedOptions(elements.typeSelect, []);
+                        setSelectedOptions(elements.sheenSelect, []);
+                        setSelectedOptions(elements.mediumSelect, []);
                         if (elements.searchInput) {
                             elements.searchInput.value = '';
                         }
@@ -805,9 +818,9 @@
                         state.filters = {
                             brandId: null,
                             seriesId: null,
-                            type: null,
-                            sheen: null,
-                            medium: null,
+                            types: [],
+                            sheens: [],
+                            mediums: [],
                             search: ''
                         };
 
@@ -875,9 +888,9 @@
                 state.filters = {
                     brandId: null,
                     seriesId: null,
-                    type: null,
-                    sheen: null,
-                    medium: null,
+                    types: [],
+                    sheens: [],
+                    mediums: [],
                     search: ''
                 };
 
@@ -894,19 +907,31 @@
                     state.filters.seriesId = seriesId;
                 }
 
-                const type = parseNumericParam(params.get('type'));
-                if (type !== null) {
-                    state.filters.type = type;
+                const types = parseNumericArray(params.getAll('types'));
+                const legacyType = parseNumericParam(params.get('type'));
+                if (legacyType !== null && !types.includes(legacyType)) {
+                    types.push(legacyType);
+                }
+                if (types.length) {
+                    state.filters.types = types;
                 }
 
-                const sheen = parseNumericParam(params.get('sheen'));
-                if (sheen !== null) {
-                    state.filters.sheen = sheen;
+                const sheens = parseNumericArray(params.getAll('sheens'));
+                const legacySheen = parseNumericParam(params.get('sheen'));
+                if (legacySheen !== null && !sheens.includes(legacySheen)) {
+                    sheens.push(legacySheen);
+                }
+                if (sheens.length) {
+                    state.filters.sheens = sheens;
                 }
 
-                const medium = parseNumericParam(params.get('medium'));
-                if (medium !== null) {
-                    state.filters.medium = medium;
+                const mediums = parseNumericArray(params.getAll('mediums'));
+                const legacyMedium = parseNumericParam(params.get('medium'));
+                if (legacyMedium !== null && !mediums.includes(legacyMedium)) {
+                    mediums.push(legacyMedium);
+                }
+                if (mediums.length) {
+                    state.filters.mediums = mediums;
                 }
 
                 const search = params.get('search');
@@ -939,15 +964,15 @@
                 }
 
                 if (elements.typeSelect) {
-                    elements.typeSelect.value = state.filters.type !== null ? String(state.filters.type) : '';
+                    setSelectedOptions(elements.typeSelect, state.filters.types);
                 }
 
                 if (elements.sheenSelect) {
-                    elements.sheenSelect.value = state.filters.sheen !== null ? String(state.filters.sheen) : '';
+                    setSelectedOptions(elements.sheenSelect, state.filters.sheens);
                 }
 
                 if (elements.mediumSelect) {
-                    elements.mediumSelect.value = state.filters.medium !== null ? String(state.filters.medium) : '';
+                    setSelectedOptions(elements.mediumSelect, state.filters.mediums);
                 }
 
                 if (elements.pageSizeSelect) {
@@ -961,9 +986,9 @@
 
                 if (filters.brandId !== null) params.append('brandId', filters.brandId);
                 if (filters.seriesId !== null) params.append('seriesId', filters.seriesId);
-                if (filters.type !== null) params.append('type', filters.type);
-                if (filters.sheen !== null) params.append('sheen', filters.sheen);
-                if (filters.medium !== null) params.append('medium', filters.medium);
+                (filters.types || []).forEach(value => params.append('types', value));
+                (filters.sheens || []).forEach(value => params.append('sheens', value));
+                (filters.mediums || []).forEach(value => params.append('mediums', value));
                 if (filters.search) params.append('search', filters.search);
                 if (pagination.page && pagination.page !== DEFAULT_PAGE) {
                     params.append('page', pagination.page);
@@ -996,6 +1021,16 @@
 
                 const parsed = Number(value);
                 return Number.isFinite(parsed) ? parsed : null;
+            }
+
+            function parseNumericArray(values) {
+                if (!Array.isArray(values) || values.length === 0) {
+                    return [];
+                }
+
+                return values
+                    .map(value => Number(value))
+                    .filter(value => Number.isFinite(value));
             }
 
             function updateStats() {
@@ -1062,30 +1097,36 @@
                     }
                 }
 
-                if (state.filters.type) {
-                    const label = filterDictionaries.type?.[String(state.filters.type)] || `Type ${state.filters.type}`;
+                if (state.filters.types?.length) {
+                    const label = state.filters.types
+                        .map(value => filterDictionaries.type?.[String(value)] || `Type ${value}`)
+                        .join(', ');
                     active.push({
-                        key: 'type',
+                        key: 'types',
                         label: `${labels.type || 'Type'}: ${label}`,
-                        onRemove: () => { state.filters.type = null; }
+                        onRemove: () => { state.filters.types = []; }
                     });
                 }
 
-                if (state.filters.sheen) {
-                    const label = filterDictionaries.sheen?.[String(state.filters.sheen)] || `Finish ${state.filters.sheen}`;
+                if (state.filters.sheens?.length) {
+                    const label = state.filters.sheens
+                        .map(value => filterDictionaries.sheen?.[String(value)] || `Finish ${value}`)
+                        .join(', ');
                     active.push({
-                        key: 'sheen',
+                        key: 'sheens',
                         label: `${labels.sheen || 'Finish'}: ${label}`,
-                        onRemove: () => { state.filters.sheen = null; }
+                        onRemove: () => { state.filters.sheens = []; }
                     });
                 }
 
-                if (state.filters.medium) {
-                    const label = filterDictionaries.medium?.[String(state.filters.medium)] || `Medium ${state.filters.medium}`;
+                if (state.filters.mediums?.length) {
+                    const label = state.filters.mediums
+                        .map(value => filterDictionaries.medium?.[String(value)] || `Medium ${value}`)
+                        .join(', ');
                     active.push({
-                        key: 'medium',
+                        key: 'mediums',
                         label: `${labels.medium || 'Medium'}: ${label}`,
-                        onRemove: () => { state.filters.medium = null; }
+                        onRemove: () => { state.filters.mediums = []; }
                     });
                 }
 
