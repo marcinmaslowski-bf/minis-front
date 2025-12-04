@@ -42,6 +42,21 @@
         .Select((value, index) => new { value, label = Localizer[$"Filters_Medium_{index + 1}"].Value })
         .ToDictionary(x => x.value.ToString(), x => x.label);
 
+    var effectValues = new[] { 1, 2, 4, 8, 16 };
+    var effectLabels = effectValues
+        .Select((value, index) => new { value, label = Localizer[$"Filters_Effect_{index + 1}"].Value })
+        .ToDictionary(x => x.value.ToString(), x => x.label);
+
+    var usageValues = new[] { 1, 2, 4 };
+    var usageLabels = usageValues
+        .Select((value, index) => new { value, label = Localizer[$"Filters_Usage_{index + 1}"].Value })
+        .ToDictionary(x => x.value.ToString(), x => x.label);
+
+    var formValues = new[] { 1, 2, 4, 8, 16 };
+    var formLabels = formValues
+        .Select((value, index) => new { value, label = Localizer[$"Filters_Form_{index + 1}"].Value })
+        .ToDictionary(x => x.value.ToString(), x => x.label);
+
     var jsonOptions = new JsonSerializerOptions
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
@@ -58,13 +73,16 @@
             comments = new { count = commentCountEndpoint },
             votes = new { summary = voteSummaryEndpoint, set = voteSetEndpoint }
         },
-        labels = new
+            labels = new
         {
             brand = Localizer["Card_Label_Brand"].Value,
             series = Localizer["Card_Label_Series"].Value,
             sheen = Localizer["Card_Label_Finish"].Value,
             type = Localizer["Card_Label_Type"].Value,
             medium = Localizer["Card_Label_Medium"].Value,
+            effects = Localizer["Card_Label_Effects"].Value,
+            usage = Localizer["Card_Label_Usage"].Value,
+            form = Localizer["Card_Label_Form"].Value,
             tags = Localizer["Card_Label_Tags"].Value,
             sku = Localizer["Card_Label_Sku"].Value,
             color = Localizer["Card_Label_Color"].Value,
@@ -76,14 +94,17 @@
                 down = Localizer["Card_Label_Vote_Down", "Downvote"].Value
             }
         },
-        filters = new
+            filters = new
         {
             allBrands = Localizer["Filters_AllBrands"].Value,
             allSeries = Localizer["Filters_AllSeries"].Value,
             activeFiltersRemove = Localizer["ActiveFilters_Remove"].Value,
             type = typeLabels,
             sheen = sheenLabels,
-            medium = mediumLabels
+            medium = mediumLabels,
+            effect = effectLabels,
+            usage = usageLabels,
+            form = formLabels
         },
         pagination = new
         {
@@ -220,6 +241,54 @@
                         @foreach (var pair in mediumLabels)
                         {
                             var checkboxId = $"mediumFilter_{pair.Key}";
+                            <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
+                                <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                            <span class="truncate">@pair.Value</span>
+                        </label>
+                    }
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        @Localizer["Filters_Effect_Label"]
+                    </p>
+                    <div id="effectFilter" class="grid grid-cols-1 gap-2">
+                        @foreach (var pair in effectLabels)
+                        {
+                            var checkboxId = $"effectFilter_{pair.Key}";
+                            <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
+                                <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                                <span class="truncate">@pair.Value</span>
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        @Localizer["Filters_Usage_Label"]
+                    </p>
+                    <div id="usageFilter" class="grid grid-cols-1 gap-2">
+                        @foreach (var pair in usageLabels)
+                        {
+                            var checkboxId = $"usageFilter_{pair.Key}";
+                            <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
+                                <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                                <span class="truncate">@pair.Value</span>
+                            </label>
+                        }
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                        @Localizer["Filters_Form_Label"]
+                    </p>
+                    <div id="formFilter" class="grid grid-cols-1 gap-2">
+                        @foreach (var pair in formLabels)
+                        {
+                            var checkboxId = $"formFilter_{pair.Key}";
                             <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
                                 <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
                                 <span class="truncate">@pair.Value</span>
@@ -368,6 +437,9 @@
                     types: [],
                     sheens: [],
                     mediums: [],
+                    effects: [],
+                    usages: [],
+                    forms: [],
                     search: ''
                 },
                 pagination: {
@@ -396,6 +468,9 @@
                 typeSelect: document.getElementById('typeFilter'),
                 sheenSelect: document.getElementById('sheenFilter'),
                 mediumSelect: document.getElementById('mediumFilter'),
+                effectSelect: document.getElementById('effectFilter'),
+                usageSelect: document.getElementById('usageFilter'),
+                formSelect: document.getElementById('formFilter'),
                 clearFiltersBtn: document.getElementById('clearFiltersBtn'),
                 pageSizeSelect: document.getElementById('pageSizeSelect'),
                 stats: document.getElementById('paintStats'),
@@ -816,6 +891,33 @@
                     });
                 }
 
+                if (elements.effectSelect) {
+                    elements.effectSelect.addEventListener('change', event => {
+                        if (!event.target.matches('input[type="checkbox"]')) return;
+                        state.filters.effects = getSelectedNumbers(elements.effectSelect);
+                        state.pagination.page = 1;
+                        fetchPaints();
+                    });
+                }
+
+                if (elements.usageSelect) {
+                    elements.usageSelect.addEventListener('change', event => {
+                        if (!event.target.matches('input[type="checkbox"]')) return;
+                        state.filters.usages = getSelectedNumbers(elements.usageSelect);
+                        state.pagination.page = 1;
+                        fetchPaints();
+                    });
+                }
+
+                if (elements.formSelect) {
+                    elements.formSelect.addEventListener('change', event => {
+                        if (!event.target.matches('input[type="checkbox"]')) return;
+                        state.filters.forms = getSelectedNumbers(elements.formSelect);
+                        state.pagination.page = 1;
+                        fetchPaints();
+                    });
+                }
+
                 if (elements.clearFiltersBtn) {
                     elements.clearFiltersBtn.addEventListener('click', () => {
                         elements.brandSelect.value = '';
@@ -823,6 +925,9 @@
                         setSelectedOptions(elements.typeSelect, []);
                         setSelectedOptions(elements.sheenSelect, []);
                         setSelectedOptions(elements.mediumSelect, []);
+                        setSelectedOptions(elements.effectSelect, []);
+                        setSelectedOptions(elements.usageSelect, []);
+                        setSelectedOptions(elements.formSelect, []);
                         if (elements.searchInput) {
                             elements.searchInput.value = '';
                         }
@@ -833,6 +938,9 @@
                             types: [],
                             sheens: [],
                             mediums: [],
+                            effects: [],
+                            usages: [],
+                            forms: [],
                             search: ''
                         };
 
@@ -946,6 +1054,21 @@
                     state.filters.mediums = mediums;
                 }
 
+                const effects = parseNumericArray(params.getAll('effects'));
+                if (effects.length) {
+                    state.filters.effects = effects;
+                }
+
+                const usages = parseNumericArray(params.getAll('usages'));
+                if (usages.length) {
+                    state.filters.usages = usages;
+                }
+
+                const forms = parseNumericArray(params.getAll('forms'));
+                if (forms.length) {
+                    state.filters.forms = forms;
+                }
+
                 const search = params.get('search');
                 if (typeof search === 'string') {
                     state.filters.search = search.trim();
@@ -987,6 +1110,18 @@
                     setSelectedOptions(elements.mediumSelect, state.filters.mediums);
                 }
 
+                if (elements.effectSelect) {
+                    setSelectedOptions(elements.effectSelect, state.filters.effects);
+                }
+
+                if (elements.usageSelect) {
+                    setSelectedOptions(elements.usageSelect, state.filters.usages);
+                }
+
+                if (elements.formSelect) {
+                    setSelectedOptions(elements.formSelect, state.filters.forms);
+                }
+
                 if (elements.pageSizeSelect) {
                     elements.pageSizeSelect.value = String(state.pagination.pageSize);
                 }
@@ -1001,6 +1136,9 @@
                 (filters.types || []).forEach(value => params.append('types', value));
                 (filters.sheens || []).forEach(value => params.append('sheens', value));
                 (filters.mediums || []).forEach(value => params.append('mediums', value));
+                (filters.effects || []).forEach(value => params.append('effects', value));
+                (filters.usages || []).forEach(value => params.append('usages', value));
+                (filters.forms || []).forEach(value => params.append('forms', value));
                 if (filters.search) params.append('search', filters.search);
                 if (pagination.page && pagination.page !== DEFAULT_PAGE) {
                     params.append('page', pagination.page);
@@ -1139,6 +1277,39 @@
                         key: 'mediums',
                         label: `${labels.medium || 'Medium'}: ${label}`,
                         onRemove: () => { state.filters.mediums = []; }
+                    });
+                }
+
+                if (state.filters.effects?.length) {
+                    const label = state.filters.effects
+                        .map(value => filterDictionaries.effect?.[String(value)] || `Effect ${value}`)
+                        .join(', ');
+                    active.push({
+                        key: 'effects',
+                        label: `${labels.effects || 'Effects'}: ${label}`,
+                        onRemove: () => { state.filters.effects = []; }
+                    });
+                }
+
+                if (state.filters.usages?.length) {
+                    const label = state.filters.usages
+                        .map(value => filterDictionaries.usage?.[String(value)] || `Usage ${value}`)
+                        .join(', ');
+                    active.push({
+                        key: 'usages',
+                        label: `${labels.usage || 'Usage'}: ${label}`,
+                        onRemove: () => { state.filters.usages = []; }
+                    });
+                }
+
+                if (state.filters.forms?.length) {
+                    const label = state.filters.forms
+                        .map(value => filterDictionaries.form?.[String(value)] || `Form ${value}`)
+                        .join(', ');
+                    active.push({
+                        key: 'forms',
+                        label: `${labels.form || 'Form'}: ${label}`,
+                        onRemove: () => { state.filters.forms = []; }
                     });
                 }
 
@@ -1597,9 +1768,15 @@
                 const sheenRaw = paint?.sheenId ?? paint?.sheen?.id ?? paint?.sheen;
                 const typeRaw = paint?.typeId ?? paint?.type?.id ?? paint?.type;
                 const mediumRaw = paint?.mediumId ?? paint?.medium?.id ?? paint?.medium;
+                const effectRaw = paint?.effectId ?? paint?.effect?.id ?? paint?.effect ?? paint?.effects;
+                const usageRaw = paint?.usageId ?? paint?.usage?.id ?? paint?.usage;
+                const formRaw = paint?.formId ?? paint?.form?.id ?? paint?.form;
                 const finishName = resolveEnumLabel(filterDictionaries.sheen, sheenRaw, paint?.sheenName || paint?.sheen?.name || paint?.sheen || '');
                 const typeName = resolveEnumLabel(filterDictionaries.type, typeRaw, paint?.typeName || paint?.type?.name || paint?.type || '');
                 const mediumName = resolveEnumLabel(filterDictionaries.medium, mediumRaw, paint?.mediumName || paint?.medium?.name || paint?.medium || '');
+                const effectName = resolveEnumLabel(filterDictionaries.effect, effectRaw, paint?.effectName || paint?.effect?.name || paint?.effects || '');
+                const usageName = resolveEnumLabel(filterDictionaries.usage, usageRaw, paint?.usageName || paint?.usage?.name || paint?.usage || '');
+                const formName = resolveEnumLabel(filterDictionaries.form, formRaw, paint?.formName || paint?.form?.name || paint?.form || '');
                 const sku = paint?.sku || paint?.code || '';
                 const colorHex = (paint?.hex) || paint?.colorHex || paint?.hexCode || paint?.swatchHex || '#475569';
                 const tags = Array.isArray(paint?.tags) ? paint.tags : [];
@@ -1623,6 +1800,9 @@
                 const safeSheen = escapeHtml(finishName);
                 const safeType = escapeHtml(typeName);
                 const safeMedium = escapeHtml(mediumName);
+                const safeEffect = escapeHtml(effectName);
+                const safeUsage = escapeHtml(usageName);
+                const safeForm = escapeHtml(formName);
                 const safeSku = escapeHtml(sku);
                 const swatch = buildPaintSwatch(paint, colorHex, { defaultHex: '#475569' });
                 const safeSwatchBackground = escapeHtml(swatch.background);
@@ -1676,6 +1856,18 @@
                             <div>
                                 <dt class="font-semibold text-slate-400">${labels.medium || 'Medium'}</dt>
                                 <dd class="text-sm text-slate-900 dark:text-slate-100">${safeMedium || '—'}</dd>
+                            </div>
+                            <div>
+                                <dt class="font-semibold text-slate-400">${labels.effects || 'Effects'}</dt>
+                                <dd class="text-sm text-slate-900 dark:text-slate-100">${safeEffect || '—'}</dd>
+                            </div>
+                            <div>
+                                <dt class="font-semibold text-slate-400">${labels.usage || 'Usage'}</dt>
+                                <dd class="text-sm text-slate-900 dark:text-slate-100">${safeUsage || '—'}</dd>
+                            </div>
+                            <div>
+                                <dt class="font-semibold text-slate-400">${labels.form || 'Form'}</dt>
+                                <dd class="text-sm text-slate-900 dark:text-slate-100">${safeForm || '—'}</dd>
                             </div>
                             <div>
                                 <dt class="font-semibold text-slate-400">${labels.sku || 'SKU'}</dt>
