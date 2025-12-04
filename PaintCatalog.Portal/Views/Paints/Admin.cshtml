@@ -259,6 +259,22 @@
 
     <div id="adminStatus" class="hidden rounded-2xl border border-slate-200 bg-white/80 p-3 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-900/70 dark:text-slate-200"></div>
 
+    <div class="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <span>Rekordy na stronę</span>
+            <select id="adminPageSize" class="rounded-lg border border-slate-300 bg-white/80 px-2 py-1 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-100">
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="0">Bez limitu</option>
+            </select>
+        </div>
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            <button id="adminPrevPage" type="button" class="rounded-lg border border-slate-300 px-3 py-1 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200">Poprzednia</button>
+            <span id="adminPageInfo" class="text-sm font-semibold text-slate-700 dark:text-slate-200">Strona 1 / 1</span>
+            <button id="adminNextPage" type="button" class="rounded-lg border border-slate-300 px-3 py-1 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 disabled:opacity-50 dark:border-slate-700 dark:text-slate-200">Następna</button>
+        </div>
+    </div>
+
     <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white/80 shadow-sm dark:border-slate-800 dark:bg-slate-900/70">
         <table class="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-800">
             <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-300">

@@ -36,8 +36,13 @@
         newDiscontinued: document.getElementById('adminNewDiscontinued'),
         createButton: document.getElementById('adminCreate'),
         tableHeaders: Array.from(document.querySelectorAll('th[data-sort]')),
+        pageSize: document.getElementById('adminPageSize'),
+        prevPage: document.getElementById('adminPrevPage'),
+        nextPage: document.getElementById('adminNextPage'),
+        pageInfo: document.getElementById('adminPageInfo'),
     };
 
+    const defaultPageSize = parseNullableInt(elements.pageSize?.value) ?? 10;
     const state = {
         paints: normalizePaints(bootstrap.initialPaints),
         brands: normalizeBrands(bootstrap.brands),
@@ -55,6 +60,7 @@
         },
         sort: { column: 'id', direction: 'asc' },
         loading: false,
+        pagination: { page: 1, pageSize: defaultPageSize },
     };
 
     function normalizePaints(raw) {
@@ -218,12 +224,12 @@
             `<td class="px-3 py-2 text-xs">${escapeHtml(seriesName) || ''}</td>`,
             `<td class="px-3 py-2"><input type="text" value="${escapeAttribute(paint.name || paint.title || '')}" class="w-36 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800" data-field="name" /></td>`,
             `<td class="px-3 py-2"><input type="text" value="${escapeAttribute(paint.slug || paint.paintSlug || '')}" class="w-36 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800" data-field="slug" /></td>`,
-            `<td class="px-3 py-2">${buildFlagSelect(enums.types, paint.type ?? paint.paintType, 'type')}</td>`,
-            `<td class="px-3 py-2">${buildFlagSelect(enums.sheens, paint.sheen ?? paint.paintSheen, 'sheen')}</td>`,
-            `<td class="px-3 py-2">${buildFlagSelect(enums.mediums, paint.medium ?? paint.paintMedium, 'medium')}</td>`,
-            `<td class="px-3 py-2">${buildFlagSelect(enums.effects, paint.effects, 'effects')}</td>`,
-            `<td class="px-3 py-2">${buildFlagSelect(enums.usages, paint.usage, 'usage')}</td>`,
-            `<td class="px-3 py-2">${buildFlagSelect(enums.forms, paint.form, 'form')}</td>`,
+            `<td class="px-3 py-2">${buildFlagCheckboxes(enums.types, paint.type ?? paint.paintType, 'type')}</td>`,
+            `<td class="px-3 py-2">${buildFlagCheckboxes(enums.sheens, paint.sheen ?? paint.paintSheen, 'sheen')}</td>`,
+            `<td class="px-3 py-2">${buildFlagCheckboxes(enums.mediums, paint.medium ?? paint.paintMedium, 'medium')}</td>`,
+            `<td class="px-3 py-2">${buildFlagCheckboxes(enums.effects, paint.effects, 'effects')}</td>`,
+            `<td class="px-3 py-2">${buildFlagCheckboxes(enums.usages, paint.usage, 'usage')}</td>`,
+            `<td class="px-3 py-2">${buildFlagCheckboxes(enums.forms, paint.form, 'form')}</td>`,
             `<td class="px-3 py-2">${buildSelect(enums.gradients, paint.gradientType, 'gradientType')}</td>`,
             `<td class="px-3 py-2"><input type="text" value="${escapeAttribute(paint.hexColor || '')}" class="w-24 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800" data-field="hexColor" /></td>`,
             `<td class="px-3 py-2"><input type="text" value="${escapeAttribute(paint.hexFrom || '')}" class="w-24 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800" data-field="hexFrom" /></td>`,
@@ -252,18 +258,24 @@
         return select.join('');
     }
 
-    function buildFlagSelect(dictionary, value, field) {
+    function buildFlagCheckboxes(dictionary, value, field) {
         const options = dictionary || {};
         const current = Number.isFinite(value) ? Number(value) : 0;
         const entries = Object.entries(options);
-        const select = [`<select data-field="${field}" multiple class="w-36 rounded border border-slate-300 bg-white/70 px-2 py-1 text-sm dark:border-slate-700 dark:bg-slate-800">`];
+        const group = [`<div class="flex max-h-32 flex-col gap-1 overflow-y-auto" data-field="${field}">`];
         entries.forEach(([key, label]) => {
             const numericKey = parseInt(key, 10);
-            const selected = Number.isFinite(numericKey) && (current & numericKey) === numericKey ? 'selected' : '';
-            select.push(`<option value="${escapeAttribute(key)}" ${selected}>${escapeHtml(label)}</option>`);
+            const checked = Number.isFinite(numericKey) && (current & numericKey) === numericKey ? 'checked' : '';
+            const checkboxId = `${field}_${escapeAttribute(key)}_${Math.random().toString(36).slice(2, 8)}`;
+            group.push([
+                `<label class="flex items-center gap-2 rounded-lg px-2 py-1 text-xs font-medium text-slate-700 transition hover:bg-emerald-50 dark:text-slate-200 dark:hover:bg-slate-800/60" for="${checkboxId}">`,
+                `<input id="${checkboxId}" type="checkbox" value="${escapeAttribute(key)}" ${checked} class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />`,
+                `<span class="truncate">${escapeHtml(label)}</span>`,
+                '</label>',
+            ].join(''));
         });
-        select.push('</select>');
-        return select.join('');
+        group.push('</div>');
+        return group.join('');
     }
 
     function escapeHtml(value) {
@@ -313,19 +325,11 @@
         return Number.isFinite(value) ? value : 0;
     }
 
-    function parseFlagsFromSelect(selectEl) {
-        if (!selectEl) return 0;
-        const value = Array.from(selectEl.selectedOptions || []).reduce((acc, opt) => {
-            const num = parseNullableInt(opt.value);
-            return Number.isFinite(num) ? acc | num : acc;
-        }, 0);
-        return Number.isFinite(value) ? value : 0;
-    }
-
     async function fetchPaints() {
         collectFiltersFromForm();
         renderStatus('Ładowanie danych...');
         state.loading = true;
+        state.pagination.page = 1;
         try {
             const params = new URLSearchParams();
             if (state.filters.search) params.set('search', state.filters.search);
@@ -337,7 +341,7 @@
             state.filters.effects.forEach((value) => params.append('effects', value));
             state.filters.usages.forEach((value) => params.append('usages', value));
             state.filters.forms.forEach((value) => params.append('forms', value));
-            params.set('pageSize', '200');
+            params.set('pageSize', '0');
 
             const url = `${endpoints.data}?${params.toString()}`;
             const response = await fetch(url, { credentials: 'include' });
@@ -354,12 +358,45 @@
         }
     }
 
+    function getTotalPages(totalCount) {
+        const pageSize = state.pagination.pageSize;
+        if (!pageSize || pageSize <= 0) return 1;
+        return Math.max(1, Math.ceil(totalCount / pageSize));
+    }
+
+    function applyPagination(paints) {
+        const pageSize = state.pagination.pageSize;
+        if (!pageSize || pageSize <= 0) return paints;
+        const totalPages = getTotalPages(paints.length);
+        if (state.pagination.page > totalPages) state.pagination.page = totalPages;
+        const start = (state.pagination.page - 1) * pageSize;
+        return paints.slice(start, start + pageSize);
+    }
+
+    function renderPagination(total) {
+        if (!elements.pageInfo) return;
+        const pageSize = state.pagination.pageSize;
+        const totalPages = getTotalPages(total);
+        if (state.pagination.page > totalPages) state.pagination.page = totalPages;
+        const page = state.pagination.page;
+        elements.pageInfo.textContent = !pageSize || pageSize <= 0
+            ? `Wszystkie (${total})`
+            : `Strona ${page} / ${totalPages}`;
+        if (elements.prevPage) elements.prevPage.disabled = !pageSize || pageSize <= 0 || page <= 1;
+        if (elements.nextPage) elements.nextPage.disabled = !pageSize || pageSize <= 0 || page >= totalPages;
+        if (elements.pageSize && elements.pageSize.value !== String(pageSize ?? '')) {
+            elements.pageSize.value = pageSize <= 0 ? '0' : String(pageSize);
+        }
+    }
+
     function renderGrid() {
         if (!elements.grid) return;
         const body = elements.grid;
         body.innerHTML = '';
         let paints = [...state.paints];
         paints = sortPaints(paints);
+        renderPagination(paints.length);
+        paints = applyPagination(paints);
         if (paints.length === 0) {
             if (elements.gridEmpty) {
                 elements.gridEmpty.classList.remove('hidden');
@@ -464,12 +501,12 @@
         const payload = {
             name: getInputValue('name') || null,
             slug: getInputValue('slug') || null,
-            type: parseFlagsFromSelect(row.querySelector('[data-field="type"]')),
-            sheen: parseFlagsFromSelect(row.querySelector('[data-field="sheen"]')),
-            medium: parseFlagsFromSelect(row.querySelector('[data-field="medium"]')),
-            effects: parseFlagsFromSelect(row.querySelector('[data-field="effects"]')),
-            usage: parseFlagsFromSelect(row.querySelector('[data-field="usage"]')),
-            form: parseFlagsFromSelect(row.querySelector('[data-field="form"]')),
+            type: parseFlagsFromCheckboxGroup(row.querySelector('[data-field="type"]')),
+            sheen: parseFlagsFromCheckboxGroup(row.querySelector('[data-field="sheen"]')),
+            medium: parseFlagsFromCheckboxGroup(row.querySelector('[data-field="medium"]')),
+            effects: parseFlagsFromCheckboxGroup(row.querySelector('[data-field="effects"]')),
+            usage: parseFlagsFromCheckboxGroup(row.querySelector('[data-field="usage"]')),
+            form: parseFlagsFromCheckboxGroup(row.querySelector('[data-field="form"]')),
             gradientType: parseNullableInt(getInputValue('gradientType')) ?? 0,
             hexColor: getInputValue('hexColor') || null,
             hexFrom: getInputValue('hexFrom') || null,
@@ -578,6 +615,23 @@
             ensureSeriesLoaded(brandId, elements.newSeries);
         });
         elements.tableHeaders.forEach((th) => th.addEventListener('click', handleSort));
+        elements.pageSize?.addEventListener('change', (evt) => {
+            const newSize = parseNullableInt(evt.target.value) ?? 0;
+            state.pagination.pageSize = newSize;
+            state.pagination.page = 1;
+            renderGrid();
+        });
+        elements.prevPage?.addEventListener('click', () => {
+            if (state.pagination.page <= 1) return;
+            state.pagination.page -= 1;
+            renderGrid();
+        });
+        elements.nextPage?.addEventListener('click', () => {
+            const totalPages = getTotalPages(state.paints.length);
+            if (state.pagination.page >= totalPages) return;
+            state.pagination.page += 1;
+            renderGrid();
+        });
         elements.grid?.addEventListener('click', (evt) => {
             const action = evt.target?.dataset?.action;
             if (!action) return;
