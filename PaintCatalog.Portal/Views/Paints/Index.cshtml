@@ -181,42 +181,51 @@
                 </div>
 
                 <div class="space-y-2">
-                    <label for="typeFilter" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         @Localizer["Filters_Type_Label"]
-                    </label>
-                    <select id="typeFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100">
-                        <option value="">@Localizer["Filters_Type_All"]</option>
+                    </p>
+                    <div id="typeFilter" class="grid grid-cols-1 gap-2">
                         @foreach (var pair in typeLabels)
                         {
-                            <option value="@pair.Key">@pair.Value</option>
+                            var checkboxId = $"typeFilter_{pair.Key}";
+                            <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
+                                <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                                <span class="truncate">@pair.Value</span>
+                            </label>
                         }
-                    </select>
+                    </div>
                 </div>
 
                 <div class="space-y-2">
-                    <label for="sheenFilter" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         @Localizer["Filters_Finish_Label"]
-                    </label>
-                    <select id="sheenFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100">
-                        <option value="">@Localizer["Filters_Finish_All"]</option>
+                    </p>
+                    <div id="sheenFilter" class="grid grid-cols-1 gap-2">
                         @foreach (var pair in sheenLabels)
                         {
-                            <option value="@pair.Key">@pair.Value</option>
+                            var checkboxId = $"sheenFilter_{pair.Key}";
+                            <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
+                                <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                                <span class="truncate">@pair.Value</span>
+                            </label>
                         }
-                    </select>
+                    </div>
                 </div>
 
                 <div class="space-y-2">
-                    <label for="mediumFilter" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                         @Localizer["Filters_Medium_Label"]
-                    </label>
-                    <select id="mediumFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100">
-                        <option value="">@Localizer["Filters_Medium_All"]</option>
+                    </p>
+                    <div id="mediumFilter" class="grid grid-cols-1 gap-2">
                         @foreach (var pair in mediumLabels)
                         {
-                            <option value="@pair.Key">@pair.Value</option>
+                            var checkboxId = $"mediumFilter_{pair.Key}";
+                            <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
+                                <input id="@checkboxId" type="checkbox" value="@pair.Key" class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                                <span class="truncate">@pair.Value</span>
+                            </label>
                         }
-                    </select>
+                    </div>
                 </div>
 
                 <button id="clearFiltersBtn" type="button" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 dark:border-slate-700 dark:text-slate-200">
@@ -729,20 +738,20 @@
                 select.value = state.filters.seriesId !== null ? String(state.filters.seriesId) : '';
             }
 
-            function getSelectedNumbers(select) {
-                if (!select) return [];
+            function getSelectedNumbers(container) {
+                if (!container) return [];
 
-                return Array.from(select.selectedOptions || [])
-                    .map(option => Number(option.value))
+                return Array.from(container.querySelectorAll('input[type="checkbox"]:checked') || [])
+                    .map(input => Number(input.value))
                     .filter(value => Number.isFinite(value));
             }
 
-            function setSelectedOptions(select, values) {
-                if (!select) return;
+            function setSelectedOptions(container, values) {
+                if (!container) return;
                 const lookup = new Set((values || []).map(value => String(value)));
 
-                Array.from(select.options || []).forEach(option => {
-                    option.selected = lookup.has(option.value);
+                Array.from(container.querySelectorAll('input[type="checkbox"]') || []).forEach(input => {
+                    input.checked = lookup.has(input.value);
                 });
             }
 
@@ -782,7 +791,8 @@
 
                 if (elements.typeSelect) {
                     elements.typeSelect.addEventListener('change', event => {
-                        state.filters.types = getSelectedNumbers(event.target);
+                        if (!event.target.matches('input[type="checkbox"]')) return;
+                        state.filters.types = getSelectedNumbers(elements.typeSelect);
                         state.pagination.page = 1;
                         fetchPaints();
                     });
@@ -790,7 +800,8 @@
 
                 if (elements.sheenSelect) {
                     elements.sheenSelect.addEventListener('change', event => {
-                        state.filters.sheens = getSelectedNumbers(event.target);
+                        if (!event.target.matches('input[type="checkbox"]')) return;
+                        state.filters.sheens = getSelectedNumbers(elements.sheenSelect);
                         state.pagination.page = 1;
                         fetchPaints();
                     });
@@ -798,7 +809,8 @@
 
                 if (elements.mediumSelect) {
                     elements.mediumSelect.addEventListener('change', event => {
-                        state.filters.mediums = getSelectedNumbers(event.target);
+                        if (!event.target.matches('input[type="checkbox"]')) return;
+                        state.filters.mediums = getSelectedNumbers(elements.mediumSelect);
                         state.pagination.page = 1;
                         fetchPaints();
                     });
