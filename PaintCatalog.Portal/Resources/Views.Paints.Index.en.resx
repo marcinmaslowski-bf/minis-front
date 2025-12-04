@@ -162,6 +162,63 @@
   <data name="Filters_Medium_99" xml:space="preserve">
     <value>Unknown medium</value>
   </data>
+  <data name="Filters_Effect_Label" xml:space="preserve">
+    <value>Effect</value>
+  </data>
+  <data name="Filters_Effect_All" xml:space="preserve">
+    <value>All effects</value>
+  </data>
+  <data name="Filters_Effect_1" xml:space="preserve">
+    <value>Metallic</value>
+  </data>
+  <data name="Filters_Effect_2" xml:space="preserve">
+    <value>Fluorescent</value>
+  </data>
+  <data name="Filters_Effect_3" xml:space="preserve">
+    <value>Transparent</value>
+  </data>
+  <data name="Filters_Effect_4" xml:space="preserve">
+    <value>Pearlescent</value>
+  </data>
+  <data name="Filters_Effect_5" xml:space="preserve">
+    <value>Color shift</value>
+  </data>
+  <data name="Filters_Usage_Label" xml:space="preserve">
+    <value>Usage</value>
+  </data>
+  <data name="Filters_Usage_All" xml:space="preserve">
+    <value>All usage options</value>
+  </data>
+  <data name="Filters_Usage_1" xml:space="preserve">
+    <value>Brush</value>
+  </data>
+  <data name="Filters_Usage_2" xml:space="preserve">
+    <value>Airbrush</value>
+  </data>
+  <data name="Filters_Usage_3" xml:space="preserve">
+    <value>Spray</value>
+  </data>
+  <data name="Filters_Form_Label" xml:space="preserve">
+    <value>Form</value>
+  </data>
+  <data name="Filters_Form_All" xml:space="preserve">
+    <value>All forms</value>
+  </data>
+  <data name="Filters_Form_1" xml:space="preserve">
+    <value>Pot</value>
+  </data>
+  <data name="Filters_Form_2" xml:space="preserve">
+    <value>Dropper bottle</value>
+  </data>
+  <data name="Filters_Form_3" xml:space="preserve">
+    <value>Spray can</value>
+  </data>
+  <data name="Filters_Form_4" xml:space="preserve">
+    <value>Airbrush ready</value>
+  </data>
+  <data name="Filters_Form_5" xml:space="preserve">
+    <value>Marker</value>
+  </data>
   <data name="Filters_Clear" xml:space="preserve">
     <value>Reset filters</value>
   </data>
@@ -224,6 +281,15 @@
   </data>
   <data name="Card_Label_Medium" xml:space="preserve">
     <value>Medium</value>
+  </data>
+  <data name="Card_Label_Effects" xml:space="preserve">
+    <value>Effects</value>
+  </data>
+  <data name="Card_Label_Usage" xml:space="preserve">
+    <value>Usage</value>
+  </data>
+  <data name="Card_Label_Form" xml:space="preserve">
+    <value>Form</value>
   </data>
   <data name="Card_Label_Tags" xml:space="preserve">
     <value>Tags</value>

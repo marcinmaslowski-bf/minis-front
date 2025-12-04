@@ -162,6 +162,63 @@
   <data name="Filters_Medium_99" xml:space="preserve">
     <value>Inne lub nieznane</value>
   </data>
+  <data name="Filters_Effect_Label" xml:space="preserve">
+    <value>Efekt</value>
+  </data>
+  <data name="Filters_Effect_All" xml:space="preserve">
+    <value>Wszystkie efekty</value>
+  </data>
+  <data name="Filters_Effect_1" xml:space="preserve">
+    <value>Metaliczny</value>
+  </data>
+  <data name="Filters_Effect_2" xml:space="preserve">
+    <value>Fluorescencyjny</value>
+  </data>
+  <data name="Filters_Effect_3" xml:space="preserve">
+    <value>Transparentny</value>
+  </data>
+  <data name="Filters_Effect_4" xml:space="preserve">
+    <value>Perłowy</value>
+  </data>
+  <data name="Filters_Effect_5" xml:space="preserve">
+    <value>Zmienny kolor</value>
+  </data>
+  <data name="Filters_Usage_Label" xml:space="preserve">
+    <value>Zastosowanie</value>
+  </data>
+  <data name="Filters_Usage_All" xml:space="preserve">
+    <value>Wszystkie zastosowania</value>
+  </data>
+  <data name="Filters_Usage_1" xml:space="preserve">
+    <value>Pędzel</value>
+  </data>
+  <data name="Filters_Usage_2" xml:space="preserve">
+    <value>Aerograf</value>
+  </data>
+  <data name="Filters_Usage_3" xml:space="preserve">
+    <value>Spray</value>
+  </data>
+  <data name="Filters_Form_Label" xml:space="preserve">
+    <value>Forma</value>
+  </data>
+  <data name="Filters_Form_All" xml:space="preserve">
+    <value>Wszystkie formy</value>
+  </data>
+  <data name="Filters_Form_1" xml:space="preserve">
+    <value>Słoiczek</value>
+  </data>
+  <data name="Filters_Form_2" xml:space="preserve">
+    <value>Butelka z kroplomierzem</value>
+  </data>
+  <data name="Filters_Form_3" xml:space="preserve">
+    <value>Spray</value>
+  </data>
+  <data name="Filters_Form_4" xml:space="preserve">
+    <value>Gotowa do aerografu</value>
+  </data>
+  <data name="Filters_Form_5" xml:space="preserve">
+    <value>Marker</value>
+  </data>
   <data name="Filters_Clear" xml:space="preserve">
     <value>Wyczyść filtry</value>
   </data>
@@ -224,6 +281,15 @@
   </data>
   <data name="Card_Label_Medium" xml:space="preserve">
     <value>Medium</value>
+  </data>
+  <data name="Card_Label_Effects" xml:space="preserve">
+    <value>Efekty</value>
+  </data>
+  <data name="Card_Label_Usage" xml:space="preserve">
+    <value>Zastosowanie</value>
+  </data>
+  <data name="Card_Label_Form" xml:space="preserve">
+    <value>Forma</value>
   </data>
   <data name="Card_Label_Tags" xml:space="preserve">
     <value>Tagi</value>
