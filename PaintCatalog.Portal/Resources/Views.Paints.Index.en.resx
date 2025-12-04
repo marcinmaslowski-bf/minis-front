@@ -169,18 +169,21 @@
     <value>All effects</value>
   </data>
   <data name="Filters_Effect_1" xml:space="preserve">
-    <value>Metallic</value>
+    <value>None</value>
   </data>
   <data name="Filters_Effect_2" xml:space="preserve">
-    <value>Fluorescent</value>
+    <value>Metallic</value>
   </data>
   <data name="Filters_Effect_3" xml:space="preserve">
-    <value>Transparent</value>
+    <value>Fluorescent</value>
   </data>
   <data name="Filters_Effect_4" xml:space="preserve">
-    <value>Pearlescent</value>
+    <value>Transparent</value>
   </data>
   <data name="Filters_Effect_5" xml:space="preserve">
+    <value>Pearlescent</value>
+  </data>
+  <data name="Filters_Effect_6" xml:space="preserve">
     <value>Color shift</value>
   </data>
   <data name="Filters_Usage_Label" xml:space="preserve">
