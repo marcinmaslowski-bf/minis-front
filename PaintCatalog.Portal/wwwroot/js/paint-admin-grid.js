@@ -309,15 +309,17 @@
     }
 
     function parseFlagsFromCheckboxGroup(container) {
-        return getCheckedValues(container).reduce((acc, value) => acc | value, 0);
+        const value = getCheckedValues(container).reduce((acc, num) => acc | num, 0);
+        return Number.isFinite(value) ? value : 0;
     }
 
     function parseFlagsFromSelect(selectEl) {
         if (!selectEl) return 0;
-        return Array.from(selectEl.selectedOptions || []).reduce((acc, opt) => {
+        const value = Array.from(selectEl.selectedOptions || []).reduce((acc, opt) => {
             const num = parseNullableInt(opt.value);
             return Number.isFinite(num) ? acc | num : acc;
         }, 0);
+        return Number.isFinite(value) ? value : 0;
     }
 
     async function fetchPaints() {
@@ -468,7 +470,7 @@
             effects: parseFlagsFromSelect(row.querySelector('[data-field="effects"]')),
             usage: parseFlagsFromSelect(row.querySelector('[data-field="usage"]')),
             form: parseFlagsFromSelect(row.querySelector('[data-field="form"]')),
-            gradientType: parseNullableInt(getInputValue('gradientType')),
+            gradientType: parseNullableInt(getInputValue('gradientType')) ?? 0,
             hexColor: getInputValue('hexColor') || null,
             hexFrom: getInputValue('hexFrom') || null,
             hexTo: getInputValue('hexTo') || null,
