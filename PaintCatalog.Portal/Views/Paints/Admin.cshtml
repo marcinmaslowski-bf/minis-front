@@ -46,6 +46,31 @@
         ["16"] = "Alcohol"
     };
 
+    var effectLabels = new Dictionary<string, string>
+    {
+        ["1"] = "Metallic",
+        ["2"] = "Fluorescent",
+        ["4"] = "Transparent",
+        ["8"] = "Pearlescent",
+        ["16"] = "Color shift"
+    };
+
+    var usageLabels = new Dictionary<string, string>
+    {
+        ["1"] = "Brush",
+        ["2"] = "Airbrush",
+        ["4"] = "Spray"
+    };
+
+    var formLabels = new Dictionary<string, string>
+    {
+        ["1"] = "Pot",
+        ["2"] = "Dropper bottle",
+        ["4"] = "Spray can",
+        ["8"] = "Airbrush ready",
+        ["16"] = "Marker"
+    };
+
     var gradientLabels = new Dictionary<string, string>
     {
         ["0"] = "None",
@@ -74,6 +99,9 @@
             types = typeLabels,
             sheens = sheenLabels,
             mediums = mediumLabels,
+            effects = effectLabels,
+            usages = usageLabels,
+            forms = formLabels,
             gradients = gradientLabels
         }
     };
@@ -110,33 +138,63 @@
             </div>
             <div class="space-y-2">
                 <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminTypeFilter">Typ</label>
-                <select id="adminTypeFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
-                    <option value="">Wszystkie</option>
+                <select id="adminTypeFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
                     @foreach (var pair in typeLabels)
                     {
                         <option value="@pair.Key">@pair.Value</option>
                     }
                 </select>
+                <p class="text-[11px] text-slate-400">Wybierz wiele opcji (Ctrl/Cmd + klik).</p>
             </div>
             <div class="space-y-2">
                 <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminSheenFilter">Połysk</label>
-                <select id="adminSheenFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
-                    <option value="">Wszystkie</option>
+                <select id="adminSheenFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
                     @foreach (var pair in sheenLabels)
                     {
                         <option value="@pair.Key">@pair.Value</option>
                     }
                 </select>
+                <p class="text-[11px] text-slate-400">Wybierz wiele opcji (Ctrl/Cmd + klik).</p>
             </div>
             <div class="space-y-2">
                 <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminMediumFilter">Medium</label>
-                <select id="adminMediumFilter" class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
-                    <option value="">Wszystkie</option>
+                <select id="adminMediumFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
                     @foreach (var pair in mediumLabels)
                     {
                         <option value="@pair.Key">@pair.Value</option>
                     }
                 </select>
+                <p class="text-[11px] text-slate-400">Wybierz wiele opcji (Ctrl/Cmd + klik).</p>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminEffectFilter">Efekty</label>
+                <select id="adminEffectFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    @foreach (var pair in effectLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+                <p class="text-[11px] text-slate-400">Wybierz wiele opcji (Ctrl/Cmd + klik).</p>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminUsageFilter">Zastosowanie</label>
+                <select id="adminUsageFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    @foreach (var pair in usageLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+                <p class="text-[11px] text-slate-400">Wybierz wiele opcji (Ctrl/Cmd + klik).</p>
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400" for="adminFormFilter">Forma</label>
+                <select id="adminFormFilter" multiple class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    @foreach (var pair in formLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+                <p class="text-[11px] text-slate-400">Wybierz wiele opcji (Ctrl/Cmd + klik).</p>
             </div>
             <div class="flex items-end gap-2">
                 <button id="adminRefresh" type="button" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 dark:border-slate-700 dark:text-slate-200">Odśwież</button>
@@ -160,23 +218,38 @@
                 </select>
                 <input id="adminNewName" type="text" class="w-40 rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" placeholder="Nazwa" />
                 @* <input id="adminNewSlug" type="text" class="w-40 rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100" placeholder="Slug" /> *@
-                <select id="adminNewType" class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
-                    <option value="">Typ</option>
+                <select id="adminNewType" multiple class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
                     @foreach (var pair in typeLabels)
                     {
                         <option value="@pair.Key">@pair.Value</option>
                     }
                 </select>
-                <select id="adminNewSheen" class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
-                    <option value="">Połysk</option>
+                <select id="adminNewSheen" multiple class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
                     @foreach (var pair in sheenLabels)
                     {
                         <option value="@pair.Key">@pair.Value</option>
                     }
                 </select>
-                <select id="adminNewMedium" class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
-                    <option value="">Medium</option>
+                <select id="adminNewMedium" multiple class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
                     @foreach (var pair in mediumLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+                <select id="adminNewEffect" multiple class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    @foreach (var pair in effectLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+                <select id="adminNewUsage" multiple class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    @foreach (var pair in usageLabels)
+                    {
+                        <option value="@pair.Key">@pair.Value</option>
+                    }
+                </select>
+                <select id="adminNewForm" multiple class="rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+                    @foreach (var pair in formLabels)
                     {
                         <option value="@pair.Key">@pair.Value</option>
                     }
@@ -214,6 +287,9 @@
                     <th class="px-3 py-2 text-left" data-sort="type">Typ</th>
                     <th class="px-3 py-2 text-left" data-sort="sheen">Połysk</th>
                     <th class="px-3 py-2 text-left" data-sort="medium">Medium</th>
+                    <th class="px-3 py-2 text-left" data-sort="effects">Efekty</th>
+                    <th class="px-3 py-2 text-left" data-sort="usage">Zastosowanie</th>
+                    <th class="px-3 py-2 text-left" data-sort="form">Forma</th>
                     <th class="px-3 py-2 text-left" data-sort="gradientType">Gradient</th>
                     <th class="px-3 py-2 text-left" data-sort="hexColor">Hex</th>
                     <th class="px-3 py-2 text-left" data-sort="hexFrom">Od</th>
@@ -224,7 +300,7 @@
             </thead>
             <tbody id="adminPaintGrid" class="divide-y divide-slate-200 text-slate-800 dark:divide-slate-800 dark:text-slate-100">
                 <tr id="adminGridEmpty">
-                    <td colspan="14" class="px-3 py-4 text-center text-sm text-slate-500 dark:text-slate-400">Brak danych</td>
+                    <td colspan="17" class="px-3 py-4 text-center text-sm text-slate-500 dark:text-slate-400">Brak danych</td>
                 </tr>
             </tbody>
         </table>
