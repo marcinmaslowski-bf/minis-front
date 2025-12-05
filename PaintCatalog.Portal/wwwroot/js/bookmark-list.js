@@ -41,6 +41,7 @@
     const newCategoryInput = document.getElementById('bookmark-edit-new-category');
     const addCategoryButton = document.getElementById('bookmark-edit-add-category');
     const noteInput = document.getElementById('bookmark-edit-note');
+    const modalUtils = window.bookmarksUi || {};
 
     const typeMap = {
         paint: 1,
@@ -98,6 +99,17 @@
         if (!modalError) return;
         modalError.textContent = message || '';
         modalError.classList.toggle('hidden', !message);
+    }
+
+    function toggleModal(show) {
+        if (!modal) return;
+        if (typeof modalUtils.toggleModalVisibility === 'function') {
+            modalUtils.toggleModalVisibility(modal, show);
+            return;
+        }
+
+        modal.classList.toggle('hidden', !show);
+        modal.classList.toggle('flex', !!show);
     }
 
     function sanitizeUrl(value) {
@@ -525,8 +537,10 @@
             const card = event.target.closest('[data-bookmark-url]');
 
             if (editBtn) {
-                const itemId = Number(editBtn.getAttribute('data-bookmark-edit'));
-                const bookmark = state.bookmarks.find((b) => b.itemId === itemId && normalizeType(b.type) === type);
+                const itemId = editBtn.getAttribute('data-bookmark-edit');
+                const bookmark = state.bookmarks.find(
+                    (b) => String(b.itemId) === String(itemId) && normalizeType(b.type) === type,
+                );
                 if (bookmark) {
                     openEditModal(bookmark);
                 }
@@ -534,8 +548,10 @@
             }
 
             if (deleteBtn) {
-                const itemId = Number(deleteBtn.getAttribute('data-bookmark-delete'));
-                const bookmark = state.bookmarks.find((b) => b.itemId === itemId && normalizeType(b.type) === type);
+                const itemId = deleteBtn.getAttribute('data-bookmark-delete');
+                const bookmark = state.bookmarks.find(
+                    (b) => String(b.itemId) === String(itemId) && normalizeType(b.type) === type,
+                );
                 if (bookmark) {
                     deleteBookmark(bookmark);
                 }
@@ -690,14 +706,12 @@
             renderModalCategories(type, bookmark.categoryId);
         }
 
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        toggleModal(true);
     }
 
     function closeEditModal() {
         if (!modal) return;
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        toggleModal(false);
         setModalError('');
         setModalStatus('');
         state.editing = null;

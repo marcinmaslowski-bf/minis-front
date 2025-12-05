@@ -49,6 +49,12 @@
         };
     }
 
+    function toggleModalVisibility(modal, show) {
+        if (!modal) return;
+        modal.classList.toggle('hidden', !show);
+        modal.classList.toggle('flex', !!show);
+    }
+
     function initBookmarkWidget(options) {
         if (!options) return;
 
@@ -101,11 +107,11 @@
         }
 
         function closeModal() {
-            modal.classList.add('hidden');
+            toggleModalVisibility(modal, false);
         }
 
         function openModal() {
-            modal.classList.remove('hidden');
+            toggleModalVisibility(modal, true);
             if (!state.categories.length) {
                 loadCategories();
             }
@@ -331,6 +337,7 @@
 
     window.bookmarksUi = {
         init: initBookmarkWidget,
+        toggleModalVisibility,
     };
 })();
 
