@@ -482,7 +482,13 @@
     async function handleDelete(row) {
         const id = row?.dataset?.id;
         if (!id) return;
-        if (!confirm(`Usunąć farbę #${id}?`)) return;
+        const confirmed = await (window.confirmDialog?.confirm({
+            title: 'Usuń farbę',
+            message: `Usunąć farbę #${id}?`,
+            confirmText: 'Usuń',
+            cancelText: 'Anuluj',
+        }) ?? Promise.resolve(window.confirm(`Usunąć farbę #${id}?`)));
+        if (!confirmed) return;
         try {
             renderStatus('Usuwanie...');
             const url = endpoints.delete.replace('__id__', encodeURIComponent(id));
