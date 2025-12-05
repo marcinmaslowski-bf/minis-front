@@ -212,6 +212,7 @@ namespace PaintCatalog.Portal.Controllers
         }
 
         [HttpPost("{id:int}/delete")]
+        [HttpPost("delete/{id:int}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
