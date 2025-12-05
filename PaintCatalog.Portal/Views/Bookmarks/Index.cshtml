@@ -115,9 +115,15 @@
         <div id="bookmark-error" class="hidden text-sm font-semibold text-rose-600 dark:text-rose-300"></div>
 
         <div data-bookmark-panel="paint" class="space-y-4" role="tabpanel">
-            <div class="flex flex-col gap-2">
-                <label for="bookmark-filter-paint" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">@Localizer["Filter_Label"]</label>
-                <select id="bookmark-filter-paint" class="w-full rounded-xl border border-slate-300 bg-white/90 p-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100 sm:w-80"></select>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div class="flex flex-col gap-2 sm:flex-1">
+                    <label for="bookmark-filter-paint" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">@Localizer["Filter_Label"]</label>
+                    <select id="bookmark-filter-paint" class="w-full rounded-xl border border-slate-300 bg-white/90 p-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100"></select>
+                </div>
+                <button id="bookmark-add-category-paint" type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-400 dark:hover:text-emerald-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    @Localizer["Bookmark_AddCategory_Button"]
+                </button>
             </div>
 
             <div id="bookmark-empty-paint" class="hidden rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-center text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300">
@@ -129,9 +135,15 @@
         </div>
 
         <div data-bookmark-panel="tutorial" class="space-y-4 hidden" role="tabpanel">
-            <div class="flex flex-col gap-2">
-                <label for="bookmark-filter-tutorial" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">@Localizer["Filter_Label"]</label>
-                <select id="bookmark-filter-tutorial" class="w-full rounded-xl border border-slate-300 bg-white/90 p-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100 sm:w-80"></select>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div class="flex flex-col gap-2 sm:flex-1">
+                    <label for="bookmark-filter-tutorial" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">@Localizer["Filter_Label"]</label>
+                    <select id="bookmark-filter-tutorial" class="w-full rounded-xl border border-slate-300 bg-white/90 p-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100"></select>
+                </div>
+                <button id="bookmark-add-category-tutorial" type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-400 dark:hover:text-emerald-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    @Localizer["Bookmark_AddCategory_Button"]
+                </button>
             </div>
 
             <div id="bookmark-empty-tutorial" class="hidden rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-center text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300">
