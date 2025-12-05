@@ -195,17 +195,17 @@ namespace PaintCatalog.Portal.Controllers
                 return payload;
             }
 
-            Dictionary<int, PaintSlugInfo> paintSlugs;
+            Dictionary<int, PaintBookmarkInfo> paintData;
             try
             {
-                paintSlugs = await FetchPaintSlugsAsync(paintIds);
+                paintData = await FetchPaintDataAsync(paintIds);
             }
             catch
             {
                 return payload;
             }
 
-            if (paintSlugs.Count == 0)
+            if (paintData.Count == 0)
             {
                 return payload;
             }
@@ -213,19 +213,35 @@ namespace PaintCatalog.Portal.Controllers
             foreach (var bookmark in bookmarkItems)
             {
                 var itemId = GetBookmarkItemId(bookmark);
-                if (!itemId.HasValue || !paintSlugs.TryGetValue(itemId.Value, out var slugs))
+                if (!itemId.HasValue || !paintData.TryGetValue(itemId.Value, out var paint))
                 {
                     continue;
                 }
 
-                ApplyValue(bookmark, "brandSlug", slugs.BrandSlug);
-                ApplyValue(bookmark, "seriesSlug", slugs.SeriesSlug);
-                ApplyValue(bookmark, "paintSlug", slugs.PaintSlug);
+                ApplyValue(bookmark, "brandSlug", paint.BrandSlug);
+                ApplyValue(bookmark, "seriesSlug", paint.SeriesSlug);
+                ApplyValue(bookmark, "paintSlug", paint.PaintSlug);
+
+                if (paint.Paint is JsonObject paintObject)
+                {
+                    var item = bookmark["item"] as JsonObject;
+                    if (item == null)
+                    {
+                        bookmark["item"] = CloneJsonObject(paintObject);
+                    }
+                    else
+                    {
+                        MergeJsonObjects(item, paintObject);
+                    }
+
+                    var paintTitle = GetString(paintObject, "name", "Name", "displayName");
+                    ApplyValue(bookmark, "title", paintTitle);
+                }
 
                 var hasUrl = TryGetString(bookmark, out var existingUrl, "url", "link", "href") && !string.IsNullOrWhiteSpace(existingUrl);
-                if (!hasUrl && slugs.IsComplete)
+                if (!hasUrl && paint.IsComplete)
                 {
-                    bookmark["url"] = $"/paints/{slugs.BrandSlug}/{slugs.SeriesSlug}/{slugs.PaintSlug}";
+                    bookmark["url"] = $"/paints/{paint.BrandSlug}/{paint.SeriesSlug}/{paint.PaintSlug}";
                 }
             }
 
@@ -247,7 +263,7 @@ namespace PaintCatalog.Portal.Controllers
             return Enumerable.Empty<JsonObject>();
         }
 
-        private async Task<Dictionary<int, PaintSlugInfo>> FetchPaintSlugsAsync(IEnumerable<int> paintIds)
+        private async Task<Dictionary<int, PaintBookmarkInfo>> FetchPaintDataAsync(IEnumerable<int> paintIds)
         {
             var payload = await _apiClient.GetPaintsRawAsync(ids: paintIds);
 
@@ -258,7 +274,7 @@ namespace PaintCatalog.Portal.Controllers
             }
             catch
             {
-                return new Dictionary<int, PaintSlugInfo>();
+                return new Dictionary<int, PaintBookmarkInfo>();
             }
 
             var paintItems = new List<JsonObject>();
@@ -272,7 +288,7 @@ namespace PaintCatalog.Portal.Controllers
                 paintItems.AddRange(itemsArray.OfType<JsonObject>());
             }
 
-            var paintSlugs = new Dictionary<int, PaintSlugInfo>();
+            var paintSlugs = new Dictionary<int, PaintBookmarkInfo>();
 
             foreach (var paint in paintItems)
             {
@@ -286,7 +302,7 @@ namespace PaintCatalog.Portal.Controllers
                 var seriesSlug = FindSeriesSlug(paint);
                 var paintSlug = FindPaintSlug(paint);
 
-                paintSlugs[paintId.Value] = new PaintSlugInfo(brandSlug, seriesSlug, paintSlug);
+                paintSlugs[paintId.Value] = new PaintBookmarkInfo(brandSlug, seriesSlug, paintSlug, CloneJsonObject(paint));
             }
 
             return paintSlugs;
@@ -438,7 +454,42 @@ namespace PaintCatalog.Portal.Controllers
             target[propertyName] = value;
         }
 
-        private readonly record struct PaintSlugInfo(string? BrandSlug, string? SeriesSlug, string? PaintSlug)
+        private static void MergeJsonObjects(JsonObject target, JsonObject source)
+        {
+            foreach (var kvp in source)
+            {
+                if (kvp.Key == null || target.ContainsKey(kvp.Key))
+                {
+                    continue;
+                }
+
+                target[kvp.Key] = CloneNode(kvp.Value);
+            }
+        }
+
+        private static JsonObject? CloneJsonObject(JsonObject source)
+        {
+            return CloneNode(source) as JsonObject;
+        }
+
+        private static JsonNode? CloneNode(JsonNode? node)
+        {
+            if (node is null)
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonNode.Parse(node.ToJsonString());
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private readonly record struct PaintBookmarkInfo(string? BrandSlug, string? SeriesSlug, string? PaintSlug, JsonObject? Paint)
         {
             public bool IsComplete => !string.IsNullOrWhiteSpace(BrandSlug)
                                        && !string.IsNullOrWhiteSpace(SeriesSlug)
