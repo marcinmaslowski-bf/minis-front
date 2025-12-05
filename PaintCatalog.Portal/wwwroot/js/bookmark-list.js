@@ -602,8 +602,20 @@
                     if (!type || !bookmark.categoryName) return acc;
                     if (!acc[type]) acc[type] = [];
 
-                    if (!acc[type].some((c) => (c.name || '').toLowerCase() === bookmark.categoryName.toLowerCase())) {
-                        acc[type].push({ name: bookmark.categoryName });
+                    const categoryId = Number(bookmark.categoryId);
+                    const hasCategoryId = Number.isFinite(categoryId) && categoryId > 0;
+
+                    const existing = acc[type].find(
+                        (c) =>
+                            (Number.isFinite(c.id) && hasCategoryId && c.id === categoryId) ||
+                            (c.name || '').toLowerCase() === bookmark.categoryName.toLowerCase(),
+                    );
+
+                    if (!existing) {
+                        acc[type].push({
+                            id: hasCategoryId ? categoryId : undefined,
+                            name: bookmark.categoryName,
+                        });
                     }
 
                     return acc;
@@ -667,7 +679,7 @@
     function renderModalCategories(type, selectedId) {
         if (!categorySelect) return;
         categorySelect.innerHTML = '';
-        const categories = state.categories[type] || [];
+        const categories = (state.categories[type] || []).filter((c) => Number.isFinite(c.id) && c.id > 0);
 
         const bookmark = state.editing;
         let resolvedSelectedId = selectedId;
@@ -717,7 +729,10 @@
             categorySelect.innerHTML = '';
         }
 
-        if (!state.categories[type]?.length) {
+        const needsCategoryLoad =
+            !state.categories[type]?.length || state.categories[type].some((c) => !Number.isFinite(c.id) || c.id <= 0);
+
+        if (needsCategoryLoad) {
             loadCategories(type).then(() => {
                 renderModalCategories(type, bookmark.categoryId);
             });
