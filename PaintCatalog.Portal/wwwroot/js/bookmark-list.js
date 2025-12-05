@@ -245,10 +245,17 @@
 
         const normalized = {
             id: item.id ?? item.bookmarkId ?? `${item.itemType || 'item'}-${item.itemId || '0'}`,
-            itemId: item.itemId ?? item.id ?? null,
+            itemId: item.itemId ?? rawItem.id ?? rawItem.Id ?? item.id ?? null,
             type: normalizedType,
-            categoryId: item.categoryId ?? category.id ?? category.categoryId ?? null,
-            categoryName: item.categoryName ?? category.name ?? null,
+            categoryId:
+                item.categoryId ??
+                category.id ??
+                category.categoryId ??
+                rawItem.categoryId ??
+                rawItem.CategoryId ??
+                rawItem.category?.id ??
+                null,
+            categoryName: item.categoryName ?? category.name ?? rawItem.category?.name ?? null,
             note: item.note || '',
             item: rawItem || null,
             url: sanitizeUrl(item.url || item.link || item.href || rawItem.url),
@@ -662,6 +669,9 @@
         categorySelect.innerHTML = '';
         const categories = state.categories[type] || [];
 
+        const bookmark = state.editing;
+        let resolvedSelectedId = selectedId;
+
         categories.forEach((category) => {
             const option = document.createElement('option');
             option.value = category.id;
@@ -669,8 +679,17 @@
             categorySelect.appendChild(option);
         });
 
-        if (selectedId) {
-            categorySelect.value = String(selectedId);
+        if (!resolvedSelectedId && bookmark?.categoryName) {
+            const match = categories.find(
+                (c) => (c.name || '').toLowerCase() === (bookmark.categoryName || '').toLowerCase(),
+            );
+            resolvedSelectedId = match?.id;
+        }
+
+        if (resolvedSelectedId) {
+            categorySelect.value = String(resolvedSelectedId);
+        } else if (categories.length) {
+            categorySelect.value = String(categories[0].id);
         }
     }
 
