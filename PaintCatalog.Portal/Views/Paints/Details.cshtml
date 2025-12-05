@@ -120,10 +120,6 @@
                         <dt class="font-semibold text-slate-400">@Localizer["Card_Label_Medium"]</dt>
                         <dd class="mt-1 text-slate-900 dark:text-slate-100" id="paint-medium">—</dd>
                     </div>
-                    <div>
-                        <dt class="font-semibold text-slate-400">@Localizer["Card_Label_Sku"]</dt>
-                        <dd class="mt-1 text-slate-900 dark:text-slate-100" id="paint-sku">—</dd>
-                    </div>
                 </dl>
                 <dl class="grid grid-cols-1 gap-4 text-sm text-slate-600 dark:text-slate-200">
                     <div>
@@ -714,7 +710,6 @@
                     type: document.getElementById('paint-type'),
                     sheen: document.getElementById('paint-sheen'),
                     medium: document.getElementById('paint-medium'),
-                    sku: document.getElementById('paint-sku'),
                     discontinued: document.getElementById('paint-discontinued'),
                     brandWebsite: document.getElementById('paint-brand-website'),
                     identifiers: document.getElementById('paint-identifiers'),
@@ -738,7 +733,6 @@
                 const finishName = resolveEnumLabel(enumLabels.sheen, finishRaw, paint?.sheenName || paint?.sheen?.name || paint?.sheen || '—');
                 const typeName = resolveEnumLabel(enumLabels.type, typeRaw, paint?.typeName || paint?.type?.name || paint?.type || '—');
                 const mediumName = resolveEnumLabel(enumLabels.medium, mediumRaw, paint?.mediumName || paint?.medium?.name || paint?.medium || '—');
-                const sku = paint?.sku || paint?.code || '—';
                 const colorHex = paint?.hex || paint?.colorHex || paint?.hexCode || paint?.swatchHex || '#0f172a';
                 const swatch = buildPaintSwatch(paint, colorHex, { defaultHex: '#0f172a' });
                 const tags = Array.isArray(paint?.tags) ? paint.tags : [];
@@ -768,7 +762,6 @@
                 if (elements.type) elements.type.textContent = typeName || '—';
                 if (elements.sheen) elements.sheen.textContent = finishName || '—';
                 if (elements.medium) elements.medium.textContent = mediumName || '—';
-                if (elements.sku) elements.sku.textContent = sku || '—';
 
                 if (elements.discontinued) elements.discontinued.textContent = formatDiscontinued(discontinued);
 

@@ -64,7 +64,7 @@
     <value>Wyszukaj farby</value>
   </data>
   <data name="Filters_Search_Placeholder" xml:space="preserve">
-    <value>Szukaj po nazwie, SKU lub tagach</value>
+    <value>Szukaj po nazwie lub tagach</value>
   </data>
   <data name="Filters_Brand_Label" xml:space="preserve">
     <value>Marka</value>
