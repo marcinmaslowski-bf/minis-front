@@ -16,6 +16,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Localization
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
+builder.Services.AddRouting(options =>
+{
+    options.LowercaseUrls = true;
+    options.LowercaseQueryStrings = true;
+});
+
 builder.Services
     .AddControllersWithViews()
     .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
