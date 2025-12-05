@@ -2,6 +2,7 @@
     const bootstrap = window.bookmarkListBootstrap || {};
     const endpoints = bootstrap.endpoints || {};
     const labels = bootstrap.labels || {};
+    const enumLabels = bootstrap.enumLabels || {};
     const swatchUtils = window.paintSwatchUtils || {};
 
     const langPrefix = (document.documentElement?.lang || '').toLowerCase() === 'pl' ? '/pl' : '';
@@ -341,22 +342,39 @@
             .replace(/'/g, '&#39;');
     }
 
+    function resolveEnumLabel(dictionary, rawValue, fallback) {
+        if (rawValue === null || rawValue === undefined) return fallback || '';
+
+        const key = String(rawValue);
+        if (dictionary && Object.prototype.hasOwnProperty.call(dictionary, key)) {
+            return dictionary[key];
+        }
+
+        return fallback || '';
+    }
+
     function renderPaintCard(bookmark) {
         const url = buildItemUrl(bookmark);
         const paint = bookmark.item || {};
         const brandName = firstString(paint.brand?.name, paint.brandName, paint.brand?.Name, paint.BrandName);
         const seriesName = firstString(paint.series?.name, paint.seriesName, paint.series?.Name, paint.SeriesName);
-        const finishName = firstString(paint.sheenName, paint.sheen?.name, paint.finish, paint.finishName, paint.SheenName);
-        const typeName = firstString(paint.typeName, paint.type?.name, paint.paintType, paint.TypeName);
-        const mediumName = firstString(paint.mediumName, paint.medium?.name, paint.MediumName);
-        const effectsName = firstString(paint.effectName, paint.effect?.name, paint.effects, paint.EffectName, paint.Effects);
-        const usageName = firstString(paint.usageName, paint.usage?.name, paint.UsageName);
+        const sheenRaw = paint.sheenId ?? paint.sheen?.id ?? paint.sheen;
+        const typeRaw = paint.typeId ?? paint.type?.id ?? paint.type;
+        const mediumRaw = paint.mediumId ?? paint.medium?.id ?? paint.medium;
+        const effectRaw = paint.effectId ?? paint.effect?.id ?? paint.effect ?? paint.effects;
+        const usageRaw = paint.usageId ?? paint.usage?.id ?? paint.usage;
+        const formRaw = paint.formId ?? paint.form?.id ?? paint.form;
+        const finishName = resolveEnumLabel(enumLabels.sheens, sheenRaw, firstString(paint.sheenName, paint.sheen?.name, paint.finish, paint.finishName, paint.SheenName));
+        const typeName = resolveEnumLabel(enumLabels.types, typeRaw, firstString(paint.typeName, paint.type?.name, paint.paintType, paint.TypeName));
+        const mediumName = resolveEnumLabel(enumLabels.mediums, mediumRaw, firstString(paint.mediumName, paint.medium?.name, paint.MediumName));
+        const effectsName = resolveEnumLabel(enumLabels.effects, effectRaw, firstString(paint.effectName, paint.effect?.name, paint.effects, paint.EffectName, paint.Effects));
+        const usageName = resolveEnumLabel(enumLabels.usages, usageRaw, firstString(paint.usageName, paint.usage?.name, paint.UsageName));
+        const formName = resolveEnumLabel(enumLabels.forms, formRaw, firstString(paint.formName, paint.form?.name, paint.FormName));
         const sku = firstString(paint.sku, paint.Sku, paint.code, paint.Code);
         const hexColor = firstString(paint.hexColor, paint.colorHex, paint.hex, paint.HexColor, paint.Hex);
         const swatch = swatchUtils.buildPaintSwatch?.(paint, hexColor || '#475569') || { background: '#475569', label: '#475569' };
-        const swatchLabel = escapeHtml(swatch.label || hexColor || '#475569');
         const safeTitle = escapeHtml(bookmark.title || bookmark.paintSlug || labels.typePaint || 'Paint');
-        const safeBrand = escapeHtml(brandName || labels.typePaint || 'Paint');
+        const safeBrand = escapeHtml(brandName || labels.brand || labels.typePaint || 'Paint');
         const safeSeries = escapeHtml(seriesName || '');
         const note = bookmark.note && bookmark.note.trim()
             ? `<div class="rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-200"><span class="font-semibold">${labels.noteLabel || 'Note'}:</span> ${escapeHtml(bookmark.note)}</div>`
@@ -366,44 +384,28 @@
             : '';
 
         const detailItems = [
-            { label: labels.type || 'Type', value: typeName },
-            { label: labels.medium || 'Medium', value: mediumName },
-            { label: labels.effects || 'Effects', value: effectsName },
-            { label: labels.usage || 'Usage', value: usageName },
-        ].filter((item) => item.value);
+            { label: labels.sheen || 'Finish', value: finishName || '—' },
+            { label: labels.type || 'Type', value: typeName || '—' },
+            { label: labels.medium || 'Medium', value: mediumName || '—' },
+            { label: labels.effects || 'Effects', value: effectsName || '—' },
+            { label: labels.usage || 'Usage', value: usageName || '—' },
+            { label: labels.form || 'Form', value: formName || '—' },
+            { label: labels.sku || 'SKU', value: sku || '—' },
+        ];
 
-        const details = detailItems.length
-            ? `<dl class="mt-3 grid grid-cols-2 gap-3 text-xs text-slate-500">
-                    ${detailItems
-                        .map((item) => `
-                            <div>
-                                <dt class="font-semibold text-slate-400">${escapeHtml(item.label)}</dt>
-                                <dd class="text-sm text-slate-900 dark:text-slate-100">${escapeHtml(item.value)}</dd>
-                            </div>`)
-                        .join('')}
-               </dl>`
-            : '';
-
-        const slugChips = [formatSlugChip(bookmark.brandSlug, bookmark.brandSlug), formatSlugChip(bookmark.seriesSlug, bookmark.seriesSlug), formatSlugChip(bookmark.paintSlug, bookmark.paintSlug)]
-            .filter(Boolean)
-            .join('');
-
-        const detailGrid = details
-            ? `<div class="mt-4">${details}</div>`
-            : '';
+        const detailGrid = `<dl class="mt-4 grid grid-cols-2 gap-3 text-xs text-slate-500">
+                ${detailItems
+                    .map((item) => `
+                        <div>
+                            <dt class="font-semibold text-slate-400">${escapeHtml(item.label)}</dt>
+                            <dd class="text-sm text-slate-900 dark:text-slate-100">${escapeHtml(item.value)}</dd>
+                        </div>`)
+                    .join('')}
+            </dl>`;
 
         const noteSection = note
             ? `<div class="mt-4 space-y-2">${note}</div>`
             : '';
-
-        const colorMeta = `
-            <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
-                <span class="font-semibold uppercase tracking-wide">${labels.color || 'Color'}</span>
-                <span class="rounded-full border border-slate-200 px-2 py-0.5 text-slate-700 dark:border-slate-700 dark:text-slate-200">${swatchLabel}</span>
-                ${finishName ? `<span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(finishName)}</span>` : ''}
-                ${sku ? `<span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(sku)}</span>` : ''}
-                ${bookmark.itemId ? `<span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">#${escapeHtml(bookmark.itemId)}</span>` : ''}
-            </div>`;
 
         const actionButtons = `
             <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
@@ -424,10 +426,6 @@
                 </div>
             </div>`;
 
-        const slugSection = slugChips
-            ? `<div class="flex flex-wrap justify-end gap-2 pt-1">${slugChips}</div>`
-            : '';
-
         const headerContent = `
             <div class="flex items-start justify-between gap-3">
                 <div class="space-y-1">
@@ -438,7 +436,6 @@
                 </div>
                 <div class="flex flex-col items-end gap-2 text-right text-[11px] text-slate-500 dark:text-slate-300">
                     <div class="h-12 w-12 rounded-xl border border-2 border-slate-200 shadow-inner dark:border-slate-700" style="background: ${escapeHtml(swatch.background)};"></div>
-                    ${slugSection}
                 </div>
             </div>`;
 
@@ -446,11 +443,10 @@
             ${headerContent}
             ${detailGrid}
             ${noteSection}
-            ${colorMeta}
             ${actionButtons}`;
 
         return `
-            <article class="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-800 dark:bg-slate-900/80" ${url ? `data-bookmark-url="${url}"` : ''}>
+            <article class="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-800 dark:bg-slate-900/80">
                 ${mainContent}
             </article>
         `;
