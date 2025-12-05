@@ -482,12 +482,15 @@
     async function handleDelete(row) {
         const id = row?.dataset?.id;
         if (!id) return;
-        const confirmed = await (window.confirmDialog?.confirm({
-            title: 'Usuń farbę',
-            message: `Usunąć farbę #${id}?`,
-            confirmText: 'Usuń',
-            cancelText: 'Anuluj',
-        }) ?? Promise.resolve(window.confirm(`Usunąć farbę #${id}?`)));
+        const hasCustomDialog = typeof window.confirmDialog?.confirm === 'function';
+        const confirmed = hasCustomDialog
+            ? await window.confirmDialog.confirm({
+                title: 'Usuń farbę',
+                message: `Usunąć farbę #${id}?`,
+                confirmText: 'Usuń',
+                cancelText: 'Anuluj',
+            })
+            : await Promise.resolve(window.confirm(`Usunąć farbę #${id}?`));
         if (!confirmed) return;
         try {
             renderStatus('Usuwanie...');
