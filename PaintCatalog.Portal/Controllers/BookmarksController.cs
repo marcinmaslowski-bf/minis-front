@@ -153,6 +153,10 @@ namespace PaintCatalog.Portal.Controllers
             {
                 return StatusCode((int)HttpStatusCode.Unauthorized);
             }
+            catch (HttpRequestException ex) when (ex.StatusCode.HasValue)
+            {
+                return StatusCode((int)ex.StatusCode.Value, new { error = "Failed to remove bookmark", detail = ex.Message });
+            }
             catch (Exception ex)
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, new { error = "Failed to remove bookmark", detail = ex.Message });
