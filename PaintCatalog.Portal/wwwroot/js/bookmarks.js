@@ -251,15 +251,21 @@
         }
 
         async function removeBookmark() {
-            if (!state.bookmark?.categoryId) {
+            if (!itemId) {
                 closeModal();
+                return;
+            }
+
+            const deleteUrl = formatEndpoint(endpoints.delete, itemType, itemId) || endpoints.delete;
+            if (!deleteUrl) {
+                setError(labels.errorDelete || 'Unable to remove bookmark');
                 return;
             }
 
             setError('');
             setStatus('');
 
-            const response = await requestJson(endpoints.delete, { method: 'DELETE' });
+            const response = await requestJson(deleteUrl, { method: 'DELETE' });
 
             if (response.status === 401 && auth.loginUrl) {
                 window.location.href = auth.loginUrl;
