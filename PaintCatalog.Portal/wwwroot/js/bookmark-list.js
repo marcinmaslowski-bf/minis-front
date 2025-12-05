@@ -356,9 +356,11 @@
         const swatch = swatchUtils.buildPaintSwatch?.(paint, hexColor || '#475569') || { background: '#475569', label: '#475569' };
         const swatchLabel = escapeHtml(swatch.label || hexColor || '#475569');
         const safeTitle = escapeHtml(bookmark.title || bookmark.paintSlug || labels.typePaint || 'Paint');
+        const safeBrand = escapeHtml(brandName || labels.typePaint || 'Paint');
+        const safeSeries = escapeHtml(seriesName || '');
         const note = bookmark.note && bookmark.note.trim()
-            ? `<div class="rounded-xl border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-700 shadow-inner dark:border-slate-800 dark:bg-slate-950/50 dark:text-slate-200"><span class="font-semibold">${labels.noteLabel || 'Note'}:</span> ${escapeHtml(bookmark.note)}</div>`
-            : `<p class="text-sm text-slate-500 dark:text-slate-400">${labels.notePlaceholder || ''}</p>`;
+            ? `<div class="rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm text-slate-700 shadow-sm dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-200"><span class="font-semibold">${labels.noteLabel || 'Note'}:</span> ${escapeHtml(bookmark.note)}</div>`
+            : '';
         const category = bookmark.categoryName
             ? `<span class="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200">${escapeHtml(bookmark.categoryName)}</span>`
             : '';
@@ -386,50 +388,70 @@
             .filter(Boolean)
             .join('');
 
+        const detailGrid = details
+            ? `<div class="mt-4">${details}</div>`
+            : '';
+
+        const noteSection = note
+            ? `<div class="mt-4 space-y-2">${note}</div>`
+            : '';
+
+        const colorMeta = `
+            <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                <span class="font-semibold uppercase tracking-wide">${labels.color || 'Color'}</span>
+                <span class="rounded-full border border-slate-200 px-2 py-0.5 text-slate-700 dark:border-slate-700 dark:text-slate-200">${swatchLabel}</span>
+                ${finishName ? `<span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(finishName)}</span>` : ''}
+                ${sku ? `<span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(sku)}</span>` : ''}
+                ${bookmark.itemId ? `<span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">#${escapeHtml(bookmark.itemId)}</span>` : ''}
+            </div>`;
+
+        const actionButtons = `
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+                <div class="flex items-center gap-2">
+                    <button type="button" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200" data-bookmark-edit="${bookmark.itemId}" data-bookmark-type="paint">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 19.5 7.125m-2.638-2.638-9.193 9.193a4.5 4.5 0 0 0-1.169 2.118l-.5 2a.375.375 0 0 0 .456.456l2-.5a4.5 4.5 0 0 0 2.118-1.169l9.193-9.193m-2.638-2.638 2.122-2.122a1.875 1.875 0 1 1 2.652 2.652L19.5 7.125m-2.638-2.638 2.638 2.638" /></svg>
+                        ${labels.edit || 'Edit'}
+                    </button>
+                    <button type="button" class="inline-flex items-center gap-2 rounded-xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-400 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:border-rose-500/60 dark:text-rose-300" data-bookmark-delete="${bookmark.itemId}" data-bookmark-type="paint">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21.75H8.084a2.25 2.25 0 0 1-2.245-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
+                        ${labels.delete || 'Delete'}
+                    </button>
+                </div>
+                <div class="flex items-center gap-2">
+                    ${url
+                        ? `<a href="${url}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">${labels.open || 'Open link'}</a>`
+                        : `<span class="text-xs font-semibold text-slate-400">${labels.open || 'Open link'}</span>`}
+                </div>
+            </div>`;
+
+        const slugSection = slugChips
+            ? `<div class="flex flex-wrap justify-end gap-2 pt-1">${slugChips}</div>`
+            : '';
+
+        const headerContent = `
+            <div class="flex items-start justify-between gap-3">
+                <div class="space-y-1">
+                    <p class="text-xs uppercase tracking-wide text-slate-400">${safeBrand}</p>
+                    <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${safeTitle}</h3>
+                    ${safeSeries ? `<p class="text-xs text-slate-500 dark:text-slate-300">${escapeHtml(labels.series || 'Series')}: ${safeSeries}</p>` : ''}
+                    ${category ? `<div class="pt-1">${category}</div>` : ''}
+                </div>
+                <div class="flex flex-col items-end gap-2 text-right text-[11px] text-slate-500 dark:text-slate-300">
+                    <div class="h-12 w-12 rounded-xl border border-2 border-slate-200 shadow-inner dark:border-slate-700" style="background: ${escapeHtml(swatch.background)};"></div>
+                    ${slugSection}
+                </div>
+            </div>`;
+
+        const mainContent = `
+            ${headerContent}
+            ${detailGrid}
+            ${noteSection}
+            ${colorMeta}
+            ${actionButtons}`;
+
         return `
             <article class="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-500 dark:border-slate-800 dark:bg-slate-900/80" ${url ? `data-bookmark-url="${url}"` : ''}>
-                <div class="flex items-start justify-between gap-3">
-                    <div class="flex flex-1 items-start gap-3">
-                        <div class="h-12 w-12 rounded-xl border-2 border-slate-200 shadow-inner dark:border-slate-700" style="background: ${escapeHtml(swatch.background)}"></div>
-                        <div class="space-y-1">
-                            <p class="text-xs uppercase tracking-wide text-slate-400">${escapeHtml(brandName || labels.typePaint || 'Paint')}</p>
-                            <h3 class="text-lg font-semibold text-slate-900 dark:text-white">${safeTitle}</h3>
-                            ${seriesName ? `<p class="text-xs text-slate-500 dark:text-slate-300">${escapeHtml(seriesName)}</p>` : ''}
-                            ${slugChips ? `<div class="flex flex-wrap gap-2 pt-1">${slugChips}</div>` : ''}
-                        </div>
-                    </div>
-                    ${category}
-                </div>
-                ${details}
-                <div class="mt-3 flex flex-wrap items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-                    <span class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 font-semibold text-slate-700 dark:border-slate-700 dark:text-slate-200">
-                        ${labels.color || 'Color'}
-                        <span class="rounded-full bg-slate-100 px-2 py-0.5 text-slate-700 dark:bg-slate-800 dark:text-slate-200">${swatchLabel}</span>
-                    </span>
-                    ${finishName ? `<span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(finishName)}</span>` : ''}
-                    ${sku ? `<span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(sku)}</span>` : ''}
-                    ${bookmark.itemId ? `<span class="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600 dark:bg-slate-800 dark:text-slate-200">#${escapeHtml(bookmark.itemId)}</span>` : ''}
-                </div>
-                <div class="mt-3 space-y-2">
-                    ${note}
-                </div>
-                <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
-                    <div class="flex items-center gap-2">
-                        <button type="button" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200" data-bookmark-edit="${bookmark.itemId}" data-bookmark-type="paint">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 19.5 7.125m-2.638-2.638-9.193 9.193a4.5 4.5 0 0 0-1.169 2.118l-.5 2a.375.375 0 0 0 .456.456l2-.5a4.5 4.5 0 0 0 2.118-1.169l9.193-9.193m-2.638-2.638 2.122-2.122a1.875 1.875 0 1 1 2.652 2.652L19.5 7.125m-2.638-2.638 2.638 2.638" /></svg>
-                            ${labels.edit || 'Edit'}
-                        </button>
-                        <button type="button" class="inline-flex items-center gap-2 rounded-xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-400 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:border-rose-500/60 dark:text-rose-300" data-bookmark-delete="${bookmark.itemId}" data-bookmark-type="paint">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21.75H8.084a2.25 2.25 0 0 1-2.245-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
-                            ${labels.delete || 'Delete'}
-                        </button>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        ${url
-                            ? `<a href="${url}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500">${labels.open || 'Open link'}</a>`
-                            : `<span class="text-xs font-semibold text-slate-400">${labels.open || 'Open link'}</span>`}
-                </div>
-                </div>
+                ${mainContent}
             </article>
         `;
     }
