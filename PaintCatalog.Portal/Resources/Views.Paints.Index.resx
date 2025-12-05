@@ -64,7 +64,7 @@
     <value>Search paints</value>
   </data>
   <data name="Filters_Search_Placeholder" xml:space="preserve">
-    <value>Search by name, SKU, or tags</value>
+    <value>Search by name or tags</value>
   </data>
   <data name="Filters_Brand_Label" xml:space="preserve">
     <value>Brand</value>

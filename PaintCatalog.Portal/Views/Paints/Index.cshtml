@@ -59,7 +59,6 @@
             usage = Localizer["Card_Label_Usage"].Value,
             form = Localizer["Card_Label_Form"].Value,
             tags = Localizer["Card_Label_Tags"].Value,
-            sku = Localizer["Card_Label_Sku"].Value,
             color = Localizer["Card_Label_Color"].Value,
             comments = Localizer["Card_Label_Comments"].Value,
             votes = new
@@ -1769,7 +1768,6 @@
                 const effectName = resolveEnumLabel(filterDictionaries.effect, effectRaw, paint?.effectName || paint?.effect?.name || paint?.effects || '');
                 const usageName = resolveEnumLabel(filterDictionaries.usage, usageRaw, paint?.usageName || paint?.usage?.name || paint?.usage || '');
                 const formName = resolveEnumLabel(filterDictionaries.form, formRaw, paint?.formName || paint?.form?.name || paint?.form || '');
-                const sku = paint?.sku || paint?.code || '';
                 const colorHex = (paint?.hex) || paint?.colorHex || paint?.hexCode || paint?.swatchHex || '#475569';
                 const tags = Array.isArray(paint?.tags) ? paint.tags : [];
                 const threadId = extractCommentThreadId(paint);
@@ -1795,7 +1793,6 @@
                 const safeEffect = escapeHtml(effectName);
                 const safeUsage = escapeHtml(usageName);
                 const safeForm = escapeHtml(formName);
-                const safeSku = escapeHtml(sku);
                 const swatch = buildPaintSwatch(paint, colorHex, { defaultHex: '#475569' });
                 const safeSwatchBackground = escapeHtml(swatch.background);
                 const safeHex = escapeHtml(swatch.label || colorHex);
@@ -1860,10 +1857,6 @@
                             <div>
                                 <dt class="font-semibold text-slate-400">${labels.form || 'Form'}</dt>
                                 <dd class="text-sm text-slate-900 dark:text-slate-100">${safeForm || '—'}</dd>
-                            </div>
-                            <div>
-                                <dt class="font-semibold text-slate-400">${labels.sku || 'SKU'}</dt>
-                                <dd class="text-sm text-slate-900 dark:text-slate-100">${safeSku || '—'}</dd>
                             </div>
                         </dl>
                         ${tagsMarkup ? `<div class="mt-4 flex flex-wrap gap-2">${tagsMarkup}</div>` : ''}`;

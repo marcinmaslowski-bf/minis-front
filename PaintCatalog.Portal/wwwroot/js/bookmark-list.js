@@ -370,7 +370,6 @@
         const effectsName = resolveEnumLabel(enumLabels.effects, effectRaw, firstString(paint.effectName, paint.effect?.name, paint.effects, paint.EffectName, paint.Effects));
         const usageName = resolveEnumLabel(enumLabels.usages, usageRaw, firstString(paint.usageName, paint.usage?.name, paint.UsageName));
         const formName = resolveEnumLabel(enumLabels.forms, formRaw, firstString(paint.formName, paint.form?.name, paint.FormName));
-        const sku = firstString(paint.sku, paint.Sku, paint.code, paint.Code);
         const hexColor = firstString(paint.hexColor, paint.colorHex, paint.hex, paint.HexColor, paint.Hex);
         const swatch = swatchUtils.buildPaintSwatch?.(paint, hexColor || '#475569') || { background: '#475569', label: '#475569' };
         const safeTitle = escapeHtml(bookmark.title || bookmark.paintSlug || labels.typePaint || 'Paint');
@@ -390,10 +389,9 @@
             { label: labels.effects || 'Effects', value: effectsName || '—' },
             { label: labels.usage || 'Usage', value: usageName || '—' },
             { label: labels.form || 'Form', value: formName || '—' },
-            { label: labels.sku || 'SKU', value: sku || '—' },
         ];
 
-        const detailGrid = `<dl class="mt-4 grid grid-cols-2 gap-3 text-xs text-slate-500">
+        const detailGrid = `<dl class="mt-4 grid grid-cols-3 gap-3 text-xs text-slate-500">
                 ${detailItems
                     .map((item) => `
                         <div>
