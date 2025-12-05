@@ -843,9 +843,14 @@
             return;
         }
 
-        if (labels.confirmDelete && !window.confirm(labels.confirmDelete)) {
-            return;
-        }
+        const confirmed = await (window.confirmDialog?.confirm({
+            title: labels.delete || labels.remove || labels.tabTutorials || 'Delete',
+            message: labels.confirmDelete || 'Remove this bookmark?',
+            confirmText: labels.remove || labels.delete || 'Delete',
+            cancelText: labels.cancel || 'Cancel',
+        }) ?? Promise.resolve(labels.confirmDelete ? window.confirm(labels.confirmDelete) : true));
+
+        if (!confirmed) return;
 
         const url = endpoints.delete
             .replace('__type__', encodeURIComponent(typeMap[type]))
