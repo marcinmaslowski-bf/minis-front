@@ -28,6 +28,11 @@
         tutorial: document.getElementById('bookmark-filter-tutorial'),
     };
 
+    const filterAddButtons = {
+        paint: document.getElementById('bookmark-add-category-paint'),
+        tutorial: document.getElementById('bookmark-add-category-tutorial'),
+    };
+
     const modal = document.getElementById('bookmark-edit-modal');
     const modalTitle = document.getElementById('bookmark-modal-title');
     const modalTypeLabel = document.getElementById('bookmark-modal-type');
@@ -333,12 +338,19 @@
         const select = filterSelects[type];
         if (!select) return;
 
-        const categories = (state.categories[type] || []).map((c) => c.name);
+        const categories = state.categories[type] || [];
+        const seen = new Set();
         const options = [`<option value="all">${type === 'paint' ? (labels.filterAllPaints || 'All paints') : (labels.filterAllTutorials || 'All tutorials')}</option>`];
 
-        categories.forEach((name) => {
-            options.push(`<option value="${encodeURIComponent(name)}">${name}</option>`);
-        });
+        categories
+            .filter((c) => (c.name || '').trim())
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+            .forEach((category) => {
+                const normalized = (category.name || '').toLowerCase();
+                if (seen.has(normalized)) return;
+                seen.add(normalized);
+                options.push(`<option value="${encodeURIComponent(category.name)}">${category.name}</option>`);
+            });
 
         select.innerHTML = options.join('');
     }
@@ -594,6 +606,29 @@
         });
     }
 
+    function mergeCategories(primary = [], secondary = []) {
+        const map = new Map();
+        const add = (category) => {
+            if (!category) return;
+            const name = (category.name || '').trim();
+            const id = Number(category.id);
+            const hasId = Number.isFinite(id) && id > 0;
+            const key = hasId ? `id:${id}` : name ? `name:${name.toLowerCase()}` : null;
+            if (!key) return;
+
+            if (!map.has(key)) {
+                map.set(key, { id: hasId ? id : undefined, name });
+            } else if (name && !map.get(key).name) {
+                map.get(key).name = name;
+            }
+        };
+
+        primary.forEach(add);
+        secondary.forEach(add);
+
+        return Array.from(map.values());
+    }
+
     async function loadBookmarks(showStatus = true) {
         if (!endpoints.list) return;
 
@@ -615,7 +650,7 @@
             const normalized = items.map(normalizeBookmark).filter(Boolean);
             state.bookmarks = normalized;
 
-            state.categories = normalized.reduce(
+            const bookmarkCategories = normalized.reduce(
                 (acc, bookmark) => {
                     const type = normalizeType(bookmark.type);
                     if (!type || !bookmark.categoryName) return acc;
@@ -624,23 +659,25 @@
                     const categoryId = Number(bookmark.categoryId);
                     const hasCategoryId = Number.isFinite(categoryId) && categoryId > 0;
 
-                    const existing = acc[type].find(
-                        (c) =>
-                            (Number.isFinite(c.id) && hasCategoryId && c.id === categoryId) ||
-                            (c.name || '').toLowerCase() === bookmark.categoryName.toLowerCase(),
-                    );
-
-                    if (!existing) {
-                        acc[type].push({
-                            id: hasCategoryId ? categoryId : undefined,
-                            name: bookmark.categoryName,
-                        });
-                    }
+                    acc[type].push({
+                        id: hasCategoryId ? categoryId : undefined,
+                        name: bookmark.categoryName,
+                    });
 
                     return acc;
                 },
                 { paint: [], tutorial: [] },
             );
+
+            const [paintCategories, tutorialCategories] = await Promise.all([
+                loadCategories('paint', { updateState: false, onError: setError }),
+                loadCategories('tutorial', { updateState: false, onError: setError }),
+            ]);
+
+            state.categories = {
+                paint: mergeCategories(paintCategories, bookmarkCategories.paint),
+                tutorial: mergeCategories(tutorialCategories, bookmarkCategories.tutorial),
+            };
 
             renderFilterOptions('paint');
             renderFilterOptions('tutorial');
@@ -678,20 +715,28 @@
         });
     }
 
-    async function loadCategories(type) {
-        if (!endpoints.categories || !typeMap[type]) return;
+    async function loadCategories(type, options = {}) {
+        const { updateState = true, onError = setModalError } = options;
+        if (!endpoints.categories || !typeMap[type]) return [];
 
         try {
             const response = await fetch(`${endpoints.categories}?itemType=${encodeURIComponent(typeMap[type])}`, { credentials: 'include' });
             if (!response.ok) throw new Error();
             const data = await response.json();
             const items = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
-            state.categories[type] = items
+            const categories = items
                 .map((item) => ({ id: Number(item.id ?? item.categoryId ?? item.Id ?? item.CategoryId), name: item.name || item.Name || `#${item.id || ''}` }))
                 .filter((c) => Number.isFinite(c.id) && c.id > 0);
+
+            if (updateState) {
+                state.categories[type] = categories;
+            }
+
+            return categories;
         } catch (error) {
             console.error('Failed to load categories', error);
-            setModalError(labels.errorLoad || 'Unable to load categories');
+            onError?.(labels.errorLoad || 'Unable to load categories');
+            return [];
         }
     }
 
@@ -770,30 +815,58 @@
         state.editing = null;
     }
 
-    async function addCategory(type) {
-        if (!endpoints.createCategory || !typeMap[type]) return;
-        const name = newCategoryInput?.value?.trim();
-        if (!name) return;
+    async function createCategory(type, name, options = {}) {
+        const { onError = setModalError } = options;
+        if (!endpoints.createCategory || !typeMap[type]) return null;
 
-        setModalError('');
-        setModalStatus('');
+        const trimmed = name?.trim();
+        if (!trimmed) return null;
 
         try {
             const response = await fetch(endpoints.createCategory, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ itemType: typeMap[type], name }),
+                body: JSON.stringify({ itemType: typeMap[type], name: trimmed }),
             });
 
             if (!response.ok) throw new Error();
-            newCategoryInput.value = '';
-            await loadCategories(type);
-            const created = state.categories[type].find((c) => c.name?.toLowerCase() === name.toLowerCase());
-            renderModalCategories(type, created?.id || state.categories[type][0]?.id);
+            const categories = await loadCategories(type, { onError, updateState: true });
+            const created = categories.find((c) => (c.name || '').toLowerCase() === trimmed.toLowerCase());
+            return created || categories[0] || null;
         } catch (error) {
             console.error('Failed to add category', error);
-            setModalError(labels.errorSave || 'Unable to save bookmark');
+            onError?.(labels.errorSave || 'Unable to save bookmark');
+            return null;
+        }
+    }
+
+    async function addCategory(type) {
+        setModalError('');
+        setModalStatus('');
+
+        const created = await createCategory(type, newCategoryInput?.value, { onError: setModalError });
+        if (!created) return;
+
+        if (newCategoryInput) newCategoryInput.value = '';
+        renderModalCategories(type, created.id || state.categories[type][0]?.id);
+        renderFilterOptions(type);
+    }
+
+    async function addCategoryFromFilter(type) {
+        const promptMessage =
+            labels.newCategoryPrompt || labels.newCategoryPlaceholder || labels.addCategory || labels.newCategoryLabel || 'New category name';
+        const name = window.prompt(promptMessage);
+        if (!name || !name.trim()) return;
+
+        const created = await createCategory(type, name, { onError: setError });
+        if (!created) return;
+
+        renderFilterOptions(type);
+        const select = filterSelects[type];
+        if (select && created.name) {
+            select.value = encodeURIComponent(created.name);
+            applyFilters(type);
         }
     }
 
@@ -879,6 +952,11 @@
         Object.entries(filterSelects).forEach(([type, select]) => {
             if (!select) return;
             select.addEventListener('change', () => applyFilters(type));
+        });
+
+        Object.entries(filterAddButtons).forEach(([type, button]) => {
+            if (!button) return;
+            button.addEventListener('click', () => addCategoryFromFilter(type));
         });
     }
 
