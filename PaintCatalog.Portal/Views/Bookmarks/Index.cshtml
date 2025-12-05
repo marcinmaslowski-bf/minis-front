@@ -1,9 +1,14 @@
+@using PaintCatalog.Portal.Helpers
 @model PaintCatalog.Portal.Models.Bookmarks.BookmarkListViewModel
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
+@inject Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizerFactory LocalizerFactory
 
 @{
     ViewData["Title"] = Localizer["Page_Title"].Value;
     ViewData["MetaDescription"] = Localizer["Page_Description"].Value;
+
+    var searchLocalizer = LocalizerFactory.Create("Views.Paints.Index", typeof(Program).Assembly.GetName().Name);
+    var enumLabels = EnumLabelHelper.CreatePaintEnumLabels(searchLocalizer);
 
     var jsonOptions = new System.Text.Json.JsonSerializerOptions
     {
@@ -59,7 +64,25 @@
             statusSaved = Localizer["Status_Saved"].Value,
             statusDeleted = Localizer["Status_Deleted"].Value,
             confirmDelete = Localizer["Confirm_Delete"].Value,
-            refreshLoading = Localizer["Status_Loading"].Value
+            refreshLoading = Localizer["Status_Loading"].Value,
+            brand = searchLocalizer["Card_Label_Brand"].Value,
+            series = searchLocalizer["Card_Label_Series"].Value,
+            sheen = searchLocalizer["Card_Label_Finish"].Value,
+            type = searchLocalizer["Card_Label_Type"].Value,
+            medium = searchLocalizer["Card_Label_Medium"].Value,
+            effects = searchLocalizer["Card_Label_Effects"].Value,
+            usage = searchLocalizer["Card_Label_Usage"].Value,
+            form = searchLocalizer["Card_Label_Form"].Value,
+            sku = searchLocalizer["Card_Label_Sku"].Value
+        },
+        enumLabels = new
+        {
+            types = enumLabels.Types,
+            sheens = enumLabels.Sheens,
+            mediums = enumLabels.Mediums,
+            effects = enumLabels.Effects,
+            usages = enumLabels.Usages,
+            forms = enumLabels.Forms
         }
     };
 
@@ -99,7 +122,7 @@
                 <p class="mt-1 text-sm">@Localizer["Empty_Paints_Description"]</p>
             </div>
 
-            <div id="bookmark-list-paint" class="grid grid-cols-1 gap-4 sm:grid-cols-2"></div>
+            <div id="bookmark-list-paint" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
         </div>
 
         <div data-bookmark-panel="tutorial" class="space-y-4 hidden" role="tabpanel">
