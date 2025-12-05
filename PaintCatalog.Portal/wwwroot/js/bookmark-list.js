@@ -150,6 +150,20 @@
         return normalized || null;
     }
 
+    function resolveItemId(bookmark) {
+        if (!bookmark) return null;
+
+        const candidates = [bookmark.itemId, bookmark.tutorialId, bookmark.paintId, bookmark.id];
+        for (const candidate of candidates) {
+            const parsed = Number(candidate);
+            if (Number.isFinite(parsed) && parsed > 0) {
+                return parsed;
+            }
+        }
+
+        return null;
+    }
+
     function firstString(...values) {
         for (const value of values) {
             if (typeof value === 'string' && value.trim()) {
@@ -424,14 +438,16 @@
             ? `<div class="mt-4 space-y-2">${note}</div>`
             : '';
 
+        const resolvedItemId = resolveItemId(bookmark);
+
         const actionButtons = `
             <div class="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
                 <div class="flex items-center gap-2">
-                    <button type="button" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200" data-bookmark-edit="${bookmark.itemId}" data-bookmark-type="paint">
+                    <button type="button" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200" data-bookmark-edit="${resolvedItemId ?? ''}" data-bookmark-type="paint">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 19.5 7.125m-2.638-2.638-9.193 9.193a4.5 4.5 0 0 0-1.169 2.118l-.5 2a.375.375 0 0 0 .456.456l2-.5a4.5 4.5 0 0 0 2.118-1.169l9.193-9.193m-2.638-2.638 2.122-2.122a1.875 1.875 0 1 1 2.652 2.652L19.5 7.125m-2.638-2.638 2.638 2.638" /></svg>
                         ${labels.edit || 'Edit'}
                     </button>
-                    <button type="button" class="inline-flex items-center gap-2 rounded-xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-400 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:border-rose-500/60 dark:text-rose-300" data-bookmark-delete="${bookmark.itemId}" data-bookmark-type="paint">
+                    <button type="button" class="inline-flex items-center gap-2 rounded-xl border border-rose-200 px-3 py-2 text-sm font-semibold text-rose-600 transition hover:border-rose-400 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:border-rose-500/60 dark:text-rose-300" data-bookmark-delete="${resolvedItemId ?? ''}" data-bookmark-type="paint">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21.75H8.084a2.25 2.25 0 0 1-2.245-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                         ${labels.delete || 'Delete'}
                     </button>
@@ -479,6 +495,7 @@
             ? `<span class="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200">${bookmark.categoryName}</span>`
             : '';
         const title = bookmark.title || bookmark.tutorialSlug || typeLabel;
+        const resolvedItemId = resolveItemId(bookmark);
 
         return `
             <article class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70" ${url ? `data-bookmark-url="${url}"` : ''}>
@@ -493,12 +510,12 @@
                     ${note}
                 </div>
                 <div class="mt-4 flex items-center justify-between">
-                    <span class="text-xs text-slate-500 dark:text-slate-400">${bookmark.itemId ? `#${bookmark.itemId}` : ''}</span>
+                    <span class="text-xs text-slate-500 dark:text-slate-400">${resolvedItemId ? `#${resolvedItemId}` : ''}</span>
                     <div class="flex items-center gap-2">
-                        <button type="button" class="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-300" data-bookmark-edit="${bookmark.itemId}" data-bookmark-type="tutorial">
+                        <button type="button" class="rounded-lg border border-slate-200 p-2 text-slate-600 transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-300" data-bookmark-edit="${resolvedItemId ?? ''}" data-bookmark-type="tutorial">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 19.5 7.125m-2.638-2.638-9.193 9.193a4.5 4.5 0 0 0-1.169 2.118l-.5 2a.375.375 0 0 0 .456.456l2-.5a4.5 4.5 0 0 0 2.118-1.169l9.193-9.193m-2.638-2.638 2.122-2.122a1.875 1.875 0 1 1 2.652 2.652L19.5 7.125m-2.638-2.638 2.638 2.638" /></svg>
                         </button>
-                        <button type="button" class="rounded-lg border border-slate-200 p-2 text-rose-500 transition hover:border-rose-300 hover:text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:border-slate-700 dark:text-rose-300" data-bookmark-delete="${bookmark.itemId}" data-bookmark-type="tutorial">
+                        <button type="button" class="rounded-lg border border-slate-200 p-2 text-rose-500 transition hover:border-rose-300 hover:text-rose-600 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:border-slate-700 dark:text-rose-300" data-bookmark-delete="${resolvedItemId ?? ''}" data-bookmark-type="tutorial">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21.75H8.084a2.25 2.25 0 0 1-2.245-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                         </button>
                         ${url
@@ -545,9 +562,10 @@
 
             if (editBtn) {
                 const itemId = editBtn.getAttribute('data-bookmark-edit');
-                const bookmark = state.bookmarks.find(
-                    (b) => String(b.itemId) === String(itemId) && normalizeType(b.type) === type,
-                );
+                const bookmark = state.bookmarks.find((b) => {
+                    const resolvedId = resolveItemId(b);
+                    return resolvedId && String(resolvedId) === String(itemId) && normalizeType(b.type) === type;
+                });
                 if (bookmark) {
                     openEditModal(bookmark);
                 }
@@ -556,9 +574,10 @@
 
             if (deleteBtn) {
                 const itemId = deleteBtn.getAttribute('data-bookmark-delete');
-                const bookmark = state.bookmarks.find(
-                    (b) => String(b.itemId) === String(itemId) && normalizeType(b.type) === type,
-                );
+                const bookmark = state.bookmarks.find((b) => {
+                    const resolvedId = resolveItemId(b);
+                    return resolvedId && String(resolvedId) === String(itemId) && normalizeType(b.type) === type;
+                });
                 if (bookmark) {
                     deleteBookmark(bookmark);
                 }
@@ -818,13 +837,19 @@
         const type = normalizeType(bookmark.type);
         if (!typeMap[type]) return;
 
+        const itemId = resolveItemId(bookmark);
+        if (!itemId) {
+            setError(labels.errorDelete || 'Unable to remove bookmark');
+            return;
+        }
+
         if (labels.confirmDelete && !window.confirm(labels.confirmDelete)) {
             return;
         }
 
         const url = endpoints.delete
             .replace('__type__', encodeURIComponent(typeMap[type]))
-            .replace('__id__', encodeURIComponent(bookmark.itemId));
+            .replace('__id__', encodeURIComponent(itemId));
 
         try {
             const response = await fetch(url, { method: 'DELETE', credentials: 'include' });
