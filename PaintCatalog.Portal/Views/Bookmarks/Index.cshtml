@@ -16,6 +16,9 @@
         WriteIndented = false
     };
 
+    var deleteEndpointTemplate = Url.Action("Delete", "Bookmarks", new { itemType = 0, itemId = 0 }) ?? "/bookmarks/0/0";
+    deleteEndpointTemplate = deleteEndpointTemplate.Replace("/0/0", "/__type__/__id__");
+
     var bootstrap = new
     {
         endpoints = new
@@ -24,7 +27,7 @@
             categories = Url.Action("Categories", "Bookmarks") ?? "/bookmarks/categories",
             createCategory = Url.Action("CreateCategory", "Bookmarks") ?? "/bookmarks/categories",
             upsert = Url.Action("Upsert", "Bookmarks") ?? "/bookmarks",
-            delete = Url.Action("Delete", "Bookmarks", new { itemType = "__type__", itemId = "__id__" }) ?? "/bookmarks/__type__/__id__"
+            delete = deleteEndpointTemplate
         },
         labels = new
         {
