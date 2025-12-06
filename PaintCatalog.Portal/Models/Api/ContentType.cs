@@ -6,9 +6,9 @@ namespace PaintCatalog.Portal.Models.Api
     public enum ContentType
     {
         Tutorial = 1,
-        Reference = 2,
+        BattleReport = 2,
         Review = 4,
-        Showcase = 8,
+        Event = 8,
         News = 16
     }
 }

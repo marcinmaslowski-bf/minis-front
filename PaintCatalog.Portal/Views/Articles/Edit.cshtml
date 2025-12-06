@@ -37,21 +37,28 @@
         <input asp-for="Published" type="hidden" />
         <div class="space-y-2">
             <label class="block text-sm font-semibold text-slate-800 dark:text-slate-100" for="SelectedContentTypes">@Localizer["Field_ContentTypes"]</label>
-            <select asp-for="SelectedContentTypes"
-                    multiple
-                    class="w-full rounded-xl border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100">
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach (var option in Model.ContentTypeOptions)
                 {
                     var rawValue = option.Value ?? string.Empty;
+                    var checkboxId = $"content-type-{rawValue}";
                     ContentType? typeValue = null;
                     if (int.TryParse(rawValue, out var parsed))
                     {
                         typeValue = (ContentType)parsed;
                     }
                     var label = typeValue.HasValue ? Localizer[$"ContentType_{typeValue.Value}"].Value : option.Text;
-                    <option value="@rawValue" selected="@(option.Selected ? "selected" : null)">@label</option>
+                    <label for="@checkboxId" class="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white/60 px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-emerald-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200">
+                        <input id="@checkboxId"
+                               name="SelectedContentTypes"
+                               type="checkbox"
+                               value="@rawValue"
+                               @(option.Selected ? "checked" : null)
+                               class="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900" />
+                        <span class="truncate">@label</span>
+                    </label>
                 }
-            </select>
+            </div>
             <p class="text-xs text-slate-500 dark:text-slate-400">@Localizer["Field_ContentTypes_Help"]</p>
             <span asp-validation-for="SelectedContentTypes" class="text-xs text-rose-600"></span>
         </div>
