@@ -29,9 +29,9 @@ namespace PaintCatalog.Portal.Controllers
         private static readonly Dictionary<ContentType, string> ContentTypeLabels = new()
         {
             { ContentType.Tutorial, "Tutorial" },
-            { ContentType.Reference, "Reference" },
+            { ContentType.BattleReport, "BattleReport" },
             { ContentType.Review, "Review" },
-            { ContentType.Showcase, "Showcase" },
+            { ContentType.Event, "Event" },
             { ContentType.News, "News" }
         };
 

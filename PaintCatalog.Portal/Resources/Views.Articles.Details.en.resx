@@ -160,20 +160,20 @@
 <data name="Field_ContentTypes_Help" xml:space="preserve">
   <value>Select one or more types that describe this article.</value>
 </data>
-<data name="ContentType_Tutorial" xml:space="preserve">
-  <value>Tutorial</value>
-</data>
-<data name="ContentType_Reference" xml:space="preserve">
-  <value>Reference</value>
-</data>
-<data name="ContentType_Review" xml:space="preserve">
-  <value>Review</value>
-</data>
-<data name="ContentType_Showcase" xml:space="preserve">
-  <value>Showcase</value>
-</data>
-<data name="ContentType_News" xml:space="preserve">
-  <value>News</value>
-</data>
+  <data name="ContentType_Tutorial" xml:space="preserve">
+    <value>Tutorial</value>
+  </data>
+  <data name="ContentType_BattleReport" xml:space="preserve">
+    <value>Battle report</value>
+  </data>
+  <data name="ContentType_Review" xml:space="preserve">
+    <value>Review</value>
+  </data>
+  <data name="ContentType_Event" xml:space="preserve">
+    <value>Event</value>
+  </data>
+  <data name="ContentType_News" xml:space="preserve">
+    <value>News</value>
+  </data>
 
 </root>

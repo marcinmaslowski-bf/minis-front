@@ -73,20 +73,20 @@
 <data name="Field_ContentTypes_Help" xml:space="preserve">
   <value>Wybierz jeden lub więcej typów opisujących ten artykuł.</value>
 </data>
-<data name="ContentType_Tutorial" xml:space="preserve">
-  <value>Tutorial</value>
-</data>
-<data name="ContentType_Reference" xml:space="preserve">
-  <value>Referencja</value>
-</data>
-<data name="ContentType_Review" xml:space="preserve">
-  <value>Recenzja</value>
-</data>
-<data name="ContentType_Showcase" xml:space="preserve">
-  <value>Prezentacja</value>
-</data>
-<data name="ContentType_News" xml:space="preserve">
-  <value>Aktualności</value>
-</data>
+  <data name="ContentType_Tutorial" xml:space="preserve">
+    <value>Tutorial</value>
+  </data>
+  <data name="ContentType_BattleReport" xml:space="preserve">
+    <value>Raport bitewny</value>
+  </data>
+  <data name="ContentType_Review" xml:space="preserve">
+    <value>Recenzja</value>
+  </data>
+  <data name="ContentType_Event" xml:space="preserve">
+    <value>Wydarzenie</value>
+  </data>
+  <data name="ContentType_News" xml:space="preserve">
+    <value>Aktualności</value>
+  </data>
 
 </root>
