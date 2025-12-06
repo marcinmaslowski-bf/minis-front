@@ -20,8 +20,8 @@
     var paintDetailsTemplate = CultureHelpers.GetRouteCultureSegment() is string cultureSegment
         ? Url.RouteUrl("PaintDetailsLocalized", new { culture = cultureSegment, brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/pl/paints/__brand__/__series__/__paint__"
         : Url.RouteUrl("PaintDetails", new { brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/paints/__brand__/__series__/__paint__";
-    var sections = Model.Content?.Sections ?? new List<ArticleSectionDto>();
-    var contentTypes = Enum.GetValues<ContentType>().Where(Model.ContentType.HasFlag).ToList();
+    var sections = (Model.Content?.Sections ?? new List<ArticleSectionDto>()).ToList();
+    var contentTypes = Enum.GetValues<ContentType>().Where(type => Model.ContentType.HasFlag(type)).ToList();
 }
 
 @section Scripts {
@@ -196,7 +196,7 @@
     {
         foreach (var section in sections)
         {
-            var items = section.Items ?? new List<ArticleSectionItemDto>();
+            var items = (section.Items ?? new List<ArticleSectionItemDto>()).ToList();
             var sectionTitle = string.IsNullOrWhiteSpace(section.Title)
                 ? Localizer["Content_Section_Fallback", string.Empty].Value?.Trim()
                 : section.Title;
@@ -232,7 +232,7 @@
                             }
                             else if (type == "step")
                             {
-                                var steps = item.Steps ?? new List<ArticleStepDto>();
+                                var steps = (item.Steps ?? new List<ArticleStepDto>()).ToList();
                                 if (steps.Count == 0)
                                 {
                                     <div class="space-y-2">
