@@ -36,25 +36,25 @@
             refresh = Localizer["Refresh_Button"].Value,
             filterLabel = Localizer["Filter_Label"].Value,
             filterAllPaints = Localizer["Filter_All_Paints"].Value,
-            filterAllTutorials = Localizer["Filter_All_Tutorials"].Value,
+            filterAllArticles = Localizer["Filter_All_Articles"].Value,
             tabPaints = Localizer["Tab_Paints"].Value,
-            tabTutorials = Localizer["Tab_Tutorials"].Value,
+            tabArticles = Localizer["Tab_Articles"].Value,
             emptyPaintsTitle = Localizer["Empty_Paints_Title"].Value,
             emptyPaintsDescription = Localizer["Empty_Paints_Description"].Value,
-            emptyTutorialsTitle = Localizer["Empty_Tutorials_Title"].Value,
-            emptyTutorialsDescription = Localizer["Empty_Tutorials_Description"].Value,
+            emptyArticlesTitle = Localizer["Empty_Articles_Title"].Value,
+            emptyArticlesDescription = Localizer["Empty_Articles_Description"].Value,
             errorLoad = Localizer["Error_Load"].Value,
             errorSave = Localizer["Error_Save"].Value,
             errorDelete = Localizer["Error_Delete"].Value,
             noteLabel = Localizer["Note_Label"].Value,
             typePaint = Localizer["Type_Paint"].Value,
-            typeTutorial = Localizer["Type_Tutorial"].Value,
+            typeArticle = Localizer["Type_Article"].Value,
             typeUnknown = Localizer["Type_Unknown"].Value,
             open = Localizer["Open_Link"].Value,
             edit = Localizer["Edit"].Value,
             delete = Localizer["Delete"].Value,
             modalTitlePaint = Localizer["Modal_Title_Paint"].Value,
-            modalTitleTutorial = Localizer["Modal_Title_Tutorial"].Value,
+            modalTitleArticle = Localizer["Modal_Title_Article"].Value,
             categoryLabel = Localizer["Bookmark_Category_Label"].Value,
             newCategoryLabel = Localizer["Bookmark_NewCategory_Label"].Value,
             newCategoryPlaceholder = Localizer["Bookmark_NewCategory_Placeholder"].Value,
@@ -102,7 +102,7 @@
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div class="inline-flex w-full max-w-xl rounded-xl border border-slate-200 bg-slate-50 p-1 text-sm font-semibold text-slate-600 shadow-inner dark:border-slate-700 dark:bg-slate-800/70 dark:text-slate-200" role="tablist">
                 <button data-bookmark-tab="paint" class="bookmark-tab-btn flex-1 rounded-lg px-3 py-2 transition" role="tab" aria-selected="true">@Localizer["Tab_Paints"]</button>
-                <button data-bookmark-tab="tutorial" class="bookmark-tab-btn flex-1 rounded-lg px-3 py-2 transition" role="tab" aria-selected="false">@Localizer["Tab_Tutorials"]</button>
+                <button data-bookmark-tab="article" class="bookmark-tab-btn flex-1 rounded-lg px-3 py-2 transition" role="tab" aria-selected="false">@Localizer["Tab_Articles"]</button>
             </div>
 
             <button id="bookmark-refresh" type="button" class="inline-flex items-center gap-2 rounded-xl border border-emerald-500 px-4 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-500 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-400 dark:hover:text-slate-900">
@@ -134,24 +134,24 @@
             <div id="bookmark-list-paint" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"></div>
         </div>
 
-        <div data-bookmark-panel="tutorial" class="space-y-4 hidden" role="tabpanel">
+        <div data-bookmark-panel="article" class="space-y-4 hidden" role="tabpanel">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div class="flex flex-col gap-2 sm:flex-1">
-                    <label for="bookmark-filter-tutorial" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">@Localizer["Filter_Label"]</label>
-                    <select id="bookmark-filter-tutorial" class="w-full rounded-xl border border-slate-300 bg-white/90 p-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100"></select>
+                    <label for="bookmark-filter-article" class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">@Localizer["Filter_Label"]</label>
+                    <select id="bookmark-filter-article" class="w-full rounded-xl border border-slate-300 bg-white/90 p-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100"></select>
                 </div>
-                <button id="bookmark-add-category-tutorial" type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-400 dark:hover:text-emerald-300">
+                <button id="bookmark-add-category-article" type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-400 dark:hover:text-emerald-300">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                     @Localizer["Bookmark_AddCategory_Button"]
                 </button>
             </div>
 
-            <div id="bookmark-empty-tutorial" class="hidden rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-center text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300">
-                <h2 class="text-lg font-semibold">@Localizer["Empty_Tutorials_Title"]</h2>
-                <p class="mt-1 text-sm">@Localizer["Empty_Tutorials_Description"]</p>
+            <div id="bookmark-empty-article" class="hidden rounded-2xl border border-dashed border-slate-300 bg-white/60 p-6 text-center text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300">
+                <h2 class="text-lg font-semibold">@Localizer["Empty_Articles_Title"]</h2>
+                <p class="mt-1 text-sm">@Localizer["Empty_Articles_Description"]</p>
             </div>
 
-            <div id="bookmark-list-tutorial" class="grid grid-cols-1 gap-4 sm:grid-cols-2"></div>
+            <div id="bookmark-list-article" class="grid grid-cols-1 gap-4 sm:grid-cols-2"></div>
         </div>
     </div>
 </section>

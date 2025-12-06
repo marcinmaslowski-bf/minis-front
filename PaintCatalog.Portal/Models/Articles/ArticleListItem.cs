@@ -1,8 +1,8 @@
 using System;
 
-namespace PaintCatalog.Portal.Models.Tutorials
+namespace PaintCatalog.Portal.Models.Articles
 {
-    public class TutorialListItem
+    public class ArticleListItem
     {
         public int Id { get; set; }
 

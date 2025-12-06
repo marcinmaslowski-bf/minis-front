@@ -13,10 +13,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Page_Title" xml:space="preserve">
-    <value>Tutorial: {0}</value>
+    <value>Article: {0}</value>
   </data>
   <data name="Page_Description" xml:space="preserve">
-    <value>Tutorial preview</value>
+    <value>Article preview</value>
   </data>
   <data name="Header_Badge" xml:space="preserve">
     <value>Preview</value>
@@ -28,7 +28,7 @@
     <value>Back to list</value>
   </data>
   <data name="Content_Title" xml:space="preserve">
-    <value>Tutorial content</value>
+    <value>Article content</value>
   </data>
   <data name="Content_Badge" xml:space="preserve">
     <value>Content</value>
@@ -40,7 +40,7 @@
     <value>Items: {0}</value>
   </data>
   <data name="Content_Empty" xml:space="preserve">
-    <value>This tutorial does not contain any content yet.</value>
+    <value>This article does not contain any content yet.</value>
   </data>
   <data name="Content_Section_Label" xml:space="preserve">
     <value>Section {0}</value>
@@ -153,4 +153,27 @@
   <data name="Bookmark_Login" xml:space="preserve">
     <value>Sign in to save bookmarks</value>
   </data>
+
+<data name="Field_ContentTypes" xml:space="preserve">
+  <value>Article types</value>
+</data>
+<data name="Field_ContentTypes_Help" xml:space="preserve">
+  <value>Select one or more types that describe this article.</value>
+</data>
+<data name="ContentType_Tutorial" xml:space="preserve">
+  <value>Tutorial</value>
+</data>
+<data name="ContentType_Reference" xml:space="preserve">
+  <value>Reference</value>
+</data>
+<data name="ContentType_Review" xml:space="preserve">
+  <value>Review</value>
+</data>
+<data name="ContentType_Showcase" xml:space="preserve">
+  <value>Showcase</value>
+</data>
+<data name="ContentType_News" xml:space="preserve">
+  <value>News</value>
+</data>
+
 </root>

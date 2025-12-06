@@ -1,4 +1,4 @@
-@model PaintCatalog.Portal.Models.Tutorials.TutorialDetailsViewModel
+@model PaintCatalog.Portal.Models.Articles.ArticleDetailsViewModel
 @using System.Linq
 @using System.Net
 @using System.Text.RegularExpressions
@@ -20,7 +20,8 @@
     var paintDetailsTemplate = CultureHelpers.GetRouteCultureSegment() is string cultureSegment
         ? Url.RouteUrl("PaintDetailsLocalized", new { culture = cultureSegment, brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/pl/paints/__brand__/__series__/__paint__"
         : Url.RouteUrl("PaintDetails", new { brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/paints/__brand__/__series__/__paint__";
-    var sections = Model.Content?.Sections ?? new List<TutorialSectionDto>();
+    var sections = Model.Content?.Sections ?? new List<ArticleSectionDto>();
+    var contentTypes = Enum.GetValues<ContentType>().Where(Model.ContentType.HasFlag).ToList();
 }
 
 @section Scripts {
@@ -161,6 +162,17 @@
         {
             <p class="text-sm font-semibold text-amber-600 dark:text-amber-300">@Localizer["Status_Draft"]</p>
         }
+        @if (contentTypes.Any())
+        {
+            <div class="flex flex-wrap gap-2">
+                @foreach (var type in contentTypes)
+                {
+                    <span class="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:border-emerald-400/50 dark:bg-emerald-900/40 dark:text-emerald-100">
+                        @Localizer[$"ContentType_{type}"]
+                    </span>
+                }
+            </div>
+        }
         <div class="flex flex-wrap gap-2">
             <button id="bookmark-trigger" type="button" class="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-slate-700 transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300">
                 <span aria-hidden="true">★</span>
@@ -184,7 +196,7 @@
     {
         foreach (var section in sections)
         {
-            var items = section.Items ?? new List<TutorialSectionItemDto>();
+            var items = section.Items ?? new List<ArticleSectionItemDto>();
             var sectionTitle = string.IsNullOrWhiteSpace(section.Title)
                 ? Localizer["Content_Section_Fallback", string.Empty].Value?.Trim()
                 : section.Title;
@@ -220,7 +232,7 @@
                             }
                             else if (type == "step")
                             {
-                                var steps = item.Steps ?? new List<TutorialStepDto>();
+                                var steps = item.Steps ?? new List<ArticleStepDto>();
                                 if (steps.Count == 0)
                                 {
                                     <div class="space-y-2">
@@ -299,10 +311,10 @@
     </div>
 
     <div class="flex gap-4">
-        <a href="@Url.Action("Edit", "Tutorials", new { id = Model.Id })" class="text-sm font-semibold text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200">
+        <a href="@Url.Action("Edit", "Articles", new { id = Model.Id })" class="text-sm font-semibold text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200">
             @Localizer["Action_Edit"]
         </a>
-        <a href="@Url.Action("Index", "Tutorials")" class="text-sm font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white">
+        <a href="@Url.Action("Index", "Articles")" class="text-sm font-semibold text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white">
             @Localizer["Action_Back"]
         </a>
     </div>

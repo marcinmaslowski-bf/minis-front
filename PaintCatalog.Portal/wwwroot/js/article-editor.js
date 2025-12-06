@@ -1,8 +1,8 @@
 (function () {
-    const form = document.getElementById('tutorial-form');
+    const form = document.getElementById('article-form');
     const contentInput = document.getElementById('ContentJson');
-    const editor = document.getElementById('tutorial-editor');
-    const addSectionButton = document.getElementById('tutorial-add-section');
+    const editor = document.getElementById('article-editor');
+    const addSectionButton = document.getElementById('article-add-section');
     const uploadButton = document.getElementById('title-image-upload');
     const uploadInput = document.getElementById('title-image-file');
     const uploadStatus = document.getElementById('title-image-status');
@@ -714,7 +714,7 @@
 
         const safeId = encodeURIComponent(parsedId);
         titleImagePreview.innerHTML = `
-            <img src="/attachments/${safeId}" alt="Tutorial cover" class="max-h-48 w-full rounded-md object-cover" />
+            <img src="/attachments/${safeId}" alt="Article cover" class="max-h-48 w-full rounded-md object-cover" />
         `;
     }
 

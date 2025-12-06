@@ -6,7 +6,7 @@ namespace PaintCatalog.Portal.Models.Api
     public class EditorJsDocumentDto
     {
         [JsonPropertyName("sections")]
-        public List<TutorialSectionDto>? Sections { get; set; }
+        public List<ArticleSectionDto>? Sections { get; set; }
 
         [JsonPropertyName("time")]
         public long? Time { get; set; }

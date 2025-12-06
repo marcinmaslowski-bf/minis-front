@@ -384,9 +384,9 @@ namespace PaintCatalog.Portal.Controllers
                 return "paint";
             }
 
-            if (raw == "2" || raw == "tutorial" || raw == "tutorials")
+            if (raw == "2" || raw == "article" || raw == "articles")
             {
-                return "tutorial";
+                return "article";
             }
 
             return raw;

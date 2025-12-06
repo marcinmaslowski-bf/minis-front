@@ -13,22 +13,22 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Page_Title" xml:space="preserve">
-    <value>Tutorials - Paint Catalog Portal</value>
+    <value>Articles - Paint Catalog Portal</value>
   </data>
   <data name="Page_Description" xml:space="preserve">
-    <value>Manage your own painting tutorials.</value>
+    <value>Manage your own painting articles.</value>
   </data>
   <data name="Header_Badge" xml:space="preserve">
     <value>My content</value>
   </data>
   <data name="Header_Title" xml:space="preserve">
-    <value>Your tutorials</value>
+    <value>Your articles</value>
   </data>
   <data name="Header_Subtitle" xml:space="preserve">
-    <value>Create, preview, edit, or delete your tutorials.</value>
+    <value>Create, preview, edit, or delete your articles.</value>
   </data>
   <data name="Header_Create" xml:space="preserve">
-    <value>New tutorial</value>
+    <value>New article</value>
   </data>
   <data name="Table_Title" xml:space="preserve">
     <value>Title</value>
@@ -46,7 +46,7 @@
     <value>Actions</value>
   </data>
   <data name="Table_Empty" xml:space="preserve">
-    <value>No tutorials yet.</value>
+    <value>No articles yet.</value>
   </data>
   <data name="Status_Draft" xml:space="preserve">
     <value>Draft</value>
@@ -67,7 +67,7 @@
     <value>Delete</value>
   </data>
   <data name="Action_DeleteConfirm" xml:space="preserve">
-    <value>Delete this tutorial?</value>
+    <value>Delete this article?</value>
   </data>
   <data name="Raw_Title" xml:space="preserve">
     <value>Raw response</value>

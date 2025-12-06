@@ -24,8 +24,8 @@
   <data name="Nav_Paints" xml:space="preserve">
     <value>Paints</value>
   </data>
-  <data name="Nav_Tutorials" xml:space="preserve">
-    <value>Tutorials</value>
+  <data name="Nav_Articles" xml:space="preserve">
+    <value>Articles</value>
   </data>
   <data name="Nav_Bookmarks" xml:space="preserve">
     <value>Bookmarks</value>

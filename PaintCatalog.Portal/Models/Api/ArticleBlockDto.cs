@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace PaintCatalog.Portal.Models.Api
 {
-    public class TutorialBlockDto
+    public class ArticleBlockDto
     {
         [JsonPropertyName("header")]
         public string? Header { get; set; }
@@ -15,7 +15,7 @@ namespace PaintCatalog.Portal.Models.Api
         public List<int>? PaintIds { get; set; }
 
         [JsonPropertyName("images")]
-        public List<TutorialImageDto>? Images { get; set; }
+        public List<ArticleImageDto>? Images { get; set; }
 
         [JsonPropertyName("body")]
         public string? Body { get; set; }

@@ -22,7 +22,7 @@
     <value>Your bookmarks</value>
   </data>
   <data name="Subheading" xml:space="preserve">
-    <value>Review everything you saved, filter by category and open the matching paint or tutorial.</value>
+    <value>Review everything you saved, filter by category and open the matching paint or article.</value>
   </data>
   <data name="Refresh_Button" xml:space="preserve">
     <value>Refresh list</value>
@@ -36,14 +36,14 @@
   <data name="Filter_All_Paints" xml:space="preserve">
     <value>All paints</value>
   </data>
-  <data name="Filter_All_Tutorials" xml:space="preserve">
-    <value>All tutorials</value>
+  <data name="Filter_All_Articles" xml:space="preserve">
+    <value>All articles</value>
   </data>
   <data name="Tab_Paints" xml:space="preserve">
     <value>Paints</value>
   </data>
-  <data name="Tab_Tutorials" xml:space="preserve">
-    <value>Tutorials</value>
+  <data name="Tab_Articles" xml:space="preserve">
+    <value>Articles</value>
   </data>
   <data name="Empty_Paints_Title" xml:space="preserve">
     <value>No paint bookmarks yet</value>
@@ -51,11 +51,11 @@
   <data name="Empty_Paints_Description" xml:space="preserve">
     <value>Save paints to see them here.</value>
   </data>
-  <data name="Empty_Tutorials_Title" xml:space="preserve">
-    <value>No tutorial bookmarks yet</value>
+  <data name="Empty_Articles_Title" xml:space="preserve">
+    <value>No article bookmarks yet</value>
   </data>
-  <data name="Empty_Tutorials_Description" xml:space="preserve">
-    <value>Save tutorials to see them here.</value>
+  <data name="Empty_Articles_Description" xml:space="preserve">
+    <value>Save articles to see them here.</value>
   </data>
   <data name="Error_Load" xml:space="preserve">
     <value>Unable to load bookmarks</value>
@@ -72,8 +72,8 @@
   <data name="Type_Paint" xml:space="preserve">
     <value>Paint</value>
   </data>
-  <data name="Type_Tutorial" xml:space="preserve">
-    <value>Tutorial</value>
+  <data name="Type_Article" xml:space="preserve">
+    <value>Article</value>
   </data>
   <data name="Type_Unknown" xml:space="preserve">
     <value>Item</value>
@@ -90,8 +90,8 @@
   <data name="Modal_Title_Paint" xml:space="preserve">
     <value>Edit paint bookmark</value>
   </data>
-  <data name="Modal_Title_Tutorial" xml:space="preserve">
-    <value>Edit tutorial bookmark</value>
+  <data name="Modal_Title_Article" xml:space="preserve">
+    <value>Edit article bookmark</value>
   </data>
   <data name="Bookmark_Category_Label" xml:space="preserve">
     <value>Category</value>

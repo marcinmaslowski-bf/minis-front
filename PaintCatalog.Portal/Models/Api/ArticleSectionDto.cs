@@ -3,15 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace PaintCatalog.Portal.Models.Api
 {
-    public class TutorialStepDto
+    public class ArticleSectionDto
     {
         [JsonPropertyName("title")]
         public string? Title { get; set; }
 
-        [JsonPropertyName("text")]
-        public string? Text { get; set; }
-
-        [JsonPropertyName("paintIds")]
-        public List<int>? PaintIds { get; set; }
+        [JsonPropertyName("items")]
+        public List<ArticleSectionItemDto>? Items { get; set; }
     }
 }

@@ -1,13 +1,15 @@
 using System;
 using PaintCatalog.Portal.Models.Api;
 
-namespace PaintCatalog.Portal.Models.Tutorials
+namespace PaintCatalog.Portal.Models.Articles
 {
-    public class TutorialDetailsViewModel
+    public class ArticleDetailsViewModel
     {
         public int Id { get; set; }
 
         public string Title { get; set; } = string.Empty;
+
+        public ContentType ContentType { get; set; }
 
         public int? TitleImageAttachmentId { get; set; }
 
