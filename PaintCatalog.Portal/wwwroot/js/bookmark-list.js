@@ -15,22 +15,22 @@
 
     const listContainers = {
         paint: document.getElementById('bookmark-list-paint'),
-        tutorial: document.getElementById('bookmark-list-tutorial'),
+        article: document.getElementById('bookmark-list-article'),
     };
 
     const emptyStates = {
         paint: document.getElementById('bookmark-empty-paint'),
-        tutorial: document.getElementById('bookmark-empty-tutorial'),
+        article: document.getElementById('bookmark-empty-article'),
     };
 
     const filterSelects = {
         paint: document.getElementById('bookmark-filter-paint'),
-        tutorial: document.getElementById('bookmark-filter-tutorial'),
+        article: document.getElementById('bookmark-filter-article'),
     };
 
     const filterAddButtons = {
         paint: document.getElementById('bookmark-add-category-paint'),
-        tutorial: document.getElementById('bookmark-add-category-tutorial'),
+        article: document.getElementById('bookmark-add-category-article'),
     };
 
     const modal = document.getElementById('bookmark-edit-modal');
@@ -59,13 +59,13 @@
 
     const typeMap = {
         paint: 1,
-        tutorial: 2,
+        article: 2,
     };
 
     const state = {
         bookmarks: [],
-        filtered: { paint: [], tutorial: [] },
-        categories: { paint: [], tutorial: [] },
+        filtered: { paint: [], article: [] },
+        categories: { paint: [], article: [] },
         activeTab: 'paint',
         loading: false,
         editing: null,
@@ -165,13 +165,13 @@
 
         if (typeof value === 'number') {
             if (value === 1) return 'paint';
-            if (value === 2) return 'tutorial';
+            if (value === 2) return 'article';
         }
 
         const normalized = String(value).trim().toLowerCase();
 
         if (['paint', 'paints', '1'].includes(normalized)) return 'paint';
-        if (['tutorial', 'tutorials', 'lesson', '2'].includes(normalized)) return 'tutorial';
+        if (['article', 'articles', 'lesson', '2'].includes(normalized)) return 'article';
 
         return normalized || null;
     }
@@ -179,7 +179,7 @@
     function resolveItemId(bookmark) {
         if (!bookmark) return null;
 
-        const candidates = [bookmark.itemId, bookmark.tutorialId, bookmark.paintId, bookmark.id];
+        const candidates = [bookmark.itemId, bookmark.articleId, bookmark.paintId, bookmark.id];
         for (const candidate of candidates) {
             const parsed = Number(candidate);
             if (Number.isFinite(parsed) && parsed > 0) {
@@ -277,9 +277,9 @@
             rawItem.slug,
         );
 
-        const tutorialSlug = firstString(
-            item.tutorialSlug,
-            rawItem.tutorialSlug,
+        const articleSlug = firstString(
+            item.articleSlug,
+            rawItem.articleSlug,
             rawItem.slug,
         );
 
@@ -303,8 +303,8 @@
             brandSlug: brandSlug,
             seriesSlug: seriesSlug,
             paintSlug: paintSlug,
-            tutorialSlug: tutorialSlug,
-            tutorialId: item.tutorialId ?? rawItem.tutorialId ?? rawItem.id ?? null,
+            articleSlug: articleSlug,
+            articleId: item.articleId ?? rawItem.articleId ?? rawItem.id ?? null,
         };
 
         if (normalized.url && normalized.type === 'paint') {
@@ -342,13 +342,13 @@
             if (provided) return provided;
         }
 
-        if (type === 'tutorial') {
-            if (bookmark.tutorialSlug) {
-                return `${langPrefix}/tutorials/${bookmark.tutorialSlug}`;
+        if (type === 'article') {
+            if (bookmark.articleSlug) {
+                return `${langPrefix}/articles/${bookmark.articleSlug}`;
             }
 
-            if (bookmark.tutorialId) {
-                return `${langPrefix}/tutorials/${bookmark.tutorialId}`;
+            if (bookmark.articleId) {
+                return `${langPrefix}/articles/${bookmark.articleId}`;
             }
         }
 
@@ -361,7 +361,7 @@
 
         const categories = state.categories[type] || [];
         const seen = new Set();
-        const options = [`<option value="all">${type === 'paint' ? (labels.filterAllPaints || 'All paints') : (labels.filterAllTutorials || 'All tutorials')}</option>`];
+        const options = [`<option value="all">${type === 'paint' ? (labels.filterAllPaints || 'All paints') : (labels.filterAllArticles || 'All articles')}</option>`];
 
         categories
             .filter((c) => (c.name || '').trim())
@@ -518,8 +518,8 @@
         `;
     }
 
-    function renderTutorialCard(bookmark) {
-        const typeLabel = labels.typeTutorial || 'Tutorial';
+    function renderArticleCard(bookmark) {
+        const typeLabel = labels.typeArticle || 'Article';
         const url = buildItemUrl(bookmark);
         const note = bookmark.note
             ? `<p class="text-sm text-slate-600 dark:text-slate-300"><span class="font-semibold">${labels.noteLabel || 'Note'}:</span> ${bookmark.note}</p>`
@@ -527,7 +527,7 @@
         const category = bookmark.categoryName
             ? `<span class="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200">${bookmark.categoryName}</span>`
             : '';
-        const title = bookmark.title || bookmark.tutorialSlug || typeLabel;
+        const title = bookmark.title || bookmark.articleSlug || typeLabel;
         const resolvedItemId = resolveItemId(bookmark);
 
         return `
@@ -545,11 +545,11 @@
                 <div class="mt-4 flex items-center justify-between">
                     <span class="text-xs text-slate-500 dark:text-slate-400">${resolvedItemId ? `#${resolvedItemId}` : ''}</span>
                     <div class="flex items-center gap-2">
-                        <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white/80 p-2 text-slate-600 shadow-sm transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200" data-bookmark-edit="${resolvedItemId ?? ''}" data-bookmark-type="tutorial">
+                        <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white/80 p-2 text-slate-600 shadow-sm transition hover:border-emerald-400 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-200" data-bookmark-edit="${resolvedItemId ?? ''}" data-bookmark-type="article">
                             <span class="sr-only">${labels.edit || 'Edit'}</span>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487 19.5 7.125m-2.638-2.638-9.193 9.193a4.5 4.5 0 0 0-1.169 2.118l-.5 2a.375.375 0 0 0 .456.456l2-.5a4.5 4.5 0 0 0 2.118-1.169l9.193-9.193m-2.638-2.638 2.122-2.122a1.875 1.875 0 1 1 2.652 2.652L19.5 7.125m-2.638-2.638 2.638 2.638" /></svg>
                         </button>
-                        <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white/80 p-2 text-rose-600 shadow-sm transition hover:border-rose-300 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:border-rose-500/60 dark:bg-slate-900/60 dark:text-rose-200" data-bookmark-delete="${resolvedItemId ?? ''}" data-bookmark-type="tutorial">
+                        <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-rose-200 bg-white/80 p-2 text-rose-600 shadow-sm transition hover:border-rose-300 hover:text-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300 dark:border-rose-500/60 dark:bg-slate-900/60 dark:text-rose-200" data-bookmark-delete="${resolvedItemId ?? ''}" data-bookmark-type="article">
                             <span class="sr-only">${labels.delete || 'Delete'}</span>
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673A2.25 2.25 0 0 1 15.916 21.75H8.084a2.25 2.25 0 0 1-2.245-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" /></svg>
                         </button>
@@ -580,7 +580,7 @@
 
         const cards = items.map((bookmark) => {
             if (type === 'paint') return renderPaintCard(bookmark);
-            return renderTutorialCard(bookmark);
+            return renderArticleCard(bookmark);
         });
 
         container.innerHTML = cards.join('');
@@ -689,23 +689,23 @@
 
                     return acc;
                 },
-                { paint: [], tutorial: [] },
+                { paint: [], article: [] },
             );
 
-            const [paintCategories, tutorialCategories] = await Promise.all([
+            const [paintCategories, articleCategories] = await Promise.all([
                 loadCategories('paint', { updateState: false, onError: setError }),
-                loadCategories('tutorial', { updateState: false, onError: setError }),
+                loadCategories('article', { updateState: false, onError: setError }),
             ]);
 
             state.categories = {
                 paint: mergeCategories(paintCategories, bookmarkCategories.paint),
-                tutorial: mergeCategories(tutorialCategories, bookmarkCategories.tutorial),
+                article: mergeCategories(articleCategories, bookmarkCategories.article),
             };
 
             renderFilterOptions('paint');
-            renderFilterOptions('tutorial');
+            renderFilterOptions('article');
             applyFilters('paint');
-            applyFilters('tutorial');
+            applyFilters('article');
 
             if (showStatus) {
                 setStatus(labels.statusLoaded || 'Bookmarks updated');
@@ -801,11 +801,11 @@
         setModalStatus('');
 
         if (modalTitle) {
-            modalTitle.textContent = type === 'paint' ? labels.modalTitlePaint || labels.typePaint || 'Edit paint bookmark' : labels.modalTitleTutorial || labels.typeTutorial || 'Edit tutorial bookmark';
+            modalTitle.textContent = type === 'paint' ? labels.modalTitlePaint || labels.typePaint || 'Edit paint bookmark' : labels.modalTitleArticle || labels.typeArticle || 'Edit article bookmark';
         }
 
         if (modalTypeLabel) {
-            modalTypeLabel.textContent = type === 'paint' ? (labels.typePaint || 'Paint') : (labels.typeTutorial || 'Tutorial');
+            modalTypeLabel.textContent = type === 'paint' ? (labels.typePaint || 'Paint') : (labels.typeArticle || 'Article');
         }
 
         if (noteInput) {
@@ -911,7 +911,7 @@
         state.newCategoryType = type;
         setAddCategoryError('');
 
-        const typeLabel = type === 'paint' ? labels.typePaint : labels.typeTutorial;
+        const typeLabel = type === 'paint' ? labels.typePaint : labels.typeArticle;
         if (addCategoryTypeLabel) {
             addCategoryTypeLabel.textContent = typeLabel || '';
         }
@@ -975,7 +975,7 @@
         }
 
         const confirmed = await (window.confirmDialog?.confirm({
-            title: labels.delete || labels.remove || labels.tabTutorials || 'Delete',
+            title: labels.delete || labels.remove || labels.tabArticles || 'Delete',
             message: labels.confirmDelete || 'Remove this bookmark?',
             confirmText: labels.remove || labels.delete || 'Delete',
             cancelText: labels.cancel || 'Cancel',
@@ -1063,14 +1063,14 @@
     }
 
     function init() {
-        if (!listContainers.paint && !listContainers.tutorial) return;
+        if (!listContainers.paint && !listContainers.article) return;
 
         bindTabs();
         bindFilters();
         bindModal();
         bindAddCategoryModal();
         bindListEvents('paint');
-        bindListEvents('tutorial');
+        bindListEvents('article');
 
         if (refreshButton) {
             refreshButton.addEventListener('click', () => loadBookmarks(false));

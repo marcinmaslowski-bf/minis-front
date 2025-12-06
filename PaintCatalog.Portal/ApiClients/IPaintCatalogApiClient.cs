@@ -58,16 +58,16 @@ public interface IPaintCatalogApiClient
 
     Task EnsureCurrentUserExistsAsync();
 
-    // Tutorials
-    Task<string> GetTutorialsRawAsync(string? authorId = null, int? page = null, int? pageSize = null);
+    // Articles
+    Task<string> GetArticlesRawAsync(string? authorId = null, int? page = null, int? pageSize = null);
 
-    Task<string> GetTutorialByIdAsync(int tutorialId);
+    Task<string> GetArticleByIdAsync(int articleId);
 
-    Task<string> CreateTutorialAsync(CreateTutorialRequest request);
+    Task<string> CreateArticleAsync(CreateArticleRequest request);
 
-    Task<string> UpdateTutorialAsync(int tutorialId, UpdateTutorialRequest request);
+    Task<string> UpdateArticleAsync(int articleId, UpdateArticleRequest request);
 
-    Task<string> DeleteTutorialAsync(int tutorialId);
+    Task<string> DeleteArticleAsync(int articleId);
 
     // Bookmarks
     Task<string> GetBookmarkAsync(BookmarkItemType itemType, int itemId);

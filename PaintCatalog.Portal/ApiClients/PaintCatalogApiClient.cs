@@ -394,7 +394,7 @@ namespace PaintCatalog.Portal.ApiClients
             response.EnsureSuccessStatusCode();
         }
 
-        public async Task<string> GetTutorialsRawAsync(string? authorId = null, int? page = null, int? pageSize = null)
+        public async Task<string> GetArticlesRawAsync(string? authorId = null, int? page = null, int? pageSize = null)
         {
             var queryParts = new List<string>();
 
@@ -413,7 +413,7 @@ namespace PaintCatalog.Portal.ApiClients
                 queryParts.Add($"PageSize={pageSize.Value}");
             }
 
-            var url = "/api/v1/tutorials";
+            var url = "/api/v1/articles";
 
             if (queryParts.Count > 0)
             {
@@ -426,9 +426,9 @@ namespace PaintCatalog.Portal.ApiClients
             return await response.Content.ReadAsStringAsync();
         }
 
-        public async Task<string> GetTutorialByIdAsync(int tutorialId)
+        public async Task<string> GetArticleByIdAsync(int articleId)
         {
-            var url = $"/api/v1/tutorials/{tutorialId}";
+            var url = $"/api/v1/articles/{articleId}";
 
             using var response = await SendGetAsync(url);
             response.EnsureSuccessStatusCode();
@@ -436,14 +436,14 @@ namespace PaintCatalog.Portal.ApiClients
             return await response.Content.ReadAsStringAsync();
         }
 
-        public async Task<string> CreateTutorialAsync(CreateTutorialRequest request)
+        public async Task<string> CreateArticleAsync(CreateArticleRequest request)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            const string url = "/api/v1/tutorials";
+            const string url = "/api/v1/articles";
             var payload = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
             using var response = await SendAsync(HttpMethod.Post, url, payload);
@@ -452,14 +452,14 @@ namespace PaintCatalog.Portal.ApiClients
             return await response.Content.ReadAsStringAsync();
         }
 
-        public async Task<string> UpdateTutorialAsync(int tutorialId, UpdateTutorialRequest request)
+        public async Task<string> UpdateArticleAsync(int articleId, UpdateArticleRequest request)
         {
             if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var url = $"/api/v1/tutorials/{tutorialId}";
+            var url = $"/api/v1/articles/{articleId}";
             var payload = new StringContent(JsonSerializer.Serialize(request), Encoding.UTF8, "application/json");
 
             using var response = await SendAsync(HttpMethod.Put, url, payload);
@@ -468,9 +468,9 @@ namespace PaintCatalog.Portal.ApiClients
             return await response.Content.ReadAsStringAsync();
         }
 
-        public async Task<string> DeleteTutorialAsync(int tutorialId)
+        public async Task<string> DeleteArticleAsync(int articleId)
         {
-            var url = $"/api/v1/tutorials/{tutorialId}";
+            var url = $"/api/v1/articles/{articleId}";
 
             using var response = await SendAsync(HttpMethod.Delete, url);
             response.EnsureSuccessStatusCode();

@@ -13,22 +13,22 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Page_Title_Create" xml:space="preserve">
-    <value>Create tutorial</value>
+    <value>Create article</value>
   </data>
   <data name="Page_Title_Edit" xml:space="preserve">
-    <value>Edit tutorial: {0}</value>
+    <value>Edit article: {0}</value>
   </data>
   <data name="Page_Description" xml:space="preserve">
-    <value>Add or update tutorial content.</value>
+    <value>Add or update article content.</value>
   </data>
   <data name="Header_Badge" xml:space="preserve">
-    <value>Tutorial builder</value>
+    <value>Article builder</value>
   </data>
   <data name="Header_Title_Create" xml:space="preserve">
-    <value>New tutorial</value>
+    <value>New article</value>
   </data>
   <data name="Header_Title_Edit" xml:space="preserve">
-    <value>Edit tutorial</value>
+    <value>Edit article</value>
   </data>
   <data name="Header_Subtitle" xml:space="preserve">
     <value>Provide the required metadata and JSON payload for Editor.js content.</value>
@@ -40,7 +40,7 @@
     <value>Title image attachment ID</value>
   </data>
   <data name="Field_TitleImage_Help" xml:space="preserve">
-    <value>Use an existing attachment ID that should be displayed as the tutorial cover.</value>
+    <value>Use an existing attachment ID that should be displayed as the article cover.</value>
   </data>
   <data name="Field_Content" xml:space="preserve">
     <value>Content (Editor.js JSON)</value>
@@ -66,4 +66,27 @@
   <data name="Action_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+
+<data name="Field_ContentTypes" xml:space="preserve">
+  <value>Article types</value>
+</data>
+<data name="Field_ContentTypes_Help" xml:space="preserve">
+  <value>Select one or more types that describe this article.</value>
+</data>
+<data name="ContentType_Tutorial" xml:space="preserve">
+  <value>Tutorial</value>
+</data>
+<data name="ContentType_Reference" xml:space="preserve">
+  <value>Reference</value>
+</data>
+<data name="ContentType_Review" xml:space="preserve">
+  <value>Review</value>
+</data>
+<data name="ContentType_Showcase" xml:space="preserve">
+  <value>Showcase</value>
+</data>
+<data name="ContentType_News" xml:space="preserve">
+  <value>News</value>
+</data>
+
 </root>

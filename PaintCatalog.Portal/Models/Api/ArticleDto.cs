@@ -3,13 +3,16 @@ using System.Text.Json.Serialization;
 
 namespace PaintCatalog.Portal.Models.Api
 {
-    public class TutorialDto
+    public class ArticleDto
     {
         [JsonPropertyName("id")]
         public int Id { get; set; }
 
         [JsonPropertyName("title")]
         public string? Title { get; set; }
+
+        [JsonPropertyName("contentType")]
+        public ContentType ContentType { get; set; }
 
         [JsonPropertyName("titleImageAttachmentId")]
         public int? TitleImageAttachmentId { get; set; }

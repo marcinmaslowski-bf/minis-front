@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace PaintCatalog.Portal.Models.Api
 {
-    public class TutorialImageDto
+    public class ArticleImageDto
     {
         [JsonPropertyName("attachmentId")]
         public int AttachmentId { get; set; }

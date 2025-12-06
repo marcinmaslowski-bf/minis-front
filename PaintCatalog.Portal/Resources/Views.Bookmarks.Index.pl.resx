@@ -22,7 +22,7 @@
     <value>Twoje zakładki</value>
   </data>
   <data name="Subheading" xml:space="preserve">
-    <value>Przejrzyj zapisane pozycje, przefiltruj je po kategorii i otwórz odpowiadającą farbę lub tutorial.</value>
+    <value>Przejrzyj zapisane pozycje, przefiltruj je po kategorii i otwórz odpowiadającą farbę lub artykuł.</value>
   </data>
   <data name="Refresh_Button" xml:space="preserve">
     <value>Odśwież listę</value>
@@ -36,14 +36,14 @@
   <data name="Filter_All_Paints" xml:space="preserve">
     <value>Wszystkie farby</value>
   </data>
-  <data name="Filter_All_Tutorials" xml:space="preserve">
-    <value>Wszystkie tutoriale</value>
+  <data name="Filter_All_Articles" xml:space="preserve">
+    <value>Wszystkie artykuły</value>
   </data>
   <data name="Empty_Title" xml:space="preserve">
     <value>Brak zakładek</value>
   </data>
   <data name="Empty_Description" xml:space="preserve">
-    <value>Zapisz farby lub tutoriale, aby pojawiły się w tym miejscu.</value>
+    <value>Zapisz farby lub artykuły, aby pojawiły się w tym miejscu.</value>
   </data>
   <data name="Error_Load" xml:space="preserve">
     <value>Nie udało się pobrać zakładek</value>
@@ -54,8 +54,8 @@
   <data name="Type_Paint" xml:space="preserve">
     <value>Farba</value>
   </data>
-  <data name="Type_Tutorial" xml:space="preserve">
-    <value>Tutorial</value>
+  <data name="Type_Article" xml:space="preserve">
+    <value>Artykuł</value>
   </data>
   <data name="Type_Unknown" xml:space="preserve">
     <value>Element</value>

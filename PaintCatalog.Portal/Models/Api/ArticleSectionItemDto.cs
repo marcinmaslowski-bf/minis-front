@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace PaintCatalog.Portal.Models.Api
 {
-    public class TutorialSectionItemDto
+    public class ArticleSectionItemDto
     {
         [JsonPropertyName("type")]
         public string? Type { get; set; }
@@ -24,6 +24,6 @@ namespace PaintCatalog.Portal.Models.Api
         public List<int>? PaintIds { get; set; }
 
         [JsonPropertyName("steps")]
-        public List<TutorialStepDto>? Steps { get; set; }
+        public List<ArticleStepDto>? Steps { get; set; }
     }
 }

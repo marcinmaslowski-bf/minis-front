@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
@@ -7,15 +8,16 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using PaintCatalog.Portal.ApiClients;
 using PaintCatalog.Portal.Models.Api;
-using PaintCatalog.Portal.Models.Tutorials;
+using PaintCatalog.Portal.Models.Articles;
 
 namespace PaintCatalog.Portal.Controllers
 {
     [Authorize]
-    [Route("tutorials")]
-    public class TutorialsController : Controller
+    [Route("articles")]
+    public class ArticlesController : Controller
     {
         private readonly IPaintCatalogApiClient _apiClient;
         private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
@@ -24,7 +26,16 @@ namespace PaintCatalog.Portal.Controllers
             WriteIndented = true
         };
 
-        public TutorialsController(IPaintCatalogApiClient apiClient)
+        private static readonly Dictionary<ContentType, string> ContentTypeLabels = new()
+        {
+            { ContentType.Tutorial, "Tutorial" },
+            { ContentType.Reference, "Reference" },
+            { ContentType.Review, "Review" },
+            { ContentType.Showcase, "Showcase" },
+            { ContentType.News, "News" }
+        };
+
+        public ArticlesController(IPaintCatalogApiClient apiClient)
         {
             _apiClient = apiClient;
         }
@@ -38,12 +49,12 @@ namespace PaintCatalog.Portal.Controllers
                 return Forbid();
             }
 
-            var vm = new TutorialsIndexViewModel();
+            var vm = new ArticlesIndexViewModel();
 
             try
             {
-                vm.RawJson = await _apiClient.GetTutorialsRawAsync(userId);
-                vm.Tutorials = ParseTutorialList(vm.RawJson);
+                vm.RawJson = await _apiClient.GetArticlesRawAsync(userId);
+                vm.Articles = ParseArticleList(vm.RawJson);
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
             {
@@ -51,7 +62,7 @@ namespace PaintCatalog.Portal.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, $"Failed to load tutorials: {ex.Message}");
+                ModelState.AddModelError(string.Empty, $"Failed to load articles: {ex.Message}");
             }
 
             return View(vm);
@@ -60,23 +71,24 @@ namespace PaintCatalog.Portal.Controllers
         [HttpGet("create")]
         public IActionResult Create()
         {
-            var vm = new TutorialEditViewModel
+            var vm = new ArticleEditViewModel
             {
+                SelectedContentTypes = new List<int> { (int)ContentType.Tutorial },
                 ContentJson = JsonSerializer.Serialize(new EditorJsDocumentDto
                 {
                     Time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
                     Version = "3.0.0",
-                    Sections = new List<TutorialSectionDto>
+                    Sections = new List<ArticleSectionDto>
                     {
-                        new TutorialSectionDto
+                        new ArticleSectionDto
                         {
                             Title = "Intro",
-                            Items = new List<TutorialSectionItemDto>
+                            Items = new List<ArticleSectionItemDto>
                             {
-                                new TutorialSectionItemDto
+                                new ArticleSectionItemDto
                                 {
                                     Type = "text",
-                                    Text = "Add your tutorial steps here.",
+                                    Text = "Add your article steps here.",
                                     PaintIds = new List<int>()
                                 }
                             }
@@ -85,13 +97,16 @@ namespace PaintCatalog.Portal.Controllers
                 }, JsonOptions)
             };
 
+            EnsureContentTypeOptions(vm);
             return View("Edit", vm);
         }
 
         [HttpPost("create")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(TutorialEditViewModel model, string? submitAction)
+        public async Task<IActionResult> Create(ArticleEditViewModel model, string? submitAction)
         {
+            model.SelectedContentTypes ??= new List<int>();
+            EnsureContentTypeOptions(model);
             ValidateContent(model);
 
             if (!ModelState.IsValid)
@@ -101,9 +116,10 @@ namespace PaintCatalog.Portal.Controllers
 
             var publishRequested = string.Equals(submitAction, "publish", StringComparison.OrdinalIgnoreCase);
 
-            var request = new CreateTutorialRequest
+            var request = new CreateArticleRequest
             {
                 Title = model.Title?.Trim(),
+                ContentType = CombineContentTypes(model.SelectedContentTypes),
                 TitleImageAttachmentId = model.TitleImageAttachmentId!.Value,
                 Content = DeserializeContent(model.ContentJson!),
                 Published = publishRequested && model.IsEdit
@@ -111,7 +127,7 @@ namespace PaintCatalog.Portal.Controllers
 
             try
             {
-                await _apiClient.CreateTutorialAsync(request);
+                await _apiClient.CreateArticleAsync(request);
                 return RedirectToAction(nameof(Index));
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.Unauthorized)
@@ -120,7 +136,7 @@ namespace PaintCatalog.Portal.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, $"Failed to create tutorial: {ex.Message}");
+                ModelState.AddModelError(string.Empty, $"Failed to create article: {ex.Message}");
                 return View("Edit", model);
             }
         }
@@ -128,29 +144,33 @@ namespace PaintCatalog.Portal.Controllers
         [HttpGet("{id:int}/edit")]
         public async Task<IActionResult> Edit(int id)
         {
-            var tutorial = await GetTutorialAsync(id);
-            if (tutorial == null)
+            var article = await GetArticleAsync(id);
+            if (article == null)
             {
                 return NotFound();
             }
 
-            var vm = new TutorialEditViewModel
+            var vm = new ArticleEditViewModel
             {
-                Id = tutorial.Id,
-                Title = tutorial.Title,
-                TitleImageAttachmentId = tutorial.TitleImageAttachmentId,
-                ContentJson = JsonSerializer.Serialize(tutorial.Content ?? new EditorJsDocumentDto(), JsonOptions),
-                Published = tutorial.Published
+                Id = article.Id,
+                Title = article.Title,
+                SelectedContentTypes = SplitContentTypes(article.ContentType),
+                TitleImageAttachmentId = article.TitleImageAttachmentId,
+                ContentJson = JsonSerializer.Serialize(article.Content ?? new EditorJsDocumentDto(), JsonOptions),
+                Published = article.Published
             };
 
+            EnsureContentTypeOptions(vm);
             return View(vm);
         }
 
         [HttpPost("{id:int}/edit")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, TutorialEditViewModel model, string? submitAction)
+        public async Task<IActionResult> Edit(int id, ArticleEditViewModel model, string? submitAction)
         {
             model.Id = id;
+            model.SelectedContentTypes ??= new List<int>();
+            EnsureContentTypeOptions(model);
             ValidateContent(model);
 
             if (!ModelState.IsValid)
@@ -158,9 +178,10 @@ namespace PaintCatalog.Portal.Controllers
                 return View(model);
             }
 
-            var request = new UpdateTutorialRequest
+            var request = new UpdateArticleRequest
             {
                 Title = model.Title?.Trim(),
+                ContentType = CombineContentTypes(model.SelectedContentTypes),
                 TitleImageAttachmentId = model.TitleImageAttachmentId!.Value,
                 Content = DeserializeContent(model.ContentJson!),
                 Published = ShouldPublish(submitAction, model)
@@ -168,7 +189,7 @@ namespace PaintCatalog.Portal.Controllers
 
             try
             {
-                await _apiClient.UpdateTutorialAsync(id, request);
+                await _apiClient.UpdateArticleAsync(id, request);
                 return RedirectToAction(nameof(Index));
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
@@ -181,7 +202,7 @@ namespace PaintCatalog.Portal.Controllers
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, $"Failed to update tutorial: {ex.Message}");
+                ModelState.AddModelError(string.Empty, $"Failed to update article: {ex.Message}");
                 return View(model);
             }
         }
@@ -189,23 +210,24 @@ namespace PaintCatalog.Portal.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> Details(int id)
         {
-            var tutorial = await GetTutorialAsync(id);
-            if (tutorial == null)
+            var article = await GetArticleAsync(id);
+            if (article == null)
             {
                 return NotFound();
             }
 
-            var vm = new TutorialDetailsViewModel
+            var vm = new ArticleDetailsViewModel
             {
-                Id = tutorial.Id,
-                Title = tutorial.Title ?? string.Empty,
-                TitleImageAttachmentId = tutorial.TitleImageAttachmentId,
-                Content = tutorial.Content ?? new EditorJsDocumentDto(),
-                ContentJson = JsonSerializer.Serialize(tutorial.Content ?? new EditorJsDocumentDto(), JsonOptions),
-                Published = tutorial.Published,
-                CreatedAtUtc = tutorial.CreatedAtUtc,
-                UpdatedAtUtc = tutorial.UpdatedAtUtc,
-                Bookmark = tutorial.Bookmark
+                Id = article.Id,
+                Title = article.Title ?? string.Empty,
+                ContentType = article.ContentType,
+                TitleImageAttachmentId = article.TitleImageAttachmentId,
+                Content = article.Content ?? new EditorJsDocumentDto(),
+                ContentJson = JsonSerializer.Serialize(article.Content ?? new EditorJsDocumentDto(), JsonOptions),
+                Published = article.Published,
+                CreatedAtUtc = article.CreatedAtUtc,
+                UpdatedAtUtc = article.UpdatedAtUtc,
+                Bookmark = article.Bookmark
             };
 
             return View(vm);
@@ -217,7 +239,7 @@ namespace PaintCatalog.Portal.Controllers
         {
             try
             {
-                await _apiClient.DeleteTutorialAsync(id);
+                await _apiClient.DeleteArticleAsync(id);
                 return RedirectToAction(nameof(Index));
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
@@ -230,17 +252,17 @@ namespace PaintCatalog.Portal.Controllers
             }
             catch (Exception ex)
             {
-                TempData["Error"] = $"Failed to delete tutorial: {ex.Message}";
+                TempData["Error"] = $"Failed to delete article: {ex.Message}";
                 return RedirectToAction(nameof(Index));
             }
         }
 
-        private async Task<TutorialDto?> GetTutorialAsync(int id)
+        private async Task<ArticleDto?> GetArticleAsync(int id)
         {
             try
             {
-                var payload = await _apiClient.GetTutorialByIdAsync(id);
-                return JsonSerializer.Deserialize<TutorialDto>(payload, JsonOptions);
+                var payload = await _apiClient.GetArticleByIdAsync(id);
+                return JsonSerializer.Deserialize<ArticleDto>(payload, JsonOptions);
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
@@ -248,9 +270,9 @@ namespace PaintCatalog.Portal.Controllers
             }
         }
 
-        private static List<TutorialListItem> ParseTutorialList(string? rawJson)
+        private static List<ArticleListItem> ParseArticleList(string? rawJson)
         {
-            var result = new List<TutorialListItem>();
+            var result = new List<ArticleListItem>();
 
             if (string.IsNullOrWhiteSpace(rawJson))
             {
@@ -275,16 +297,16 @@ namespace PaintCatalog.Portal.Controllers
 
                 foreach (var element in listElement.EnumerateArray())
                 {
-                    var dto = JsonSerializer.Deserialize<TutorialDto>(element.GetRawText(), JsonOptions);
+                    var dto = JsonSerializer.Deserialize<ArticleDto>(element.GetRawText(), JsonOptions);
                     if (dto == null)
                     {
                         continue;
                     }
 
-                    result.Add(new TutorialListItem
+                    result.Add(new ArticleListItem
                     {
                         Id = dto.Id,
-                        Title = dto.Title ?? $"Tutorial #{dto.Id}",
+                        Title = dto.Title ?? $"Article #{dto.Id}",
                         Published = dto.Published,
                         CreatedAtUtc = dto.CreatedAtUtc,
                         UpdatedAtUtc = dto.UpdatedAtUtc
@@ -299,17 +321,22 @@ namespace PaintCatalog.Portal.Controllers
             return result;
         }
 
-        private static bool ShouldPublish(string? submitAction, TutorialEditViewModel model)
+        private static bool ShouldPublish(string? submitAction, ArticleEditViewModel model)
         {
             var publishRequested = string.Equals(submitAction, "publish", StringComparison.OrdinalIgnoreCase);
             return publishRequested || model.Published;
         }
 
-        private void ValidateContent(TutorialEditViewModel model)
+        private void ValidateContent(ArticleEditViewModel model)
         {
             if (string.IsNullOrWhiteSpace(model.Title))
             {
                 ModelState.AddModelError(nameof(model.Title), "Title is required");
+            }
+
+            if (model.SelectedContentTypes == null || model.SelectedContentTypes.Count == 0)
+            {
+                ModelState.AddModelError(nameof(model.SelectedContentTypes), "At least one content type is required");
             }
 
             if (!model.TitleImageAttachmentId.HasValue || model.TitleImageAttachmentId.Value <= 0)
@@ -343,6 +370,49 @@ namespace PaintCatalog.Portal.Controllers
             }
 
             return content;
+        }
+
+        private static ContentType CombineContentTypes(IEnumerable<int> selectedTypes)
+        {
+            ContentType result = 0;
+            foreach (var value in selectedTypes)
+            {
+                result |= (ContentType)value;
+            }
+
+            return result;
+        }
+
+        private static List<int> SplitContentTypes(ContentType contentType)
+        {
+            return Enum.GetValues<ContentType>()
+                .Where(type => contentType.HasFlag(type))
+                .Select(type => (int)type)
+                .ToList();
+        }
+
+        private void EnsureContentTypeOptions(ArticleEditViewModel model)
+        {
+            model.ContentTypeOptions = BuildContentTypeOptions(model.SelectedContentTypes ?? new List<int>());
+        }
+
+        private List<SelectListItem> BuildContentTypeOptions(IEnumerable<int> selectedValues)
+        {
+            var selectedSet = new HashSet<int>(selectedValues);
+
+            var items = new List<SelectListItem>();
+
+            foreach (var (type, label) in ContentTypeLabels)
+            {
+                items.Add(new SelectListItem
+                {
+                    Value = ((int)type).ToString(),
+                    Text = label,
+                    Selected = selectedSet.Contains((int)type)
+                });
+            }
+
+            return items;
         }
     }
 }

@@ -13,22 +13,22 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Page_Title_Create" xml:space="preserve">
-    <value>Dodaj tutorial</value>
+    <value>Dodaj artykuł</value>
   </data>
   <data name="Page_Title_Edit" xml:space="preserve">
-    <value>Edytuj tutorial: {0}</value>
+    <value>Edytuj artykuł: {0}</value>
   </data>
   <data name="Page_Description" xml:space="preserve">
-    <value>Dodaj lub zaktualizuj treść tutoriala.</value>
+    <value>Dodaj lub zaktualizuj treść artykułu.</value>
   </data>
   <data name="Header_Badge" xml:space="preserve">
-    <value>Kreator tutoriali</value>
+    <value>Kreator artykułów</value>
   </data>
   <data name="Header_Title_Create" xml:space="preserve">
-    <value>Nowy tutorial</value>
+    <value>Nowy artykuł</value>
   </data>
   <data name="Header_Title_Edit" xml:space="preserve">
-    <value>Edytuj tutorial</value>
+    <value>Edytuj artykuł</value>
   </data>
   <data name="Header_Subtitle" xml:space="preserve">
     <value>Uzupełnij metadane i JSON z edytora blokowego (Editor.js).</value>
@@ -40,7 +40,7 @@
     <value>ID załącznika okładki</value>
   </data>
   <data name="Field_TitleImage_Help" xml:space="preserve">
-    <value>Użyj istniejącego załącznika, który ma być okładką tutoriala.</value>
+    <value>Użyj istniejącego załącznika, który ma być okładką artykułu.</value>
   </data>
   <data name="Field_Content" xml:space="preserve">
     <value>Treść (JSON Editor.js)</value>
@@ -66,4 +66,27 @@
   <data name="Action_Cancel" xml:space="preserve">
     <value>Anuluj</value>
   </data>
+
+<data name="Field_ContentTypes" xml:space="preserve">
+  <value>Typy artykułu</value>
+</data>
+<data name="Field_ContentTypes_Help" xml:space="preserve">
+  <value>Wybierz jeden lub więcej typów opisujących ten artykuł.</value>
+</data>
+<data name="ContentType_Tutorial" xml:space="preserve">
+  <value>Tutorial</value>
+</data>
+<data name="ContentType_Reference" xml:space="preserve">
+  <value>Referencja</value>
+</data>
+<data name="ContentType_Review" xml:space="preserve">
+  <value>Recenzja</value>
+</data>
+<data name="ContentType_Showcase" xml:space="preserve">
+  <value>Prezentacja</value>
+</data>
+<data name="ContentType_News" xml:space="preserve">
+  <value>Aktualności</value>
+</data>
+
 </root>

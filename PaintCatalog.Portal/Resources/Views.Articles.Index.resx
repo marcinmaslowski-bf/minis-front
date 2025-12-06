@@ -13,63 +13,63 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Page_Title" xml:space="preserve">
-    <value>Tutoriale - Paint Catalog Portal</value>
+    <value>Articles - Paint Catalog Portal</value>
   </data>
   <data name="Page_Description" xml:space="preserve">
-    <value>Zarządzaj swoimi tutorialami malarskimi.</value>
+    <value>Manage your own painting articles.</value>
   </data>
   <data name="Header_Badge" xml:space="preserve">
-    <value>Moje treści</value>
+    <value>My content</value>
   </data>
   <data name="Header_Title" xml:space="preserve">
-    <value>Twoje tutoriale</value>
+    <value>Your articles</value>
   </data>
   <data name="Header_Subtitle" xml:space="preserve">
-    <value>Dodawaj, podglądaj, edytuj i usuwaj własne tutoriale.</value>
+    <value>Create, preview, edit, or delete your articles.</value>
   </data>
   <data name="Header_Create" xml:space="preserve">
-    <value>Nowy tutorial</value>
+    <value>New article</value>
   </data>
   <data name="Table_Title" xml:space="preserve">
-    <value>Tytuł</value>
+    <value>Title</value>
   </data>
   <data name="Table_Created" xml:space="preserve">
-    <value>Utworzono</value>
+    <value>Created</value>
   </data>
   <data name="Table_Status" xml:space="preserve">
     <value>Status</value>
   </data>
   <data name="Table_Updated" xml:space="preserve">
-    <value>Zaktualizowano</value>
+    <value>Updated</value>
   </data>
   <data name="Table_Actions" xml:space="preserve">
-    <value>Akcje</value>
+    <value>Actions</value>
   </data>
   <data name="Table_Empty" xml:space="preserve">
-    <value>Brak tutoriali.</value>
+    <value>No articles yet.</value>
   </data>
   <data name="Status_Draft" xml:space="preserve">
-    <value>Szkic (nieopublikowany)</value>
+    <value>Draft</value>
   </data>
   <data name="Status_Published" xml:space="preserve">
-    <value>Opublikowany</value>
+    <value>Published</value>
   </data>
   <data name="Action_View" xml:space="preserve">
-    <value>Podgląd</value>
+    <value>View</value>
   </data>
   <data name="Action_Preview" xml:space="preserve">
-    <value>Podgląd</value>
+    <value>Preview</value>
   </data>
   <data name="Action_Edit" xml:space="preserve">
-    <value>Edytuj</value>
+    <value>Edit</value>
   </data>
   <data name="Action_Delete" xml:space="preserve">
-    <value>Usuń</value>
+    <value>Delete</value>
   </data>
   <data name="Action_DeleteConfirm" xml:space="preserve">
-    <value>Usunąć ten tutorial?</value>
+    <value>Delete this article?</value>
   </data>
   <data name="Raw_Title" xml:space="preserve">
-    <value>Surowa odpowiedź</value>
+    <value>Raw response</value>
   </data>
 </root>
