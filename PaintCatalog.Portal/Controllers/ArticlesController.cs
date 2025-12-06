@@ -73,7 +73,7 @@ namespace PaintCatalog.Portal.Controllers
         {
             var vm = new ArticleEditViewModel
             {
-                SelectedContentTypes = new List<int> { (int)ContentType.Tutorial },
+                SelectedContentTypes = new List<int>(),
                 ContentJson = JsonSerializer.Serialize(new EditorJsDocumentDto
                 {
                     Time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
