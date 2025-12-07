@@ -34,16 +34,13 @@
             && typeof quill?.getFormat === 'function'
             && typeof quill?.insertText === 'function'
             && typeof quill?.setSelection === 'function'
-            && typeof quill?.getLength === 'function';
+            && typeof quill?.getLength === 'function'
+            && typeof quill?.theme?.tooltip?.edit === 'function';
     }
 
     function createLinkDialog(quill) {
         if (!canUseEnhancedLinkDialog(quill)) {
-            const fallbackHref = prompt('Enter link URL');
-            if (fallbackHref && typeof document.execCommand === 'function') {
-                const sanitizedHref = /^https?:\/\//i.test(fallbackHref) ? fallbackHref : `https://${fallbackHref}`;
-                document.execCommand('createLink', false, sanitizedHref);
-            }
+            quill?.theme?.tooltip?.edit('link');
             return;
         }
 
@@ -142,15 +139,18 @@
             theme: 'snow',
             modules: {
                 toolbar: toolbarOptions
-            }
+            },
+            formats: ['bold', 'italic', 'underline', 'link', 'list']
         });
 
         const toolbar = typeof quill.getModule === 'function' ? quill.getModule('toolbar') : null;
-        if (toolbar?.addHandler && canUseEnhancedLinkDialog(quill)) {
-            toolbar.addHandler('link', () => createLinkDialog(quill));
-        }
+        toolbar?.addHandler?.('link', () => createLinkDialog(quill));
 
-        quill.root.innerHTML = initialHtml || '';
+        if (typeof quill.clipboard?.dangerouslyPasteHTML === 'function') {
+            quill.clipboard.dangerouslyPasteHTML(initialHtml || '', 'silent');
+        } else {
+            quill.root.innerHTML = initialHtml || '';
+        }
 
         if (typeof onChange === 'function') {
             quill.on('text-change', () => onChange(quill.root.innerHTML));
