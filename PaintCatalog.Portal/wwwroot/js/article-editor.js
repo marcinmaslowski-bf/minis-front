@@ -13,12 +13,6 @@
         return;
     }
 
-    const quillAvailable = typeof window.Quill === 'function';
-
-    if (!quillAvailable) {
-        console.warn('Quill editor not available. Falling back to plain HTML mode.');
-    }
-
     const icons = {
         trash: '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m-1 4v6m-4-6v6"/></svg>',
         image: '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5l5-5 4 4 5-6 4 5v3.5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1.5z" /><path stroke-linecap="round" stroke-linejoin="round" d="M8 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" /></svg>',
@@ -143,10 +137,6 @@
     }
 
     function createQuillEditor(container, initialHtml, onChange) {
-        if (!quillAvailable) {
-            return null;
-        }
-
         const toolbarOptions = [
             ['bold', 'italic', 'underline'],
             ['link'],
@@ -818,16 +808,10 @@
                 paintButton.className = 'inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300';
                 paintButton.innerHTML = `${icons.paint}<span>Insert paint</span>`;
 
-                const htmlMode = item.htmlMode === true || !quillAvailable;
+                const htmlMode = item.htmlMode === true;
 
                 toggleButton.textContent = htmlMode ? 'Show editor' : 'Show HTML';
-                toggleButton.disabled = !quillAvailable;
-                if (!quillAvailable) {
-                    toggleButton.classList.add('opacity-60', 'cursor-not-allowed');
-                }
-
                 toggleButton.addEventListener('click', () => {
-                    if (!quillAvailable) return;
                     documentState.sections[sectionIndex].items[itemIndex].htmlMode = !htmlMode;
                     renderEditor();
                 });
@@ -872,6 +856,7 @@
                 } else {
                     const editorHost = document.createElement('div');
                     editorHost.className = 'article-text-editor';
+
                     const quill = createQuillEditor(editorHost, item.text || '', (html) => {
                         documentState.sections[sectionIndex].items[itemIndex].text = html;
                         renderPaintPreview(html, preview);
