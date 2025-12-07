@@ -28,7 +28,25 @@
         IMAGE: 'image'
     };
 
+    function canUseEnhancedLinkDialog(quill) {
+        return typeof quill?.getSelection === 'function'
+            && typeof quill?.getText === 'function'
+            && typeof quill?.getFormat === 'function'
+            && typeof quill?.insertText === 'function'
+            && typeof quill?.setSelection === 'function'
+            && typeof quill?.getLength === 'function';
+    }
+
     function createLinkDialog(quill) {
+        if (!canUseEnhancedLinkDialog(quill)) {
+            const fallbackHref = prompt('Enter link URL');
+            if (fallbackHref && typeof document.execCommand === 'function') {
+                const sanitizedHref = /^https?:\/\//i.test(fallbackHref) ? fallbackHref : `https://${fallbackHref}`;
+                document.execCommand('createLink', false, sanitizedHref);
+            }
+            return;
+        }
+
         const existingSelection = quill.getSelection(true);
         const selectionText = existingSelection ? quill.getText(existingSelection.index, existingSelection.length) : '';
         const selectionFormats = existingSelection ? quill.getFormat(existingSelection) : {};
@@ -127,8 +145,10 @@
             }
         });
 
-        const toolbar = quill.getModule('toolbar');
-        toolbar?.addHandler('link', () => createLinkDialog(quill));
+        const toolbar = typeof quill.getModule === 'function' ? quill.getModule('toolbar') : null;
+        if (toolbar?.addHandler && canUseEnhancedLinkDialog(quill)) {
+            toolbar.addHandler('link', () => createLinkDialog(quill));
+        }
 
         quill.root.innerHTML = initialHtml || '';
 
