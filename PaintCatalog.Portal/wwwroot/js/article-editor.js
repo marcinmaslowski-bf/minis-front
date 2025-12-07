@@ -801,9 +801,6 @@
                     textarea.rows = 6;
                     textarea.value = prettifyRichText(item.text || '');
                     textarea.className = 'w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100';
-                    textarea.dataset.sectionIndex = sectionIndex;
-                    textarea.dataset.itemIndex = itemIndex;
-                    textarea.dataset.field = 'text-html';
 
                     textarea.addEventListener('input', (event) => {
                         const value = event.target?.value || '';
@@ -890,41 +887,7 @@
         renderEditor();
     }
 
-    function captureCaretPosition() {
-        const active = document.activeElement;
-        if (!active || active.tagName !== 'TEXTAREA') return null;
-
-        const sectionIndex = active.dataset.sectionIndex;
-        const itemIndex = active.dataset.itemIndex;
-        const field = active.dataset.field;
-
-        if (sectionIndex === undefined || itemIndex === undefined || !field) return null;
-
-        return {
-            sectionIndex: Number(sectionIndex),
-            itemIndex: Number(itemIndex),
-            field,
-            selectionStart: active.selectionStart ?? 0,
-            selectionEnd: active.selectionEnd ?? 0
-        };
-    }
-
-    function restoreCaretPosition(caretState) {
-        if (!caretState) return;
-
-        const selector = `textarea[data-section-index="${caretState.sectionIndex}"][data-item-index="${caretState.itemIndex}"][data-field="${caretState.field}"]`;
-        const textarea = editor.querySelector(selector);
-
-        if (!textarea) return;
-
-        textarea.focus();
-        const start = Math.max(0, Math.min(caretState.selectionStart, textarea.value.length));
-        const end = Math.max(0, Math.min(caretState.selectionEnd, textarea.value.length));
-        textarea.setSelectionRange(start, end);
-    }
-
     function renderEditor() {
-        const caretState = captureCaretPosition();
         editor.innerHTML = '';
 
         if (!Array.isArray(documentState.sections) || documentState.sections.length === 0) {
@@ -1027,8 +990,6 @@
             sectionContainer.appendChild(addRow);
             editor.appendChild(sectionContainer);
         });
-
-        restoreCaretPosition(caretState);
     }
 
     function collectSections() {
