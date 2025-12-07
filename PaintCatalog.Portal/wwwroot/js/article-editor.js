@@ -523,10 +523,22 @@
 
     function renderPaintPreview(text, target) {
         if (!target) return;
+        target.dataset.rawContent = text || '';
+
         const sanitized = sanitizeRichText(text || '');
         const normalized = normalizePaintTokens(sanitized);
         const withBadges = normalized.replace(/\{\{paint:(\d+)\}\}/g, (match, id) => renderPaintBadge(id));
         target.innerHTML = withBadges;
+    }
+
+    function refreshPaintPreviews() {
+        if (!editor) return;
+
+        const previews = editor.querySelectorAll('[data-paint-preview]');
+        previews.forEach((preview) => {
+            const raw = preview.dataset.rawContent || '';
+            renderPaintPreview(raw, preview);
+        });
     }
 
     function renderItems(sectionIndex, itemsContainer) {
@@ -690,6 +702,7 @@
 
                 const preview = document.createElement('div');
                 preview.className = 'article-richtext min-h-[42px] rounded-lg border border-dashed border-slate-200 bg-slate-50/60 p-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300';
+                preview.dataset.paintPreview = 'true';
 
                 const actionsRow = document.createElement('div');
                 actionsRow.className = 'flex flex-wrap items-center gap-2';
@@ -1193,7 +1206,9 @@
     })();
 
     renderEditor();
-    hydratePaintCache(collectPaintIdsFromDocument());
+    hydratePaintCache(collectPaintIdsFromDocument())
+        ?.then(refreshPaintPreviews)
+        ?.catch(() => {});
     updateTitleImagePreview(titleImageInput?.value);
 
     form.addEventListener('submit', () => {
