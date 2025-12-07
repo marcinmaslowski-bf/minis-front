@@ -179,6 +179,13 @@
             }
         }
 
+        function closeAdminMenu() {
+            const menu = document.getElementById('admin-menu');
+            if (menu) {
+                menu.classList.add('hidden');
+            }
+        }
+
         function toggleProfileMenu() {
             const menu = document.getElementById('profile-menu');
             if (menu) {
@@ -186,20 +193,30 @@
             }
         }
 
+        function toggleAdminMenu() {
+            const menu = document.getElementById('admin-menu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+
         window.addEventListener('click', function (event) {
             const wrapper = document.getElementById('profile-menu-wrapper');
-            if (!wrapper) {
-                return;
+            const adminWrapper = document.getElementById('admin-menu-wrapper');
+
+            if (wrapper && !wrapper.contains(event.target)) {
+                closeProfileMenu();
             }
 
-            if (!wrapper.contains(event.target)) {
-                closeProfileMenu();
+            if (adminWrapper && !adminWrapper.contains(event.target)) {
+                closeAdminMenu();
             }
         });
 
         window.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
                 closeProfileMenu();
+                closeAdminMenu();
             }
         });
     </script>
@@ -275,6 +292,26 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <div id="admin-menu-wrapper" class="relative">
+                                <button type="button"
+                                        onclick="toggleAdminMenu()"
+                                        class="flex items-center gap-1 rounded-full border border-slate-300 px-3 py-1 text-[11px] font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-700 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-400 dark:hover:text-emerald-300"
+                                        aria-haspopup="true"
+                                        aria-expanded="false"
+                                        aria-controls="admin-menu">
+                                    Admin
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                                    </svg>
+                                </button>
+
+                                <div id="admin-menu" class="absolute right-0 top-9 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 hidden">
+                                    <div class="py-2">
+                                        <a href="@navPaintAdminUrl" class="block px-4 py-2 text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-200 dark:hover:bg-slate-800">Paints Admin</a>
+                                    </div>
+                                </div>
+                            </div>
                         }
                         else
                         {
@@ -295,12 +332,7 @@
                 <nav class="hidden w-full items-center gap-6 text-sm text-slate-600 dark:text-slate-300 md:flex">
                     <a href="@navHomeUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Home"]</a>
                     <a href="@navPaintsUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Paints"]</a>
-                    <a href="@navPaintAdminUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">Paints Admin</a>
                     <a href="@navArticlesUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Articles"]</a>
-                    @if (isAuthenticated)
-                    {
-                        <a href="@navBookmarksUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Bookmarks"]</a>
-                    }
                 </nav>
             </div>
         </div>
@@ -309,12 +341,7 @@
             <div class="mx-auto max-w-6xl px-4">
                 <a href="@navHomeUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Home"]</a>
                 <a href="@navPaintsUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Paints"]</a>
-                <a href="@navPaintAdminUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">Paints Admin</a>
                 <a href="@navArticlesUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Articles"]</a>
-                @if (isAuthenticated)
-                {
-                    <a href="@navBookmarksUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Bookmarks"]</a>
-                }
             </div>
         </div>
     </header>
