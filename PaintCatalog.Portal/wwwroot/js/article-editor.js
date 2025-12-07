@@ -29,9 +29,25 @@
     };
 
     function createLinkDialog(quill) {
-        const existingSelection = quill.getSelection(true);
-        const selectionText = existingSelection ? quill.getText(existingSelection.index, existingSelection.length) : '';
-        const selectionFormats = existingSelection ? quill.getFormat(existingSelection) : {};
+        const editorRoot = quill?.root || null;
+        const selection = window.getSelection();
+        const existingRange = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+
+        if (!editorRoot || !existingRange || !editorRoot.contains(existingRange.commonAncestorContainer)) {
+            return;
+        }
+
+        const selectionText = selection?.toString() || '';
+        const selectionFormats = {};
+
+        let node = existingRange.commonAncestorContainer;
+        while (node && node !== editorRoot) {
+            if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'A') {
+                selectionFormats.link = node.getAttribute('href') || '';
+                break;
+            }
+            node = node.parentNode;
+        }
 
         const overlay = document.createElement('div');
         overlay.className = 'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4';
@@ -79,14 +95,21 @@
                 return;
             }
 
-            if (!existingSelection || existingSelection.length === 0) {
-                const insertIndex = existingSelection ? existingSelection.index : quill.getLength();
-                quill.insertText(insertIndex, finalText, 'link', sanitizedHref, 'user');
-                quill.setSelection(insertIndex + finalText.length, 0, 'user');
-            } else {
-                quill.deleteText(existingSelection.index, existingSelection.length, 'user');
-                quill.insertText(existingSelection.index, finalText, 'link', sanitizedHref, 'user');
-                quill.setSelection(existingSelection.index + finalText.length, 0, 'user');
+            const workingRange = existingRange.cloneRange();
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', sanitizedHref);
+            linkElement.textContent = finalText;
+
+            workingRange.deleteContents();
+            workingRange.insertNode(linkElement);
+
+            const selection = window.getSelection();
+            if (selection) {
+                selection.removeAllRanges();
+                const afterRange = document.createRange();
+                afterRange.setStartAfter(linkElement);
+                afterRange.collapse(true);
+                selection.addRange(afterRange);
             }
 
             closeDialog();
@@ -123,19 +146,14 @@
         const quill = new Quill(container, {
             theme: 'snow',
             modules: {
-                toolbar: {
-                    container: toolbarOptions
-                }
+                toolbar: toolbarOptions
             },
             formats: ['bold', 'italic', 'underline', 'link', 'list', 'ordered', 'bullet']
         });
 
-        const toolbar = typeof quill.getModule === 'function' ? quill.getModule('toolbar') : null;
-        toolbar?.addHandler?.('link', () => createLinkDialog(quill));
+        quill.addHandler?.('link', () => createLinkDialog(quill));
 
-        if (typeof quill.clipboard?.dangerouslyPasteHTML === 'function') {
-            quill.clipboard.dangerouslyPasteHTML(initialHtml || '', 'silent');
-        } else {
+        if (quill.root) {
             quill.root.innerHTML = initialHtml || '';
         }
 
