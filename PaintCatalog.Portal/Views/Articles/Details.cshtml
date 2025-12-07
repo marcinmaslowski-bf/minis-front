@@ -362,9 +362,7 @@
     private static string NormalizePaintTokens(string? text)
     {
         return text?
-            .Replace("&amp;#123;", "{")
             .Replace("&#123;", "{")
-            .Replace("&amp;#125;", "}")
             .Replace("&#125;", "}")
             ?? string.Empty;
     }

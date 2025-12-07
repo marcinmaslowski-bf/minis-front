@@ -316,11 +316,10 @@
 
     function extractPaintIds(body) {
         if (!body) return [];
-        const normalized = normalizePaintTokens(body);
         const regex = /\{\{paint:(\d+)\}\}/g;
         const ids = new Set();
         let match;
-        while ((match = regex.exec(normalized)) !== null) {
+        while ((match = regex.exec(body)) !== null) {
             const id = Number.parseInt(match[1], 10);
             if (Number.isFinite(id)) {
                 ids.add(id);
@@ -480,10 +479,9 @@
 
     function normalizePaintTokens(text) {
         if (!text) return '';
-
         return text
-            .replace(/&amp;#123;|&#123;/g, '{')
-            .replace(/&amp;#125;|&#125;/g, '}');
+            .replace(/&#123;/g, '{')
+            .replace(/&#125;/g, '}');
     }
 
     function prettifyRichText(html) {
