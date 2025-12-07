@@ -4,7 +4,7 @@
 @using System.Text.RegularExpressions
 @using System.Text.Json
 @using System.Text.Encodings.Web
-@using Ganss.XSS
+@using Ganss.Xss
 @using Microsoft.AspNetCore.Html
 @using PaintCatalog.Portal.Helpers
 @using PaintCatalog.Portal.Models.Api
@@ -244,7 +244,7 @@
                                 else
                                 {
                                     <ol class="space-y-3 list-decimal pl-5 text-slate-800 dark:text-slate-100">
-                                        @for (var i = 0; i < steps.Count; i++)
+                                        @for (var i = 0; i < steps.Count(); i++)
                                         {
                                             var step = steps[i];
                                             <li class="space-y-1">
