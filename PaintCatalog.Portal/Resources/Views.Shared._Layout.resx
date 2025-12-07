@@ -42,6 +42,15 @@
   <data name="Auth_Login" xml:space="preserve">
     <value>Log in</value>
   </data>
+  <data name="Auth_Profile" xml:space="preserve">
+    <value>My profile</value>
+  </data>
+  <data name="Auth_EditProfile" xml:space="preserve">
+    <value>Edit profile</value>
+  </data>
+  <data name="Auth_MyBookmarks" xml:space="preserve">
+    <value>My bookmarks</value>
+  </data>
   <data name="Auth_Logout" xml:space="preserve">
     <value>Log out</value>
   </data>
