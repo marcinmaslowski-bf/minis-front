@@ -123,16 +123,12 @@
         const quill = new Quill(container, {
             theme: 'snow',
             modules: {
-                toolbar: {
-                    container: toolbarOptions,
-                    handlers: {
-                        link: function () {
-                            createLinkDialog(quill);
-                        }
-                    }
-                }
+                toolbar: toolbarOptions
             }
         });
+
+        const toolbar = quill.getModule('toolbar');
+        toolbar?.addHandler('link', () => createLinkDialog(quill));
 
         quill.root.innerHTML = initialHtml || '';
 
