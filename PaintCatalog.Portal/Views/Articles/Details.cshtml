@@ -359,6 +359,14 @@
         return string.IsNullOrWhiteSpace(text) ? string.Empty : RichTextSanitizer.Sanitize(text);
     }
 
+    private static string NormalizePaintTokens(string? text)
+    {
+        return text?
+            .Replace("&#123;", "{")
+            .Replace("&#125;", "}")
+            ?? string.Empty;
+    }
+
     private static IHtmlContent RenderRichText(string? text)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -367,7 +375,8 @@
         }
 
         var sanitized = SanitizeRichText(text);
-        var withPaintBadges = Regex.Replace(sanitized, "\\{\\{paint:(\\d+)\\}\\}", match => BuildPaintBadge(match.Groups[1].Value));
+        var normalized = NormalizePaintTokens(sanitized);
+        var withPaintBadges = Regex.Replace(normalized, "\\{\\{paint:(\\d+)\\}\\}", match => BuildPaintBadge(match.Groups[1].Value));
         return new HtmlString($"<div class=\"article-richtext\">{withPaintBadges}</div>");
     }
 
