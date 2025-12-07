@@ -482,13 +482,19 @@
 
         if (decorated !== quill.root.innerHTML) {
             const selection = typeof quill.getSelection === 'function'
-                ? quill.getSelection()
+                ? quill.getSelection(true)
                 : null;
 
-            quill.root.innerHTML = decorated;
+            if (typeof quill.clipboard?.dangerouslyPasteHTML === 'function') {
+                quill.clipboard.dangerouslyPasteHTML(decorated, 'silent');
+            } else {
+                quill.root.innerHTML = decorated;
+            }
 
-            if (selection && typeof quill.setSelection === 'function') {
-                quill.setSelection(selection);
+            if (selection
+                && typeof selection.index === 'number'
+                && typeof quill.setSelection === 'function') {
+                quill.setSelection(selection.index, selection.length || 0, 'silent');
             }
         }
 
