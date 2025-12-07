@@ -477,41 +477,6 @@
         return Array.from(wrapper?.childNodes ?? []).map(cleanNode).join('');
     }
 
-    function prettifyRichText(html) {
-        const sanitized = sanitizeRichText(html);
-        if (!sanitized) return '';
-
-        const tokens = sanitized
-            .split(/(<[^>]+>)/g)
-            .map(token => token.trim())
-            .filter(Boolean);
-
-        const blockTags = new Set(['p', 'div', 'ul', 'ol', 'li']);
-        let indent = 0;
-
-        const lines = tokens.map(token => {
-            const tagMatch = token.match(/^<\/?([a-z0-9-]+)/i);
-            const tagName = tagMatch?.[1]?.toLowerCase();
-            const isClosing = token.startsWith('</');
-            const isSelfClosing = /\/>$/.test(token) || /^<br\/?\s*>$/i.test(token);
-            const isBlockTag = blockTags.has(tagName || '');
-
-            if (isClosing && isBlockTag) {
-                indent = Math.max(indent - 1, 0);
-            }
-
-            const line = `${'  '.repeat(indent)}${token}`;
-
-            if (!isClosing && !isSelfClosing && isBlockTag) {
-                indent += 1;
-            }
-
-            return line;
-        });
-
-        return lines.join('\n').replace(/\n{3,}/g, '\n\n');
-    }
-
     function renderPaintPreview(text, target) {
         if (!target) return;
         target.dataset.rawContent = text || '';
@@ -717,7 +682,7 @@
                 if (htmlMode) {
                     const textarea = document.createElement('textarea');
                     textarea.rows = 6;
-                    textarea.value = prettifyRichText(item.text || '');
+                    textarea.value = item.text || '';
                     textarea.className = 'w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100';
 
                     textarea.addEventListener('input', (event) => {
