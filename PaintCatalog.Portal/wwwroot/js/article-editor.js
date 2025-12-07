@@ -418,10 +418,68 @@
         `;
     }
 
+    function sanitizeRichText(html) {
+        if (!html) return '';
+
+        const allowedTags = new Set(['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'ul', 'ol', 'li']);
+        const allowedAttributes = new Map([
+            ['a', new Set(['href'])]
+        ]);
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
+        const wrapper = doc.body.firstChild;
+
+        function isSafeHref(value) {
+            return /^https?:\/\//i.test(value || '');
+        }
+
+        function cleanNode(node) {
+            if (!node) return '';
+
+            if (node.nodeType === Node.TEXT_NODE) {
+                return escapeHtml(node.textContent || '');
+            }
+
+            if (node.nodeType !== Node.ELEMENT_NODE) {
+                return '';
+            }
+
+            const tag = node.tagName.toLowerCase();
+            const children = Array.from(node.childNodes).map(cleanNode).join('');
+
+            if (!allowedTags.has(tag)) {
+                return children;
+            }
+
+            const attributes = allowedAttributes.get(tag) || new Set();
+            const attrs = [];
+
+            attributes.forEach(attr => {
+                const value = node.getAttribute(attr);
+                if (!value) return;
+
+                if (tag === 'a') {
+                    const sanitizedHref = value.trim();
+                    if (!isSafeHref(sanitizedHref)) return;
+                    attrs.push(`href="${escapeHtml(sanitizedHref)}" target="_blank" rel="noopener noreferrer"`);
+                    return;
+                }
+
+                attrs.push(`${attr}="${escapeHtml(value)}"`);
+            });
+
+            const attributesText = attrs.length ? ' ' + attrs.join(' ') : '';
+            return `<${tag}${attributesText}>${children}</${tag}>`;
+        }
+
+        return Array.from(wrapper?.childNodes ?? []).map(cleanNode).join('');
+    }
+
     function renderPaintPreview(text, target) {
         if (!target) return;
-        const base = (text || '').replace(/\n/g, '<br />');
-        const withBadges = base.replace(/\{\{paint:(\d+)\}\}/g, (match, id) => renderPaintBadge(id));
+        const sanitized = sanitizeRichText(text || '');
+        const withBadges = sanitized.replace(/\{\{paint:(\d+)\}\}/g, (match, id) => renderPaintBadge(id));
         target.innerHTML = withBadges;
     }
 
@@ -587,7 +645,7 @@
                 editorHost.className = 'article-text-editor';
 
                 const preview = document.createElement('div');
-                preview.className = 'min-h-[42px] rounded-lg border border-dashed border-slate-200 bg-slate-50/60 p-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300';
+                preview.className = 'article-richtext min-h-[42px] rounded-lg border border-dashed border-slate-200 bg-slate-50/60 p-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300';
 
                 const quill = createQuillEditor(editorHost, item.text || '', (html) => {
                     documentState.sections[sectionIndex].items[itemIndex].text = html;
