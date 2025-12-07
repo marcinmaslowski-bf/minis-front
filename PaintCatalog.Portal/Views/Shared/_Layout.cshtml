@@ -58,7 +58,7 @@
 
     var navHomeUrl = Url.LocalizedAction("Index", "Home");
     var navPaintsUrl = Url.LocalizedAction("Index", "paints");
-    var navPaintAdminUrl = Url.LocalizedAction("Admin", "Paints");
+    var navPaintAdminUrl = Url.Action("Admin", "Paints") ?? "/admin/paints";
     var navArticlesUrl = Url.LocalizedAction("Index", "Articles");
     var navBookmarksUrl = Url.LocalizedAction("Index", "Bookmarks");
     var returnUrl = path + Context.Request.QueryString;
@@ -333,6 +333,10 @@
                     <a href="@navHomeUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Home"]</a>
                     <a href="@navPaintsUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Paints"]</a>
                     <a href="@navArticlesUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Articles"]</a>
+                    @if (isAuthenticated)
+                    {
+                        <a href="@navPaintAdminUrl" class="hover:text-emerald-600 dark:hover:text-emerald-300">Admin</a>
+                    }
                 </nav>
             </div>
         </div>
@@ -342,6 +346,10 @@
                 <a href="@navHomeUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Home"]</a>
                 <a href="@navPaintsUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Paints"]</a>
                 <a href="@navArticlesUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">@LayoutLocalizer["Nav_Articles"]</a>
+                @if (isAuthenticated)
+                {
+                    <a href="@navPaintAdminUrl" class="block py-1 hover:text-emerald-600 dark:hover:text-emerald-300">Admin</a>
+                }
             </div>
         </div>
     </header>

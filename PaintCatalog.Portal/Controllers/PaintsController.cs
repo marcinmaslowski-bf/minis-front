@@ -52,7 +52,7 @@ namespace PaintCatalog.Portal.Controllers
             return View(vm);
         }
 
-        [HttpGet]
+        [HttpGet("/admin/paints")]
         public async Task<IActionResult> Admin()
         {
             string? paintsJson = null;
@@ -173,7 +173,7 @@ namespace PaintCatalog.Portal.Controllers
             }
         }
 
-        [HttpGet("paints/admin/data")]
+        [HttpGet("/admin/paints/data")]
         public Task<IActionResult> AdminData(
             int? id,
             [FromQuery(Name = "ids")] List<int>? ids,
@@ -193,7 +193,7 @@ namespace PaintCatalog.Portal.Controllers
             return Data(id, ids, brandId, seriesId, types, sheens, mediums, effects, usages, forms, tagIds, search, page, pageSize);
         }
 
-        [HttpPost("paints/admin")]
+        [HttpPost("/admin/paints")]
         public async Task<IActionResult> Create([FromBody] CreatePaintRequest request)
         {
             if (request == null)
@@ -216,7 +216,7 @@ namespace PaintCatalog.Portal.Controllers
             }
         }
 
-        [HttpPut("paints/admin/{id}")]
+        [HttpPut("/admin/paints/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdatePaintRequest request)
         {
             if (request == null)
@@ -239,7 +239,7 @@ namespace PaintCatalog.Portal.Controllers
             }
         }
 
-        [HttpDelete("paints/admin/{id}")]
+        [HttpDelete("/admin/paints/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             try
