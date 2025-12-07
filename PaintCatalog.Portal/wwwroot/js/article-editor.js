@@ -483,7 +483,12 @@
             quill.root.innerHTML = decorated;
 
             if (selection && typeof quill.setSelection === 'function') {
-                quill.setSelection(selection);
+                const restoreSelection = () => quill.setSelection(selection);
+                if (typeof requestAnimationFrame === 'function') {
+                    requestAnimationFrame(restoreSelection);
+                } else {
+                    setTimeout(restoreSelection, 0);
+                }
             }
         }
 
