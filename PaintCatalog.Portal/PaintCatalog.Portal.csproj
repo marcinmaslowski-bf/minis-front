@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.22" />
+    <PackageReference Include="Ganss.XSS" Version="7.0.5" />
   </ItemGroup>
 
   <ItemGroup>

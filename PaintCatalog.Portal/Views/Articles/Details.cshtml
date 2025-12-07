@@ -5,6 +5,7 @@
 @using System.Text.Json
 @using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Html
+@using Ganss.XSS
 @using PaintCatalog.Portal.Helpers
 @using PaintCatalog.Portal.Models.Api
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
@@ -331,6 +332,33 @@
         return string.IsNullOrWhiteSpace(type) ? "text" : type.ToLowerInvariant();
     }
 
+    private static readonly HtmlSanitizer RichTextSanitizer = CreateRichTextSanitizer();
+
+    private static HtmlSanitizer CreateRichTextSanitizer()
+    {
+        var sanitizer = new HtmlSanitizer();
+        sanitizer.AllowedTags.Clear();
+        sanitizer.AllowedTags.UnionWith(new[] { "p", "br", "strong", "b", "em", "i", "u", "a", "ul", "ol", "li" });
+        sanitizer.AllowedAttributes.UnionWith(new[] { "href", "target", "rel" });
+        sanitizer.AllowedSchemes.UnionWith(new[] { "http", "https", "mailto" });
+
+        sanitizer.PostProcessNode += (_, args) =>
+        {
+            if (args.Node is AngleSharp.Html.Dom.IHtmlAnchorElement anchor)
+            {
+                anchor.SetAttribute("rel", "noopener noreferrer");
+                anchor.SetAttribute("target", "_blank");
+            }
+        };
+
+        return sanitizer;
+    }
+
+    private static string SanitizeRichText(string? text)
+    {
+        return string.IsNullOrWhiteSpace(text) ? string.Empty : RichTextSanitizer.Sanitize(text);
+    }
+
     private static IHtmlContent RenderRichText(string? text)
     {
         if (string.IsNullOrWhiteSpace(text))
@@ -338,10 +366,9 @@
             return new HtmlString("<p class=\"text-xs text-slate-500 dark:text-slate-400\">–</p>");
         }
 
-        var encoded = WebUtility.HtmlEncode(text);
-        var withPaintBadges = Regex.Replace(encoded, "\\{\\{paint:(\\d+)\\}\\}", match => BuildPaintBadge(match.Groups[1].Value));
-        var withBreaks = withPaintBadges.Replace("\n", "<br />");
-        return new HtmlString($"<p class=\"leading-relaxed text-slate-800 dark:text-slate-100\">{withBreaks}</p>");
+        var sanitized = SanitizeRichText(text);
+        var withPaintBadges = Regex.Replace(sanitized, "\\{\\{paint:(\\d+)\\}\\}", match => BuildPaintBadge(match.Groups[1].Value));
+        return new HtmlString($"<div class=\"article-richtext\">{withPaintBadges}</div>");
     }
 
     private static IHtmlContent RenderPaintList(IEnumerable<int>? explicitIds, params string?[] textSources)

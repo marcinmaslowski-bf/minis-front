@@ -28,6 +28,91 @@
         IMAGE: 'image'
     };
 
+    function createLinkDialog(quill) {
+        const existingSelection = quill.getSelection(true);
+        const selectionText = existingSelection ? quill.getText(existingSelection.index, existingSelection.length) : '';
+        const selectionFormats = existingSelection ? quill.getFormat(existingSelection) : {};
+
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4';
+
+        const container = document.createElement('div');
+        container.className = 'w-full max-w-md space-y-4 rounded-2xl bg-white p-5 shadow-xl dark:bg-slate-900';
+        container.innerHTML = `
+            <div class="space-y-1">
+                <p class="text-lg font-semibold text-slate-900 dark:text-white">Add link</p>
+                <p class="text-sm text-slate-600 dark:text-slate-300">Wpisz tekst linku i adres URL</p>
+            </div>
+            <div class="space-y-2">
+                <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Tekst</label>
+                <input type="text" id="link-text" class="w-full rounded-xl border border-slate-300 bg-white/90 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100" value="${escapeHtml(selectionText)}" />
+            </div>
+            <div class="space-y-2">
+                <label class="text-sm font-semibold text-slate-700 dark:text-slate-200">Adres URL</label>
+                <input type="url" id="link-href" class="w-full rounded-xl border border-slate-300 bg-white/90 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/50 dark:text-slate-100" placeholder="https://example.com" value="${escapeHtml(selectionFormats.link || '')}" />
+            </div>
+            <div class="flex flex-wrap justify-end gap-2">
+                <button type="button" id="link-cancel" class="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-500">Anuluj</button>
+                <button type="button" id="link-save" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-400">Zapisz</button>
+            </div>
+        `;
+
+        overlay.appendChild(container);
+        document.body.appendChild(overlay);
+
+        const textInput = container.querySelector('#link-text');
+        const hrefInput = container.querySelector('#link-href');
+        textInput?.focus();
+
+        function closeDialog() {
+            overlay.remove();
+        }
+
+        function saveLink() {
+            const hrefValue = (hrefInput?.value || '').trim();
+            const textValue = (textInput?.value || '').trim();
+            const finalText = textValue || selectionText || hrefValue;
+            const sanitizedHref = hrefValue ? (/^https?:\/\//i.test(hrefValue) ? hrefValue : `https://${hrefValue}`) : '';
+
+            if (!sanitizedHref) {
+                closeDialog();
+                return;
+            }
+
+            if (!existingSelection || existingSelection.length === 0) {
+                const insertIndex = existingSelection ? existingSelection.index : quill.getLength();
+                quill.insertText(insertIndex, finalText, 'link', sanitizedHref, 'user');
+                quill.setSelection(insertIndex + finalText.length, 0, 'user');
+            } else {
+                quill.deleteText(existingSelection.index, existingSelection.length, 'user');
+                quill.insertText(existingSelection.index, finalText, 'link', sanitizedHref, 'user');
+                quill.setSelection(existingSelection.index + finalText.length, 0, 'user');
+            }
+
+            closeDialog();
+        }
+
+        container.querySelector('#link-save')?.addEventListener('click', saveLink);
+        container.querySelector('#link-cancel')?.addEventListener('click', closeDialog);
+        overlay.addEventListener('click', (event) => {
+            if (event.target === overlay) {
+                closeDialog();
+            }
+        });
+
+        [textInput, hrefInput].forEach(input => {
+            input?.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    saveLink();
+                }
+                if (event.key === 'Escape') {
+                    closeDialog();
+                }
+            });
+        });
+    }
+
     function createQuillEditor(container, initialHtml, onChange) {
         const toolbarOptions = [
             ['bold', 'italic', 'underline'],
@@ -38,7 +123,14 @@
         const quill = new Quill(container, {
             theme: 'snow',
             modules: {
-                toolbar: toolbarOptions
+                toolbar: {
+                    container: toolbarOptions,
+                    handlers: {
+                        link: function () {
+                            createLinkDialog(quill);
+                        }
+                    }
+                }
             }
         });
 
