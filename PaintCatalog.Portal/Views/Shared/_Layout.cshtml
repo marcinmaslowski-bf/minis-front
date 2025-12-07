@@ -9,7 +9,8 @@
     var isPl = CultureHelpers.IsPl();
 
     var isAuthenticated = Context.User?.Identity?.IsAuthenticated ?? false;
-    var displayName = Context.User?.Claims?.FirstOrDefault(c => c.Type == "name")?.Value
+    var displayName = Context.User?.Claims?.FirstOrDefault(c => c.Type == "preferred_username")?.Value
+        ?? Context.User?.Claims?.FirstOrDefault(c => c.Type == "username")?.Value
         ?? Context.User?.Identity?.Name
         ?? LayoutLocalizer["Auth_UnknownUser"].Value;
 
@@ -170,6 +171,37 @@
                 menu.classList.toggle('hidden');
             }
         }
+
+        function closeProfileMenu() {
+            const menu = document.getElementById('profile-menu');
+            if (menu) {
+                menu.classList.add('hidden');
+            }
+        }
+
+        function toggleProfileMenu() {
+            const menu = document.getElementById('profile-menu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+
+        window.addEventListener('click', function (event) {
+            const wrapper = document.getElementById('profile-menu-wrapper');
+            if (!wrapper) {
+                return;
+            }
+
+            if (!wrapper.contains(event.target)) {
+                closeProfileMenu();
+            }
+        });
+
+        window.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeProfileMenu();
+            }
+        });
     </script>
 </head>
 <body class="bg-white text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-50">
@@ -210,15 +242,38 @@
 
                         @if (isAuthenticated)
                         {
-                            <div class="flex items-center gap-2">
+                            <div id="profile-menu-wrapper" class="relative flex items-center gap-2">
                                 <span class="hidden text-slate-600 dark:text-slate-200 sm:inline">@LayoutLocalizer["Auth_SignedInAs", displayName]</span>
-                                <form method="post" action="@Url.Action("Logout", "Account")" class="m-0">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit"
-                                            class="rounded-full border border-emerald-500 px-3 py-1 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-500 hover:text-slate-950 dark:border-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-400 dark:hover:text-slate-900">
-                                        @LayoutLocalizer["Auth_Logout"]
-                                    </button>
-                                </form>
+                                <button type="button"
+                                        onclick="toggleProfileMenu()"
+                                        class="flex items-center gap-1 rounded-full border border-emerald-500 px-3 py-1 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-500 hover:text-slate-950 dark:border-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-400 dark:hover:text-slate-900"
+                                        aria-haspopup="true"
+                                        aria-expanded="false"
+                                        aria-controls="profile-menu">
+                                    @LayoutLocalizer["Auth_Profile"]
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                                    </svg>
+                                </button>
+
+                                <div id="profile-menu" class="absolute right-0 top-9 w-52 overflow-hidden rounded-xl border border-slate-200 bg-white text-sm shadow-lg dark:border-slate-700 dark:bg-slate-900 hidden">
+                                    <div class="border-b border-slate-200 px-4 py-3 text-xs text-slate-500 dark:border-slate-800">
+                                        <p class="font-semibold text-slate-700 dark:text-slate-100">@LayoutLocalizer["Auth_SignedInAs", displayName]</p>
+                                    </div>
+                                    <div class="py-2">
+                                        <a href="#" class="block px-4 py-2 text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-200 dark:hover:bg-slate-800">@LayoutLocalizer["Auth_EditProfile"]</a>
+                                        <a href="@navBookmarksUrl" class="block px-4 py-2 text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 dark:text-slate-200 dark:hover:bg-slate-800">@LayoutLocalizer["Auth_MyBookmarks"]</a>
+                                    </div>
+                                    <div class="border-t border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-950">
+                                        <form method="post" action="@Url.Action("Logout", "Account")" class="m-0">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit"
+                                                    class="flex w-full items-center justify-center gap-2 rounded-lg border border-emerald-500 px-3 py-2 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-500 hover:text-slate-950 dark:border-emerald-400 dark:text-emerald-200 dark:hover:bg-emerald-400 dark:hover:text-slate-900">
+                                                @LayoutLocalizer["Auth_Logout"]
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         }
                         else
