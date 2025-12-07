@@ -174,23 +174,22 @@
         }
 
         const match = token?.match(/\{\{paint:(\d+)\}\}/);
-        const paintToken = match ? `{{paint:${match[1]}}}` : (token || '');
-        const selection = typeof quill.getSelection === 'function' ? quill.getSelection(true) : null;
-        const insertIndex = selection?.index ?? (typeof quill.getLength === 'function' ? quill.getLength() : undefined);
+        const badgeHtml = match ? renderPaintBadge(match[1], { token, forEditor: true }) : escapeHtml(token);
 
-        if (typeof insertIndex === 'number' && typeof quill.insertText === 'function') {
-            quill.insertText(insertIndex, paintToken, 'user');
-            if (typeof quill.setSelection === 'function') {
-                quill.setSelection(insertIndex + paintToken.length, 0, 'user');
-            }
+        if (typeof quill.clipboard?.dangerouslyPasteHTML === 'function') {
+            quill.clipboard.dangerouslyPasteHTML(badgeHtml);
             refreshEditorPaintBadges(quill);
             return;
         }
 
-        quill.root?.focus?.();
+        if (typeof quill.insertText === 'function') {
+            quill.insertText(token);
+            return;
+        }
+
+        quill.root.focus();
         if (typeof document.execCommand === 'function') {
-            document.execCommand('insertText', false, paintToken);
-            refreshEditorPaintBadges(quill);
+            document.execCommand('insertText', false, token);
         }
     }
 
