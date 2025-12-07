@@ -154,15 +154,11 @@
         quill.addHandler?.('link', () => createLinkDialog(quill));
 
         if (quill.root) {
-            const decorated = renderEditorPaintBadges(initialHtml || '');
-            quill.root.innerHTML = decorated;
+            quill.root.innerHTML = initialHtml || '';
         }
 
         if (typeof onChange === 'function') {
-            quill.on('text-change', () => {
-                const serialized = refreshEditorPaintBadges(quill);
-                onChange(serialized);
-            });
+            quill.on('text-change', () => onChange(quill.root.innerHTML));
         }
 
         return quill;
@@ -170,15 +166,6 @@
 
     function insertPaintToken(quill, token) {
         if (!quill) {
-            return;
-        }
-
-        const match = token?.match(/\{\{paint:(\d+)\}\}/);
-        const badgeHtml = match ? renderPaintBadge(match[1], { token, forEditor: true }) : escapeHtml(token);
-
-        if (typeof quill.clipboard?.dangerouslyPasteHTML === 'function') {
-            quill.clipboard.dangerouslyPasteHTML(badgeHtml);
-            refreshEditorPaintBadges(quill);
             return;
         }
 
@@ -412,7 +399,7 @@
         }
     }
 
-    function renderPaintBadge(id, options = {}) {
+    function renderPaintBadge(id) {
         const numericId = Number.parseInt(id, 10);
         const cacheKey = Number.isFinite(numericId) ? numericId : id;
         const paint = paintCache.get(cacheKey);
@@ -422,68 +409,14 @@
         };
         const label = paint?.name || paint?.title || `Paint #${cacheKey}`;
         const meta = [paint?.brandName, paint?.seriesName, paint?.sku].filter(Boolean).join(' • ');
-        const attributes = [
-            'class="paint-badge inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold text-slate-800 shadow-sm dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-200"',
-            'data-paint-badge',
-            `data-paint-id="${cacheKey}"`
-        ];
-
-        if (options?.token) {
-            attributes.push(`data-paint-token="${escapeHtml(options.token)}"`);
-        }
-
-        if (options?.forEditor) {
-            attributes.push('contenteditable="false"');
-        }
 
         return `
-            <span ${attributes.join(' ')}>
+            <span class="paint-badge inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold text-slate-800 shadow-sm dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-200" data-paint-badge data-paint-id="${cacheKey}">
                 <span class="h-4 w-4 rounded-full border border-white/50 shadow-inner dark:border-slate-800" style="background:${swatch.background}" title="${escapeHtml(swatch.label)}"></span>
                 <span class="paint-badge__name">${escapeHtml(label)}</span>
                 <span class="paint-badge__meta text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-300">#${cacheKey}${meta ? ' • ' + escapeHtml(meta) : ''}</span>
             </span>
         `;
-    }
-
-    function renderEditorPaintBadges(html) {
-        if (!html) return '';
-        const normalized = normalizePaintTokens(html);
-
-        return normalized.replace(/\{\{paint:(\d+)\}\}/g, (match, id) => renderPaintBadge(id, { token: match, forEditor: true }));
-    }
-
-    function serializeEditorHtml(html) {
-        if (!html) return '';
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(`<div>${html}</div>`, 'text/html');
-        const wrapper = doc.body.firstChild;
-        if (!wrapper) return '';
-
-        wrapper.querySelectorAll('[data-paint-badge]').forEach((badge) => {
-            const token = badge.getAttribute('data-paint-token')
-                || `{{paint:${badge.getAttribute('data-paint-id') || ''}}}`;
-            badge.replaceWith(doc.createTextNode(token));
-        });
-
-        return wrapper.innerHTML;
-    }
-
-    function refreshEditorPaintBadges(quill) {
-        if (!quill?.root) return '';
-
-        const serialized = serializeEditorHtml(quill.root.innerHTML);
-        const decorated = renderEditorPaintBadges(serialized);
-
-        if (decorated !== quill.root.innerHTML) {
-            const selection = quill.getSelection();
-            quill.root.innerHTML = decorated;
-            if (selection) {
-                quill.setSelection(selection);
-            }
-        }
-
-        return serialized;
     }
 
     function sanitizeRichText(html) {
@@ -840,13 +773,12 @@
                             const token = `{{paint:${paint.id}}}`;
                             insertPaintToken(quill, token);
                             paintCache.set(paint.id, paint);
-                            const serialized = refreshEditorPaintBadges(quill);
-                            documentState.sections[sectionIndex].items[itemIndex].text = serialized;
-                            renderPaintPreview(serialized, preview);
+                            documentState.sections[sectionIndex].items[itemIndex].text = quill?.root?.innerHTML || '';
+                            renderPaintPreview(quill?.root?.innerHTML || '', preview);
                         });
                     });
 
-                    renderPaintPreview(documentState.sections[sectionIndex].items[itemIndex].text || '', preview);
+                    renderPaintPreview(quill?.root?.innerHTML || '', preview);
                     actionsRow.appendChild(toggleButton);
                     actionsRow.appendChild(paintButton);
                     bodyArea.appendChild(editorHost);
