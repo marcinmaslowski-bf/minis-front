@@ -292,6 +292,13 @@
         return escapeHtml(value).replace(/`/g, '&#096;');
     }
 
+    function escapeSelector(value) {
+        if (typeof CSS !== 'undefined' && typeof CSS.escape === 'function') {
+            return CSS.escape(String(value));
+        }
+        return String(value).replace(/['"\\]/g, '\\$&');
+    }
+
     function isTruthy(value) {
         return value === true || value === 'true' || value === 1 || value === '1' || value === 'True';
     }
@@ -392,6 +399,14 @@
     function renderGrid() {
         if (!elements.grid) return;
         const body = elements.grid;
+
+        const activeElement = document.activeElement;
+        const activeRow = activeElement?.closest?.('tr');
+        const activeRowId = activeRow?.dataset?.id;
+        const activeField = activeElement?.dataset?.field;
+        const selectionStart = activeElement?.selectionStart;
+        const selectionEnd = activeElement?.selectionEnd;
+
         body.innerHTML = '';
         let paints = [...state.paints];
         paints = sortPaints(paints);
@@ -411,6 +426,20 @@
             const row = buildRow(paint);
             body.appendChild(row);
         });
+
+        if (activeRowId && activeField) {
+            const selector = `tr[data-id="${escapeSelector(activeRowId)}"] [data-field="${escapeSelector(activeField)}"]`;
+            const newActive = body.querySelector(selector);
+            if (newActive && typeof newActive.focus === 'function') {
+                newActive.focus({ preventScroll: true });
+                if (typeof selectionStart === 'number' && typeof selectionEnd === 'number'
+                    && typeof newActive.setSelectionRange === 'function') {
+                    const clampedStart = Math.min(selectionStart, newActive.value?.length ?? selectionStart);
+                    const clampedEnd = Math.min(selectionEnd, newActive.value?.length ?? selectionEnd);
+                    newActive.setSelectionRange(clampedStart, clampedEnd);
+                }
+            }
+        }
     }
 
     function sortPaints(paints) {
