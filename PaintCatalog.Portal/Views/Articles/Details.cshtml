@@ -4,7 +4,7 @@
 @using System.Text.RegularExpressions
 @using System.Text.Json
 @using System.Text.Encodings.Web
-@using Ganss.Xss
+@using Ganss.XSS
 @using Microsoft.AspNetCore.Html
 @using PaintCatalog.Portal.Helpers
 @using PaintCatalog.Portal.Models.Api
@@ -21,7 +21,7 @@
     var paintDetailsTemplate = CultureHelpers.GetRouteCultureSegment() is string cultureSegment
         ? Url.RouteUrl("PaintDetailsLocalized", new { culture = cultureSegment, brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/pl/paints/__brand__/__series__/__paint__"
         : Url.RouteUrl("PaintDetails", new { brandSlug = "__brand__", seriesSlug = "__series__", paintSlug = "__paint__" }) ?? "/paints/__brand__/__series__/__paint__";
-    var sections = (Model.Content?.Sections ?? new List<ArticleSectionDto>()).ToList();
+    var sections = (Model.Content?.Sections ?? new()).ToList();
     var contentTypes = Enum.GetValues<ContentType>().Where(type => Model.ContentType.HasFlag(type)).ToList();
 }
 
@@ -189,7 +189,7 @@
         </figure>
     }
 
-    @if (sections.Count == 0)
+    @if (sections.Count() == 0)
     {
         <p class="text-sm text-slate-600 dark:text-slate-300">@Localizer["Content_Empty"]</p>
     }
@@ -204,7 +204,7 @@
             <section class="space-y-4">
                 <h2 class="text-2xl font-semibold text-slate-900 dark:text-white">@(string.IsNullOrWhiteSpace(sectionTitle) ? Localizer["Content_Title"] : sectionTitle)</h2>
 
-                @if (items.Count == 0)
+                @if (items.Count() == 0)
                 {
                     <p class="text-sm text-slate-600 dark:text-slate-300">@Localizer["Content_Section_Empty"]</p>
                 }
@@ -234,7 +234,7 @@
                             else if (type == "step")
                             {
                                 var steps = (item.Steps ?? new List<ArticleStepDto>()).ToList();
-                                if (steps.Count == 0)
+                                if (steps.Count() == 0)
                                 {
                                     <div class="space-y-2">
                                         @RenderRichText(item.Text)
@@ -374,7 +374,7 @@
     private static IHtmlContent RenderPaintList(IEnumerable<int>? explicitIds, params string?[] textSources)
     {
         var paints = CollectPaintIds(explicitIds, textSources).ToList();
-        if (paints.Count == 0)
+        if (paints.Count() == 0)
         {
             return HtmlString.Empty;
         }
