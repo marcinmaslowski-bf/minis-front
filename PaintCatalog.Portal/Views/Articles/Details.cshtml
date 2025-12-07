@@ -338,7 +338,7 @@
     {
         var sanitizer = new HtmlSanitizer();
         sanitizer.AllowedTags.Clear();
-        sanitizer.AllowedTags.UnionWith(new[] { "p", "br", "strong", "b", "em", "i", "u", "a", "ul", "ol", "li" });
+        sanitizer.AllowedTags.UnionWith(new[] { "p", "div", "br", "strong", "b", "em", "i", "u", "a", "ul", "ol", "li" });
         sanitizer.AllowedAttributes.UnionWith(new[] { "href", "target", "rel" });
         sanitizer.AllowedSchemes.UnionWith(new[] { "http", "https", "mailto" });
 
