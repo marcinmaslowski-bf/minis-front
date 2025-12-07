@@ -476,13 +476,9 @@
         const decorated = renderEditorPaintBadges(serialized);
 
         if (decorated !== quill.root.innerHTML) {
-            const selection = typeof quill.getSelection === 'function'
-                ? quill.getSelection()
-                : null;
-
+            const selection = quill.getSelection();
             quill.root.innerHTML = decorated;
-
-            if (selection && typeof quill.setSelection === 'function') {
+            if (selection) {
                 quill.setSelection(selection);
             }
         }
