@@ -28,22 +28,7 @@
         IMAGE: 'image'
     };
 
-    function canUseEnhancedLinkDialog(quill) {
-        return typeof quill?.getSelection === 'function'
-            && typeof quill?.getText === 'function'
-            && typeof quill?.getFormat === 'function'
-            && typeof quill?.insertText === 'function'
-            && typeof quill?.setSelection === 'function'
-            && typeof quill?.getLength === 'function'
-            && typeof quill?.theme?.tooltip?.edit === 'function';
-    }
-
     function createLinkDialog(quill) {
-        if (!canUseEnhancedLinkDialog(quill)) {
-            quill?.theme?.tooltip?.edit('link');
-            return;
-        }
-
         const existingSelection = quill.getSelection(true);
         const selectionText = existingSelection ? quill.getText(existingSelection.index, existingSelection.length) : '';
         const selectionFormats = existingSelection ? quill.getFormat(existingSelection) : {};
@@ -138,9 +123,11 @@
         const quill = new Quill(container, {
             theme: 'snow',
             modules: {
-                toolbar: toolbarOptions
+                toolbar: {
+                    container: toolbarOptions
+                }
             },
-            formats: ['bold', 'italic', 'underline', 'link', 'list']
+            formats: ['bold', 'italic', 'underline', 'link', 'list', 'ordered', 'bullet']
         });
 
         const toolbar = typeof quill.getModule === 'function' ? quill.getModule('toolbar') : null;
