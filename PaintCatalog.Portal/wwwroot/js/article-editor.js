@@ -421,7 +421,7 @@
     function sanitizeRichText(html) {
         if (!html) return '';
 
-        const allowedTags = new Set(['p', 'div', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'ul', 'ol', 'li']);
+        const allowedTags = new Set(['p', 'br', 'strong', 'b', 'em', 'i', 'u', 'a', 'ul', 'ol', 'li']);
         const allowedAttributes = new Map([
             ['a', new Set(['href'])]
         ]);
@@ -446,21 +446,20 @@
             }
 
             const tag = node.tagName.toLowerCase();
-            const normalizedTag = tag === 'div' ? 'p' : tag;
             const children = Array.from(node.childNodes).map(cleanNode).join('');
 
-            if (!allowedTags.has(normalizedTag)) {
+            if (!allowedTags.has(tag)) {
                 return children;
             }
 
-            const attributes = allowedAttributes.get(normalizedTag) || new Set();
+            const attributes = allowedAttributes.get(tag) || new Set();
             const attrs = [];
 
             attributes.forEach(attr => {
                 const value = node.getAttribute(attr);
                 if (!value) return;
 
-                if (normalizedTag === 'a') {
+                if (tag === 'a') {
                     const sanitizedHref = value.trim();
                     if (!isSafeHref(sanitizedHref)) return;
                     attrs.push(`href="${escapeHtml(sanitizedHref)}" target="_blank" rel="noopener noreferrer"`);
@@ -471,7 +470,7 @@
             });
 
             const attributesText = attrs.length ? ' ' + attrs.join(' ') : '';
-            return `<${normalizedTag}${attributesText}>${children}</${normalizedTag}>`;
+            return `<${tag}${attributesText}>${children}</${tag}>`;
         }
 
         return Array.from(wrapper?.childNodes ?? []).map(cleanNode).join('');
@@ -654,91 +653,41 @@
             } else {
                 const bodyArea = document.createElement('div');
                 bodyArea.className = 'space-y-2';
+                const editorHost = document.createElement('div');
+                editorHost.className = 'article-text-editor';
 
                 const preview = document.createElement('div');
                 preview.className = 'article-richtext min-h-[42px] rounded-lg border border-dashed border-slate-200 bg-slate-50/60 p-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300';
                 preview.dataset.paintPreview = 'true';
 
+                const quill = createQuillEditor(editorHost, item.text || '', (html) => {
+                    documentState.sections[sectionIndex].items[itemIndex].text = html;
+                    renderPaintPreview(html, preview);
+                });
+
                 const actionsRow = document.createElement('div');
                 actionsRow.className = 'flex flex-wrap items-center gap-2';
-
-                const toggleButton = document.createElement('button');
-                toggleButton.type = 'button';
-                toggleButton.className = 'inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300';
 
                 const paintButton = document.createElement('button');
                 paintButton.type = 'button';
                 paintButton.className = 'inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300';
                 paintButton.innerHTML = `${icons.paint}<span>Insert paint</span>`;
 
-                const htmlMode = item.htmlMode === true;
-
-                toggleButton.textContent = htmlMode ? 'Show editor' : 'Show HTML';
-                toggleButton.addEventListener('click', () => {
-                    documentState.sections[sectionIndex].items[itemIndex].htmlMode = !htmlMode;
-                    renderEditor();
+                paintButton.addEventListener('click', () => {
+                    paintPicker.open((paint) => {
+                        const token = `{{paint:${paint.id}}}`;
+                        insertPaintToken(quill, token);
+                        paintCache.set(paint.id, paint);
+                        documentState.sections[sectionIndex].items[itemIndex].text = quill?.root?.innerHTML || '';
+                        renderPaintPreview(quill?.root?.innerHTML || '', preview);
+                    });
                 });
 
-                if (htmlMode) {
-                    const textarea = document.createElement('textarea');
-                    textarea.rows = 6;
-                    textarea.value = item.text || '';
-                    textarea.className = 'w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100';
+                renderPaintPreview(quill?.root?.innerHTML || '', preview);
 
-                    textarea.addEventListener('input', (event) => {
-                        const value = event.target?.value || '';
-                        documentState.sections[sectionIndex].items[itemIndex].text = value;
-                        renderPaintPreview(value, preview);
-                    });
-
-                    paintButton.addEventListener('click', () => {
-                        paintPicker.open((paint) => {
-                            const token = `{{paint:${paint.id}}}`;
-                            const { selectionStart, selectionEnd } = textarea;
-                            const start = Number.isInteger(selectionStart) ? selectionStart : textarea.value.length;
-                            const end = Number.isInteger(selectionEnd) ? selectionEnd : start;
-                            const newValue = `${textarea.value.slice(0, start)}${token}${textarea.value.slice(end)}`;
-                            textarea.value = newValue;
-                            textarea.focus();
-                            const cursor = start + token.length;
-                            textarea.setSelectionRange(cursor, cursor);
-                            paintCache.set(paint.id, paint);
-                            documentState.sections[sectionIndex].items[itemIndex].text = newValue;
-                            renderPaintPreview(newValue, preview);
-                        });
-                    });
-
-                    renderPaintPreview(textarea.value, preview);
-                    actionsRow.appendChild(toggleButton);
-                    actionsRow.appendChild(paintButton);
-                    bodyArea.appendChild(textarea);
-                    bodyArea.appendChild(actionsRow);
-                } else {
-                    const editorHost = document.createElement('div');
-                    editorHost.className = 'article-text-editor';
-
-                    const quill = createQuillEditor(editorHost, item.text || '', (html) => {
-                        documentState.sections[sectionIndex].items[itemIndex].text = html;
-                        renderPaintPreview(html, preview);
-                    });
-
-                    paintButton.addEventListener('click', () => {
-                        paintPicker.open((paint) => {
-                            const token = `{{paint:${paint.id}}}`;
-                            insertPaintToken(quill, token);
-                            paintCache.set(paint.id, paint);
-                            documentState.sections[sectionIndex].items[itemIndex].text = quill?.root?.innerHTML || '';
-                            renderPaintPreview(quill?.root?.innerHTML || '', preview);
-                        });
-                    });
-
-                    renderPaintPreview(quill?.root?.innerHTML || '', preview);
-                    actionsRow.appendChild(toggleButton);
-                    actionsRow.appendChild(paintButton);
-                    bodyArea.appendChild(editorHost);
-                    bodyArea.appendChild(actionsRow);
-                }
-
+                actionsRow.appendChild(paintButton);
+                bodyArea.appendChild(editorHost);
+                bodyArea.appendChild(actionsRow);
                 bodyArea.appendChild(preview);
                 itemCard.appendChild(bodyArea);
             }
