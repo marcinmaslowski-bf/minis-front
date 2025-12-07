@@ -7,12 +7,12 @@
 @{
     ViewData["Title"] = "Paints Admin";
 
-    var paintsDataEndpoint = Url.Action("AdminData", "Paints") ?? "/paints/admin/data";
+    var paintsDataEndpoint = Url.Action("AdminData", "Paints") ?? "/admin/paints/data";
     var brandsEndpoint = Url.Action("Brands", "Paints") ?? "/paints/brands";
     var seriesEndpoint = Url.Action("Series", "Paints") ?? "/paints/series";
-    var createEndpoint = Url.Action("Create", "Paints") ?? "/paints/admin";
-    var updateEndpoint = Url.Action("Update", "Paints", new { id = "__id__" }) ?? "/paints/admin/__id__";
-    var deleteEndpoint = Url.Action("Delete", "Paints", new { id = "__id__" }) ?? "/paints/admin/__id__";
+    var createEndpoint = Url.Action("Create", "Paints") ?? "/admin/paints";
+    var updateEndpoint = Url.Action("Update", "Paints", new { id = "__id__" }) ?? "/admin/paints/__id__";
+    var deleteEndpoint = Url.Action("Delete", "Paints", new { id = "__id__" }) ?? "/admin/paints/__id__";
 
     var initialPaintsJson = string.IsNullOrWhiteSpace(Model.InitialPaintsJson) ? "null" : Model.InitialPaintsJson;
     var brandsJson = string.IsNullOrWhiteSpace(Model.BrandsJson) ? "null" : Model.BrandsJson;
