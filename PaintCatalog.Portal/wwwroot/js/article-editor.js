@@ -177,12 +177,7 @@
         const badgeHtml = match ? renderPaintBadge(match[1], { token, forEditor: true }) : escapeHtml(token);
 
         if (typeof quill.clipboard?.dangerouslyPasteHTML === 'function') {
-            const selection = quill.getSelection(true);
-            const index = Number.isInteger(selection?.index) ? selection.index : quill.getLength();
-
-            quill.clipboard.dangerouslyPasteHTML(index, badgeHtml, 'user');
-            const cursor = index + 1;
-            quill.setSelection(cursor, 0, 'user');
+            quill.clipboard.dangerouslyPasteHTML(badgeHtml);
             refreshEditorPaintBadges(quill);
             return;
         }
