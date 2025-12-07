@@ -477,6 +477,13 @@
         return Array.from(wrapper?.childNodes ?? []).map(cleanNode).join('');
     }
 
+    function normalizePaintTokens(text) {
+        if (!text) return '';
+        return text
+            .replace(/&#123;/g, '{')
+            .replace(/&#125;/g, '}');
+    }
+
     function prettifyRichText(html) {
         const sanitized = sanitizeRichText(html);
         if (!sanitized) return '';
@@ -517,7 +524,8 @@
         target.dataset.rawContent = text || '';
 
         const sanitized = sanitizeRichText(text || '');
-        const withBadges = sanitized.replace(/\{\{paint:(\d+)\}\}/g, (match, id) => renderPaintBadge(id));
+        const normalized = normalizePaintTokens(sanitized);
+        const withBadges = normalized.replace(/\{\{paint:(\d+)\}\}/g, (match, id) => renderPaintBadge(id));
         target.innerHTML = withBadges;
     }
 
