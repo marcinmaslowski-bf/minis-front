@@ -153,13 +153,6 @@
 
         quill.addHandler?.('link', () => createLinkDialog(quill));
 
-        quill.__lastSelection = { index: quill.getLength(), length: 0 };
-        quill.on('selection-change', (range) => {
-            if (range) {
-                quill.__lastSelection = range;
-            }
-        });
-
         if (quill.root) {
             const decorated = renderEditorPaintBadges(initialHtml || '');
             quill.root.innerHTML = decorated;
@@ -184,13 +177,12 @@
         const badgeHtml = match ? renderPaintBadge(match[1], { token, forEditor: true }) : escapeHtml(token);
 
         if (typeof quill.clipboard?.dangerouslyPasteHTML === 'function') {
-            const selection = quill.getSelection(true) || quill.__lastSelection;
+            const selection = quill.getSelection(true);
             const index = Number.isInteger(selection?.index) ? selection.index : quill.getLength();
 
             quill.clipboard.dangerouslyPasteHTML(index, badgeHtml, 'user');
             const cursor = index + 1;
             quill.setSelection(cursor, 0, 'user');
-            quill.__lastSelection = { index: cursor, length: 0 };
             refreshEditorPaintBadges(quill);
             return;
         }
@@ -490,7 +482,7 @@
 
         if (decorated !== quill.root.innerHTML) {
             const selection = typeof quill.getSelection === 'function'
-                ? (quill.getSelection(true) || quill.__lastSelection)
+                ? quill.getSelection(true)
                 : null;
 
             if (typeof quill.clipboard?.dangerouslyPasteHTML === 'function') {
@@ -503,7 +495,6 @@
                 && typeof selection.index === 'number'
                 && typeof quill.setSelection === 'function') {
                 quill.setSelection(selection.index, selection.length || 0, 'silent');
-                quill.__lastSelection = selection;
             }
         }
 
