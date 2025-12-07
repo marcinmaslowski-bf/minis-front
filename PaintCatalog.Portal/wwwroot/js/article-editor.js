@@ -28,6 +28,45 @@
         IMAGE: 'image'
     };
 
+    function createQuillEditor(container, initialHtml, onChange) {
+        const toolbarOptions = [
+            ['bold', 'italic', 'underline'],
+            ['link'],
+            [{ list: 'bullet' }, { list: 'ordered' }]
+        ];
+
+        const quill = new Quill(container, {
+            theme: 'snow',
+            modules: {
+                toolbar: toolbarOptions
+            }
+        });
+
+        quill.root.innerHTML = initialHtml || '';
+
+        if (typeof onChange === 'function') {
+            quill.on('text-change', () => onChange(quill.root.innerHTML));
+        }
+
+        return quill;
+    }
+
+    function insertPaintToken(quill, token) {
+        if (!quill) {
+            return;
+        }
+
+        if (typeof quill.insertText === 'function') {
+            quill.insertText(token);
+            return;
+        }
+
+        quill.root.focus();
+        if (typeof document.execCommand === 'function') {
+            document.execCommand('insertText', false, token);
+        }
+    }
+
     const paintCache = new Map();
 
     function escapeHtml(value) {
@@ -268,9 +307,9 @@
 
     function renderPaintPreview(text, target) {
         if (!target) return;
-        const escaped = escapeHtml(text || '');
-        const withBadges = escaped.replace(/\{\{paint:(\d+)\}\}/g, (match, id) => renderPaintBadge(id));
-        target.innerHTML = withBadges.replace(/\n/g, '<br />');
+        const base = (text || '').replace(/\n/g, '<br />');
+        const withBadges = base.replace(/\{\{paint:(\d+)\}\}/g, (match, id) => renderPaintBadge(id));
+        target.innerHTML = withBadges;
     }
 
     function renderItems(sectionIndex, itemsContainer) {
@@ -431,11 +470,16 @@
             } else {
                 const bodyArea = document.createElement('div');
                 bodyArea.className = 'space-y-2';
-                const textarea = document.createElement('textarea');
-                textarea.value = item.text || '';
-                textarea.rows = item.type === ITEM_TYPES.TEXT ? 4 : 3;
-                textarea.placeholder = item.type === ITEM_TYPES.STEP ? 'Describe this step.' : 'Write your content. Use the paint picker to insert paints.';
-                textarea.className = 'w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-900 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 dark:border-slate-700 dark:bg-slate-950/40 dark:text-slate-100';
+                const editorHost = document.createElement('div');
+                editorHost.className = 'article-text-editor';
+
+                const preview = document.createElement('div');
+                preview.className = 'min-h-[42px] rounded-lg border border-dashed border-slate-200 bg-slate-50/60 p-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300';
+
+                const quill = createQuillEditor(editorHost, item.text || '', (html) => {
+                    documentState.sections[sectionIndex].items[itemIndex].text = html;
+                    renderPaintPreview(html, preview);
+                });
 
                 const actionsRow = document.createElement('div');
                 actionsRow.className = 'flex flex-wrap items-center gap-2';
@@ -445,27 +489,20 @@
                 paintButton.className = 'inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-emerald-500 hover:text-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-400 dark:border-slate-700 dark:text-slate-200 dark:hover:border-emerald-500 dark:hover:text-emerald-300';
                 paintButton.innerHTML = `${icons.paint}<span>Insert paint</span>`;
 
-                const preview = document.createElement('div');
-                preview.className = 'min-h-[42px] rounded-lg border border-dashed border-slate-200 bg-slate-50/60 p-2 text-xs text-slate-600 dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-300';
-                renderPaintPreview(item.text, preview);
-
                 paintButton.addEventListener('click', () => {
                     paintPicker.open((paint) => {
                         const token = `{{paint:${paint.id}}}`;
-                        insertAtCursor(textarea, token);
+                        insertPaintToken(quill, token);
                         paintCache.set(paint.id, paint);
-                        documentState.sections[sectionIndex].items[itemIndex].text = textarea.value;
-                        renderPaintPreview(textarea.value, preview);
+                        documentState.sections[sectionIndex].items[itemIndex].text = quill?.root?.innerHTML || '';
+                        renderPaintPreview(quill?.root?.innerHTML || '', preview);
                     });
                 });
 
-                textarea.addEventListener('input', (event) => {
-                    documentState.sections[sectionIndex].items[itemIndex].text = event.target.value;
-                    renderPaintPreview(event.target.value, preview);
-                });
+                renderPaintPreview(quill?.root?.innerHTML || '', preview);
 
                 actionsRow.appendChild(paintButton);
-                bodyArea.appendChild(textarea);
+                bodyArea.appendChild(editorHost);
                 bodyArea.appendChild(actionsRow);
                 bodyArea.appendChild(preview);
                 itemCard.appendChild(bodyArea);
@@ -600,16 +637,6 @@
             sectionContainer.appendChild(addRow);
             editor.appendChild(sectionContainer);
         });
-    }
-
-    function insertAtCursor(textarea, text) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
-        const value = textarea.value;
-        textarea.value = value.substring(0, start) + text + value.substring(end);
-        const newCursor = start + text.length;
-        textarea.selectionStart = textarea.selectionEnd = newCursor;
-        textarea.focus();
     }
 
     function collectSections() {
