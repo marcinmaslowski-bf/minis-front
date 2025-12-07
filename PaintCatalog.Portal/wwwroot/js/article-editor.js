@@ -488,10 +488,9 @@
 
     function prettifyRichText(html) {
         const sanitized = sanitizeRichText(html);
-        const normalized = normalizePaintTokens(sanitized);
-        if (!normalized) return '';
+        if (!sanitized) return '';
 
-        const tokens = normalized
+        const tokens = sanitized
             .split(/(<[^>]+>)/g)
             .map(token => token.trim())
             .filter(Boolean);
