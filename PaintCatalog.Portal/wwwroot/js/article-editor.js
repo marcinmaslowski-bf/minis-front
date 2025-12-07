@@ -383,9 +383,9 @@
                     brandName: raw?.brandName ?? raw?.brand?.name ?? '',
                     seriesName: raw?.seriesName ?? raw?.series?.name ?? '',
                     sku: raw?.sku ?? raw?.code ?? '',
-                    hexColor: raw?.hexColor ?? raw?.hex,
-                    hexFrom: raw?.hexFrom ?? raw?.hexFromColor,
-                    hexTo: raw?.hexTo ?? raw?.hexToColor,
+                    hexColor: raw?.hexColor,
+                    hexFrom: raw?.hexFrom,
+                    hexTo: raw?.hexTo,
                     gradientType: raw?.gradientType
                 };
 
@@ -402,18 +402,18 @@
         const numericId = Number.parseInt(id, 10);
         const cacheKey = Number.isFinite(numericId) ? numericId : id;
         const paint = paintCache.get(cacheKey);
-        const swatch = (window.paintSwatchUtils?.buildPaintSwatch?.(paint, '#475569')) || {
-            background: '#475569',
-            label: '#475569'
+        const swatch = (window.paintSwatchUtils?.buildPaintSwatch?.(paint, '#0f172a')) || {
+            background: '#0f172a',
+            label: '#0f172a'
         };
         const label = paint?.name || paint?.title || `Paint #${cacheKey}`;
         const meta = [paint?.brandName, paint?.seriesName, paint?.sku].filter(Boolean).join(' • ');
 
         return `
-            <span class="paint-badge inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-3 py-1 text-xs font-semibold text-slate-800 shadow-sm dark:border-slate-700 dark:bg-slate-900/50 dark:text-slate-200" data-paint-badge data-paint-id="${cacheKey}">
-                <span class="h-4 w-4 rounded-full border border-white/50 shadow-inner dark:border-slate-800" style="background:${swatch.background}" title="${escapeHtml(swatch.label)}"></span>
-                <span class="paint-badge__name">${escapeHtml(label)}</span>
-                <span class="paint-badge__meta text-[10px] font-semibold uppercase tracking-wide text-emerald-600 dark:text-emerald-300">#${cacheKey}${meta ? ' • ' + escapeHtml(meta) : ''}</span>
+            <span class="inline-flex items-center gap-2 rounded-full border border-emerald-300/70 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700 shadow-sm dark:border-emerald-900 dark:bg-emerald-950/50 dark:text-emerald-200" data-paint-id="${cacheKey}">
+                <span class="h-4 w-4 rounded-full border border-white/50 shadow-inner" style="background:${swatch.background}" title="${escapeHtml(swatch.label)}"></span>
+                <span>${escapeHtml(label)}</span>
+                <span class="text-[10px] font-normal uppercase tracking-wide text-emerald-500">#${cacheKey}${meta ? ' • ' + escapeHtml(meta) : ''}</span>
             </span>
         `;
     }
