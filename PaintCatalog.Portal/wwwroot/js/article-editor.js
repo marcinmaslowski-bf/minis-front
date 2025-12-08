@@ -28,6 +28,8 @@
         IMAGE: 'image'
     };
 
+    let lastEditorDomRange = null;
+
     function createLinkDialog(quill) {
         const editorRoot = quill?.root || null;
         const selection = window.getSelection();
@@ -153,14 +155,19 @@
 
         quill.addHandler?.('link', () => createLinkDialog(quill));
 
+        // 🔹 NIC nie zamieniamy przy starcie – jeśli w tekście są {{paint:66}},
+        //    zostają jako tekst. Badge będą się pojawiać TYLKO z przycisku.
         if (quill.root) {
             const decorated = renderEditorPaintBadges(initialHtml || '');
             quill.root.innerHTML = decorated;
         }
 
+        // 🔹 przy każdej zmianie tylko serializujemy:
+        //    badge (span z data-paint-badge) -> {{paint:ID}}
         if (typeof onChange === 'function') {
             quill.on('text-change', () => {
-                const serialized = refreshEditorPaintBadges(quill);
+                const html = quill.root ? quill.root.innerHTML : '';
+                const serialized = serializeEditorHtml(html);
                 onChange(serialized);
             });
         }
@@ -168,30 +175,57 @@
         return quill;
     }
 
-    function insertPaintToken(quill, token) {
-        if (!quill) {
+
+
+    function insertPaintToken(quill, token, savedRange) {
+        if (!quill || !token) {
             return;
         }
 
-        const match = token?.match(/\{\{paint:(\d+)\}\}/);
-        const badgeHtml = match ? renderPaintBadge(match[1], { token, forEditor: true }) : escapeHtml(token);
+        const match = token.match(/\{\{paint:(\d+)\}\}/);
+        const badgeHtml = match
+            ? renderPaintBadge(match[1], { token, forEditor: true })
+            : escapeHtml(token);
 
-        if (typeof quill.clipboard?.dangerouslyPasteHTML === 'function') {
-            quill.clipboard.dangerouslyPasteHTML(badgeHtml);
-            refreshEditorPaintBadges(quill);
-            return;
+        const root = quill.root;
+        if (!root) return;
+
+        // Używamy zapamiętanego DOM Range, jeśli nadal jest w edytorze
+        let range;
+        if (savedRange && root.contains(savedRange.commonAncestorContainer)) {
+            range = savedRange.cloneRange();
+        } else {
+            // fallback: wstaw na końcu edytora
+            range = document.createRange();
+            range.selectNodeContents(root);
+            range.collapse(false);
         }
 
-        if (typeof quill.insertText === 'function') {
-            quill.insertText(token);
-            return;
-        }
+        // Tworzymy node z badgeHtml
+        const temp = document.createElement('div');
+        temp.innerHTML = badgeHtml;
+        const badgeNode = temp.firstElementChild || temp.firstChild;
+        if (!badgeNode) return;
 
-        quill.root.focus();
-        if (typeof document.execCommand === 'function') {
-            document.execCommand('insertText', false, token);
+        // Wstawiamy badge w miejscu karetki
+        range.deleteContents();
+        range.insertNode(badgeNode);
+
+        // Przesuwamy kursor ZA badge
+        const afterRange = document.createRange();
+        afterRange.setStartAfter(badgeNode);
+        afterRange.collapse(true);
+
+        const selection = window.getSelection();
+        root.focus();
+        if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(afterRange);
         }
     }
+
+
+
 
     const paintCache = new Map();
 
@@ -840,11 +874,29 @@
                     });
 
                     paintButton.addEventListener('click', () => {
+                        // 1) zapamiętujemy DOM range z edytora PRZED otwarciem pickera
+                        lastEditorDomRange = null;
+                        const root = quill.root;
+                        if (root) {
+                            const sel = window.getSelection();
+                            if (sel && sel.rangeCount > 0) {
+                                const r = sel.getRangeAt(0);
+                                if (root.contains(r.commonAncestorContainer)) {
+                                    lastEditorDomRange = r.cloneRange();
+                                }
+                            }
+                        }
+
                         paintPicker.open((paint) => {
                             const token = `{{paint:${paint.id}}}`;
-                            insertPaintToken(quill, token);
+
+                            // 2) wstawiamy badge dokładnie w zapamiętanym miejscu
+                            insertPaintToken(quill, token, lastEditorDomRange);
                             paintCache.set(paint.id, paint);
-                            const serialized = refreshEditorPaintBadges(quill);
+
+                            // 3) serializacja do {{paint:ID}} do state'a
+                            const html = quill.root ? quill.root.innerHTML : '';
+                            const serialized = serializeEditorHtml(html);
                             documentState.sections[sectionIndex].items[itemIndex].text = serialized;
                             renderPaintPreview(serialized, preview);
                         });

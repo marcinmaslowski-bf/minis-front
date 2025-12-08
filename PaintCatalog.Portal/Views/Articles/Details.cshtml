@@ -243,20 +243,16 @@
                                 }
                                 else
                                 {
-                                    <ol class="space-y-3 list-decimal pl-5 text-slate-800 dark:text-slate-100">
                                         @for (var i = 0; i < steps.Count(); i++)
                                         {
                                             var step = steps[i];
-                                            <li class="space-y-1">
                                                 @if (!string.IsNullOrWhiteSpace(step.Title))
                                                 {
                                                     <p class="font-semibold">@step.Title</p>
                                                 }
                                                 @RenderRichText(step.Text)
                                                 @RenderPaintList(step.PaintIds, step.Text)
-                                            </li>
                                         }
-                                    </ol>
                                 }
                             }
                             else
