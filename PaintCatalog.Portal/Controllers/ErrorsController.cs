@@ -7,7 +7,7 @@ namespace PaintCatalog.Portal.Controllers
     public class ErrorsController : Controller
     {
         [Route("errors/{statusCode}")]
-        [Route("{culture:regex(^pl$)}/errors/{statusCode}")]
+        [Route("{culture:cultureSegment}/errors/{statusCode}")]
         public IActionResult Status(int statusCode)
         {
             var reExecute = HttpContext.Features.Get<IStatusCodeReExecuteFeature>();

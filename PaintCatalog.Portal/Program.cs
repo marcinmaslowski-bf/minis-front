@@ -9,6 +9,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using PaintCatalog.Portal.ApiClients;
 using PaintCatalog.Portal.Helpers;
+using PaintCatalog.Portal.Routing;
 using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,6 +21,7 @@ builder.Services.AddRouting(options =>
 {
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
+    options.ConstraintMap["cultureSegment"] = typeof(SupportedCultureRouteConstraint);
 });
 
 builder.Services
@@ -27,11 +29,11 @@ builder.Services
     .AddViewLocalization(LanguageViewLocationExpanderFormat.Suffix)
     .AddDataAnnotationsLocalization();
 
-var supportedCultures = new[] { "en", "pl" };
+var supportedCultures = CultureHelpers.SupportedCultures;
 
 builder.Services.Configure<RequestLocalizationOptions>(options =>
 {
-    options.DefaultRequestCulture = new RequestCulture("en");
+    options.DefaultRequestCulture = new RequestCulture(CultureHelpers.DefaultCulture);
     options.SupportedCultures = supportedCultures.Select(c => new CultureInfo(c)).ToList();
     options.SupportedUICultures = options.SupportedCultures;
 
@@ -188,6 +190,6 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "localized",
-    pattern: "{culture:regex(^pl$)}/{controller=Home}/{action=Index}/{id?}");
+    pattern: "{culture:cultureSegment}/{controller=Home}/{action=Index}/{id?}");
 
 app.Run();

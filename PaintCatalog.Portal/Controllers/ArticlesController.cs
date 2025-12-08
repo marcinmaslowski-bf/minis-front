@@ -11,7 +11,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Routing;
 using PaintCatalog.Portal.ApiClients;
+using PaintCatalog.Portal.Helpers;
 using PaintCatalog.Portal.Models.Api;
 using PaintCatalog.Portal.Models.Articles;
 
@@ -209,7 +211,8 @@ namespace PaintCatalog.Portal.Controllers
             }
         }
 
-        [HttpGet("~/{culture:regex(^pl$)?}/p/{slug}-{id:int}", Name = "ArticleDetailsPublic")]
+        [HttpGet("~/p/{slug}-{id:int}", Name = "ArticleDetailsPublic")]
+        [HttpGet("~/{culture:cultureSegment}/p/{slug}-{id:int}", Name = "ArticleDetailsPublicLocalized")]
         public async Task<IActionResult> Details(int id, string? slug, string? culture)
         {
             var article = await GetArticleAsync(id);
@@ -221,7 +224,21 @@ namespace PaintCatalog.Portal.Controllers
             var canonicalSlug = BuildArticleSlug(article, id);
             if (!string.IsNullOrWhiteSpace(slug) && !string.Equals(slug, canonicalSlug, StringComparison.OrdinalIgnoreCase))
             {
-                return RedirectToRoute("ArticleDetailsPublic", new { slug = canonicalSlug, id, culture });
+                var useLocalizedRoute = CultureHelpers.IsSupportedCulture(culture)
+                    && !CultureHelpers.IsDefaultCulture(culture);
+
+                var routeValues = new RouteValueDictionary(new { slug = canonicalSlug, id });
+
+                if (useLocalizedRoute)
+                {
+                    routeValues["culture"] = culture;
+                }
+
+                var routeName = useLocalizedRoute
+                    ? "ArticleDetailsPublicLocalized"
+                    : "ArticleDetailsPublic";
+
+                return RedirectToRoute(routeName, routeValues);
             }
 
             var vm = new ArticleDetailsViewModel
