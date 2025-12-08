@@ -8,6 +8,8 @@ namespace PaintCatalog.Portal.Models.Articles
 
         public string Title { get; set; } = string.Empty;
 
+        public string Slug { get; set; } = string.Empty;
+
         public bool Published { get; set; }
 
         public DateTime? CreatedAtUtc { get; set; }
