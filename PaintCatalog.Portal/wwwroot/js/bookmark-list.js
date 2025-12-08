@@ -310,9 +310,16 @@
             rawItem.slug,
         );
 
+        const normalizedItemId = item.itemId ?? rawItem.id ?? rawItem.Id ?? item.id ?? null;
+        const normalizedArticleId =
+            item.articleId ??
+            rawItem.articleId ??
+            rawItem.id ??
+            (normalizedType === 'article' ? normalizedItemId : null);
+
         const normalized = {
             id: item.id ?? item.bookmarkId ?? `${item.itemType || 'item'}-${item.itemId || '0'}`,
-            itemId: item.itemId ?? rawItem.id ?? rawItem.Id ?? item.id ?? null,
+            itemId: normalizedItemId,
             type: normalizedType,
             categoryId:
                 item.categoryId ??
@@ -331,7 +338,7 @@
             seriesSlug: seriesSlug,
             paintSlug: paintSlug,
             articleSlug: articleSlug,
-            articleId: item.articleId ?? rawItem.articleId ?? rawItem.id ?? null,
+            articleId: normalizedArticleId,
             articleCategories: normalizeCategories(item) || normalizeCategories(rawItem),
         };
 
@@ -371,8 +378,9 @@
         }
 
         if (type === 'article') {
-            if (bookmark.articleId) {
-                return `${langPrefix}/articles/${bookmark.articleId}`;
+            const resolvedArticleId = bookmark.articleId || resolveItemId(bookmark);
+            if (resolvedArticleId) {
+                return `${langPrefix}/articles/${resolvedArticleId}`;
             }
 
             if (bookmark.articleSlug) {
@@ -549,30 +557,32 @@
     function renderArticleCard(bookmark) {
         const typeLabel = labels.typeArticle || 'Article';
         const url = buildItemUrl(bookmark);
+        const title = bookmark.title || bookmark.articleSlug || (bookmark.articleId ? `#${bookmark.articleId}` : typeLabel);
+        const safeTitle = escapeHtml(title);
         const note = bookmark.note
-            ? `<p class="text-sm text-slate-600 dark:text-slate-300"><span class="font-semibold">${labels.noteLabel || 'Note'}:</span> ${bookmark.note}</p>`
+            ? `<p class="text-sm text-slate-600 dark:text-slate-300"><span class="font-semibold">${labels.noteLabel || 'Note'}:</span> ${escapeHtml(bookmark.note)}</p>`
             : '';
         const category = bookmark.categoryName
-            ? `<span class="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200">${bookmark.categoryName}</span>`
+            ? `<span class="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200">${escapeHtml(bookmark.categoryName)}</span>`
             : '';
-        const title = bookmark.title || bookmark.articleSlug || typeLabel;
         const resolvedItemId = resolveItemId(bookmark);
         const categories = Array.isArray(bookmark.articleCategories) ? bookmark.articleCategories : [];
-        const categoryTags = categories.length
-            ? categories
+        const normalizedCategoryTags = categories.length ? categories : bookmark.categoryName ? [bookmark.categoryName] : [];
+        const categoryTags = normalizedCategoryTags.length
+            ? normalizedCategoryTags
                   .map(
                       (name) =>
                           `<span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-200">${escapeHtml(name)}</span>`,
                   )
                   .join(' ')
-            : `<span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">${typeLabel}</span>`;
+            : `<span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">${escapeHtml(typeLabel)}</span>`;
 
         return `
             <article class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70" ${url ? `data-bookmark-url="${url}"` : ''}>
                 <div class="flex items-center justify-between gap-3">
                     <div class="flex-1">
                         <div class="flex flex-wrap items-center gap-2">${categoryTags}</div>
-                        <h3 class="mt-1 text-lg font-semibold text-slate-900 dark:text-white">${title}</h3>
+                        <h3 class="mt-1 text-lg font-semibold text-slate-900 dark:text-white">${safeTitle}</h3>
                     </div>
                     ${category}
                 </div>
