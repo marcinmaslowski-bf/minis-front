@@ -4,7 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -208,7 +210,8 @@ namespace PaintCatalog.Portal.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> Details(int id)
+        [HttpGet("/p/{slug}-{id:int}", Name = "ArticleDetailsPublic")]
+        public async Task<IActionResult> Details(int id, string? slug)
         {
             var article = await GetArticleAsync(id);
             if (article == null)
@@ -216,10 +219,17 @@ namespace PaintCatalog.Portal.Controllers
                 return NotFound();
             }
 
+            var canonicalSlug = BuildArticleSlug(article, id);
+            if (!string.IsNullOrWhiteSpace(slug) && !string.Equals(slug, canonicalSlug, StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToRoute("ArticleDetailsPublic", new { slug = canonicalSlug, id });
+            }
+
             var vm = new ArticleDetailsViewModel
             {
                 Id = article.Id,
                 Title = article.Title ?? string.Empty,
+                Slug = canonicalSlug,
                 ContentType = article.ContentType,
                 TitleImageAttachmentId = article.TitleImageAttachmentId,
                 Content = article.Content ?? new EditorJsDocumentDto(),
@@ -307,6 +317,7 @@ namespace PaintCatalog.Portal.Controllers
                     {
                         Id = dto.Id,
                         Title = dto.Title ?? $"Article #{dto.Id}",
+                        Slug = BuildArticleSlug(dto, dto.Id),
                         Published = dto.Published,
                         CreatedAtUtc = dto.CreatedAtUtc,
                         UpdatedAtUtc = dto.UpdatedAtUtc
@@ -413,6 +424,28 @@ namespace PaintCatalog.Portal.Controllers
             }
 
             return items;
+        }
+
+        private static string BuildArticleSlug(ArticleDto article, int id)
+        {
+            if (!string.IsNullOrWhiteSpace(article.Slug))
+            {
+                return article.Slug;
+            }
+
+            var source = article.Title ?? string.Empty;
+            var slug = source.ToLowerInvariant();
+            slug = slug.Normalize(NormalizationForm.FormD);
+            slug = Regex.Replace(slug, "[^a-z0-9\\s-]", string.Empty);
+            slug = Regex.Replace(slug, "\\s+", "-");
+            slug = Regex.Replace(slug, "-+", "-").Trim('-');
+
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                return $"article-{id}";
+            }
+
+            return slug;
         }
     }
 }

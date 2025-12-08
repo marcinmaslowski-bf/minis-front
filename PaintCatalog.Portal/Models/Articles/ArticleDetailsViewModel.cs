@@ -9,6 +9,8 @@ namespace PaintCatalog.Portal.Models.Articles
 
         public string Title { get; set; } = string.Empty;
 
+        public string Slug { get; set; } = string.Empty;
+
         public ContentType ContentType { get; set; }
 
         public int? TitleImageAttachmentId { get; set; }

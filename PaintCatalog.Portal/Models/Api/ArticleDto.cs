@@ -11,6 +11,9 @@ namespace PaintCatalog.Portal.Models.Api
         [JsonPropertyName("title")]
         public string? Title { get; set; }
 
+        [JsonPropertyName("slug")]
+        public string? Slug { get; set; }
+
         [JsonPropertyName("contentType")]
         public ContentType ContentType { get; set; }
 
