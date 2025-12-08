@@ -18,6 +18,10 @@ namespace PaintCatalog.Portal.Controllers
     public class BookmarksController : Controller
     {
         private readonly IPaintCatalogApiClient _apiClient;
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            PropertyNameCaseInsensitive = true
+        };
 
         public BookmarksController(IPaintCatalogApiClient apiClient)
         {
@@ -60,6 +64,8 @@ namespace PaintCatalog.Portal.Controllers
             {
                 var payload = await _apiClient.GetBookmarksAsync();
                 var enrichedPayload = await EnrichPaintBookmarksAsync(payload);
+
+                enrichedPayload = await EnrichArticleBookmarksAsync(enrichedPayload);
 
                 return Content(enrichedPayload, "application/json");
             }
@@ -252,6 +258,90 @@ namespace PaintCatalog.Portal.Controllers
             return root.ToJsonString(new JsonSerializerOptions { WriteIndented = false });
         }
 
+        private async Task<string> EnrichArticleBookmarksAsync(string payload)
+        {
+            if (string.IsNullOrWhiteSpace(payload))
+            {
+                return payload;
+            }
+
+            JsonNode? root;
+            try
+            {
+                root = JsonNode.Parse(payload);
+            }
+            catch
+            {
+                return payload;
+            }
+
+            if (root is null)
+            {
+                return payload;
+            }
+
+            var bookmarkItems = ExtractBookmarkItems(root).Where(IsArticleItem).ToList();
+            var articleIds = bookmarkItems
+                .Select(GetBookmarkItemId)
+                .Where(id => id.HasValue && id.Value > 0)
+                .Select(id => id!.Value)
+                .Distinct()
+                .ToList();
+
+            if (articleIds.Count == 0)
+            {
+                return payload;
+            }
+
+            Dictionary<int, ArticleBookmarkInfo> articles;
+            try
+            {
+                articles = await FetchArticleDataAsync(articleIds);
+            }
+            catch
+            {
+                return payload;
+            }
+
+            foreach (var bookmark in bookmarkItems)
+            {
+                var itemId = GetBookmarkItemId(bookmark);
+                if (!itemId.HasValue || !articles.TryGetValue(itemId.Value, out var article))
+                {
+                    continue;
+                }
+
+                var canonicalSlug = BuildArticleSlug(article.Article, itemId.Value);
+                bookmark["articleSlug"] = canonicalSlug;
+                bookmark["url"] = $"/p/{canonicalSlug}-{itemId.Value}";
+
+                if (article.Article?.ContentType is ContentType contentType)
+                {
+                    bookmark["contentType"] = (int)contentType;
+                }
+
+                if (article.ArticleJson != null)
+                {
+                    var item = bookmark["item"] as JsonObject;
+                    if (item == null)
+                    {
+                        bookmark["item"] = CloneJsonObject(article.ArticleJson);
+                    }
+                    else
+                    {
+                        MergeJsonObjects(item, article.ArticleJson);
+                    }
+                }
+
+                if (!string.IsNullOrWhiteSpace(article.Article?.Title))
+                {
+                    bookmark["title"] = article.Article!.Title;
+                }
+            }
+
+            return root.ToJsonString(new JsonSerializerOptions { WriteIndented = false });
+        }
+
         private static IEnumerable<JsonObject> ExtractBookmarkItems(JsonNode root)
         {
             if (root is JsonArray rootArray)
@@ -392,6 +482,12 @@ namespace PaintCatalog.Portal.Controllers
             return raw;
         }
 
+        private static bool IsArticleItem(JsonObject bookmark)
+        {
+            var type = NormalizeType(bookmark);
+            return string.Equals(type, "article", StringComparison.OrdinalIgnoreCase);
+        }
+
         private static int? GetBookmarkItemId(JsonObject bookmark)
         {
             return GetInt(bookmark, "itemId", "id");
@@ -498,6 +594,61 @@ namespace PaintCatalog.Portal.Controllers
             public bool IsComplete => !string.IsNullOrWhiteSpace(BrandSlug)
                                        && !string.IsNullOrWhiteSpace(SeriesSlug)
                                        && !string.IsNullOrWhiteSpace(PaintSlug);
+        }
+
+        private readonly record struct ArticleBookmarkInfo(ArticleDto? Article, JsonObject? ArticleJson);
+
+        private async Task<Dictionary<int, ArticleBookmarkInfo>> FetchArticleDataAsync(IEnumerable<int> articleIds)
+        {
+            var results = new Dictionary<int, ArticleBookmarkInfo>();
+
+            var tasks = articleIds.Select(async id =>
+            {
+                try
+                {
+                    var payload = await _apiClient.GetArticleByIdAsync(id);
+                    var article = JsonSerializer.Deserialize<ArticleDto>(payload, JsonOptions);
+                    var articleJson = JsonNode.Parse(payload) as JsonObject;
+                    return (id, info: new ArticleBookmarkInfo(article, articleJson));
+                }
+                catch
+                {
+                    return (id, info: (ArticleBookmarkInfo?)null);
+                }
+            });
+
+            foreach (var task in tasks)
+            {
+                var (id, info) = await task;
+                if (info.HasValue && info.Value.Article != null)
+                {
+                    results[id] = info.Value;
+                }
+            }
+
+            return results;
+        }
+
+        private static string BuildArticleSlug(ArticleDto? article, int id)
+        {
+            if (article != null && !string.IsNullOrWhiteSpace(article.Slug))
+            {
+                return article.Slug;
+            }
+
+            var source = article?.Title ?? string.Empty;
+            var slug = source.ToLowerInvariant();
+            slug = slug.Normalize(System.Text.NormalizationForm.FormD);
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, "[^a-z0-9\\s-]", string.Empty);
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, "\\s+", "-");
+            slug = System.Text.RegularExpressions.Regex.Replace(slug, "-+", "-").Trim('-');
+
+            if (string.IsNullOrWhiteSpace(slug))
+            {
+                return $"article-{id}";
+            }
+
+            return slug;
         }
     }
 }
