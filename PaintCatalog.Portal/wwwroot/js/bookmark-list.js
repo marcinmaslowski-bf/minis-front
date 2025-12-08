@@ -627,7 +627,7 @@
             : `<span class="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">${escapeHtml(typeLabel)}</span>`;
 
         return `
-            <article class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70" ${url ? `data-bookmark-url="${url}"` : ''}>
+            <article class="rounded-2xl border border-slate-200 bg-white/80 p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800 dark:bg-slate-900/70">
                 <div class="flex items-center justify-between gap-3">
                     <div class="flex-1">
                         <div class="flex flex-wrap items-center gap-2">${categoryTags}</div>
