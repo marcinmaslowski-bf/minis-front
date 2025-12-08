@@ -1,4 +1,6 @@
 @using PaintCatalog.Portal.Helpers
+@using PaintCatalog.Portal.Models.Api
+@using System.Linq
 @model PaintCatalog.Portal.Models.Bookmarks.BookmarkListViewModel
 @inject Microsoft.AspNetCore.Mvc.Localization.IViewLocalizer Localizer
 @inject Microsoft.AspNetCore.Mvc.Localization.IHtmlLocalizerFactory LocalizerFactory
@@ -8,7 +10,10 @@
     ViewData["MetaDescription"] = Localizer["Page_Description"].Value;
 
     var searchLocalizer = LocalizerFactory.Create("Views.Paints.Index", typeof(Program).Assembly.GetName().Name);
+    var articleLocalizer = LocalizerFactory.Create("Views.Articles.Details", typeof(Program).Assembly.GetName().Name);
     var enumLabels = EnumLabelHelper.CreatePaintEnumLabels(searchLocalizer);
+    var contentTypeLabels = Enum.GetValues<ContentType>()
+        .ToDictionary(type => ((int)type).ToString(), type => articleLocalizer[$"ContentType_{type}"]?.Value ?? type.ToString());
 
     var jsonOptions = new System.Text.Json.JsonSerializerOptions
     {
@@ -78,16 +83,17 @@
             form = searchLocalizer["Card_Label_Form"].Value,
             sku = searchLocalizer["Card_Label_Sku"].Value
         },
-        enumLabels = new
-        {
-            types = enumLabels.Types,
-            sheens = enumLabels.Sheens,
-            mediums = enumLabels.Mediums,
-            effects = enumLabels.Effects,
-            usages = enumLabels.Usages,
-            forms = enumLabels.Forms
-        }
-    };
+            enumLabels = new
+            {
+                types = enumLabels.Types,
+                sheens = enumLabels.Sheens,
+                mediums = enumLabels.Mediums,
+                effects = enumLabels.Effects,
+                usages = enumLabels.Usages,
+                forms = enumLabels.Forms,
+                contentTypes = contentTypeLabels
+            }
+        };
 
     var bootstrapJson = System.Text.Json.JsonSerializer.Serialize(bootstrap, jsonOptions);
 }

@@ -209,9 +209,8 @@ namespace PaintCatalog.Portal.Controllers
             }
         }
 
-        [HttpGet("{id:int}")]
-        [HttpGet("/p/{slug}-{id:int}", Name = "ArticleDetailsPublic")]
-        public async Task<IActionResult> Details(int id, string? slug)
+        [HttpGet("~/{culture:regex(^pl$)?}/p/{slug}-{id:int}", Name = "ArticleDetailsPublic")]
+        public async Task<IActionResult> Details(int id, string? slug, string? culture)
         {
             var article = await GetArticleAsync(id);
             if (article == null)
@@ -222,7 +221,7 @@ namespace PaintCatalog.Portal.Controllers
             var canonicalSlug = BuildArticleSlug(article, id);
             if (!string.IsNullOrWhiteSpace(slug) && !string.Equals(slug, canonicalSlug, StringComparison.OrdinalIgnoreCase))
             {
-                return RedirectToRoute("ArticleDetailsPublic", new { slug = canonicalSlug, id });
+                return RedirectToRoute("ArticleDetailsPublic", new { slug = canonicalSlug, id, culture });
             }
 
             var vm = new ArticleDetailsViewModel

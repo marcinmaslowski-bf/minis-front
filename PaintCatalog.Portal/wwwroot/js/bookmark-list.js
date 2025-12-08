@@ -3,6 +3,7 @@
     const endpoints = bootstrap.endpoints || {};
     const labels = bootstrap.labels || {};
     const enumLabels = bootstrap.enumLabels || {};
+    const contentTypeLabels = enumLabels.contentTypes || {};
     const swatchUtils = window.paintSwatchUtils || {};
 
     const langPrefix = (document.documentElement?.lang || '').toLowerCase() === 'pl' ? '/pl' : '';
@@ -176,6 +177,17 @@
         return normalized || null;
     }
 
+    function parseContentType(value) {
+        if (value === null || value === undefined) return null;
+
+        if (typeof value === 'number') {
+            return Number.isFinite(value) ? value : null;
+        }
+
+        const parsed = Number(String(value).trim());
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+
     function resolveItemId(bookmark) {
         if (!bookmark) return null;
 
@@ -340,6 +352,7 @@
             articleSlug: articleSlug,
             articleId: normalizedArticleId,
             articleCategories: normalizeCategories(item) || normalizeCategories(rawItem),
+            contentType: parseContentType(item.contentType ?? rawItem.contentType ?? rawItem.ContentType ?? item.ContentType),
         };
 
         if (normalized.url && normalized.type === 'paint') {
@@ -380,15 +393,27 @@
         if (type === 'article') {
             const resolvedArticleId = bookmark.articleId || resolveItemId(bookmark);
             if (resolvedArticleId) {
-                return `${langPrefix}/articles/${resolvedArticleId}`;
-            }
-
-            if (bookmark.articleSlug) {
-                return `${langPrefix}/articles/${bookmark.articleSlug}`;
+                const slug = bookmark.articleSlug || buildArticleSlug(bookmark.title, resolvedArticleId);
+                return `${langPrefix}/p/${slug}-${resolvedArticleId}`;
             }
         }
 
         return provided;
+    }
+
+    function buildArticleSlug(title, id) {
+        const source = (title || '').toString().toLowerCase();
+        const normalized = source
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-+|-+$/g, '');
+
+        if (normalized) return normalized;
+        if (id) return `article-${id}`;
+        return 'article';
     }
 
     function renderFilterOptions(type) {
@@ -453,6 +478,22 @@
         }
 
         return fallback || '';
+    }
+
+    function resolveContentTypeLabels(rawValue) {
+        const numeric = parseContentType(rawValue);
+        if (!numeric) return [];
+
+        const tags = [];
+        Object.entries(contentTypeLabels).forEach(([key, label]) => {
+            const flag = Number(key);
+            if (!Number.isFinite(flag) || flag <= 0) return;
+            if ((numeric & flag) === flag) {
+                tags.push(label || key);
+            }
+        });
+
+        return tags;
     }
 
     function renderPaintCard(bookmark) {
@@ -566,8 +607,16 @@
             ? `<span class="rounded-full bg-emerald-500/10 px-2 py-1 text-[11px] font-semibold text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-200">${escapeHtml(bookmark.categoryName)}</span>`
             : '';
         const resolvedItemId = resolveItemId(bookmark);
-        const categories = Array.isArray(bookmark.articleCategories) ? bookmark.articleCategories : [];
-        const normalizedCategoryTags = categories.length ? categories : bookmark.categoryName ? [bookmark.categoryName] : [];
+        const contentTypeTags = resolveContentTypeLabels(bookmark.contentType);
+        const fallbackTags = Array.isArray(bookmark.articleCategories) ? bookmark.articleCategories : [];
+        const normalizedCategoryTags = contentTypeTags.length
+            ? contentTypeTags
+            : fallbackTags.length
+              ? fallbackTags
+              : bookmark.categoryName
+                ? [bookmark.categoryName]
+                : [];
+
         const categoryTags = normalizedCategoryTags.length
             ? normalizedCategoryTags
                   .map(
